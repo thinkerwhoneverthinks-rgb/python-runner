@@ -265,7 +265,7 @@ def run_deepseek_scraper(pdf_path: Path, prompts: List[str]) -> str:
         while time.monotonic() - gen_start < GENERATION_TIMEOUT_SECONDS:
             time.sleep(2)
             try:
-                cont_btn = page.locator("div[role='button']:has-text('Continue')").last
+                cont_btn = page.locator("div[role='button']:has-text('Continue'), button:has-text('Continue')").last
                 if cont_btn.is_visible(timeout=500):
                     cont_btn.click()
                     stable_count = 0
@@ -276,19 +276,32 @@ def run_deepseek_scraper(pdf_path: Path, prompts: List[str]) -> str:
 
             current_text = ""
             try:
-                code_pre = page.locator(".md-code-block pre").all()
-                if code_pre:
-                    current_text = code_pre[-1].inner_text(timeout=500)
+                code_pres = page.locator(".md-code-block pre, pre code, pre, .ds-markdown pre").all()
+                if code_pres:
+                    current_text = code_pres[-1].inner_text(timeout=500)
                 else:
-                    assistant_msgs = page.locator(".ds-markdown.ds-assistant-message-main-content, .ds-message").all()
+                    assistant_msgs = page.locator(".ds-markdown.ds-assistant-message-main-content, .ds-markdown, .ds-message").all()
                     if assistant_msgs:
                         current_text = assistant_msgs[-1].inner_text(timeout=500)
             except Exception:
                 pass
 
+            # Fast completion check: If valid JSON array or closing code block detected
+            if current_text and len(current_text.strip()) > 80:
+                trimmed = current_text.strip()
+                if (trimmed.startswith("[") and trimmed.endswith("]")) or (trimmed.startswith("```") and trimmed.endswith("```")):
+                    try:
+                        parsed = parse_clean_json(trimmed)
+                        if parsed and len(parsed) > 0:
+                            print(f"[DeepSeek] Clean JSON completed ({len(parsed)} questions detected)!")
+                            context.close()
+                            return trimmed
+                    except Exception:
+                        pass
+
             is_generating = False
             try:
-                stop_btns = page.locator("button:has-text('Stop'), [class*='stop'], .ds-icon--stop").all()
+                stop_btns = page.locator("button:has-text('Stop'), [class*='stop'], .ds-icon--stop, [aria-label*='Stop']").all()
                 if any(sb.is_visible(timeout=300) for sb in stop_btns if sb.count() > 0):
                     is_generating = True
             except Exception:
@@ -298,7 +311,7 @@ def run_deepseek_scraper(pdf_path: Path, prompts: List[str]) -> str:
                 if current_text == last_text:
                     if not is_generating:
                         stable_count += 1
-                        if stable_count >= 3:
+                        if stable_count >= 2:
                             break
                     else:
                         stable_count = 0
@@ -308,14 +321,23 @@ def run_deepseek_scraper(pdf_path: Path, prompts: List[str]) -> str:
 
         # Try Copy code button first
         try:
-            code_banners = page.locator(".md-code-block-banner").all()
-            if code_banners:
-                copy_btn = code_banners[-1].locator("div[role='button']:has-text('Copy'), .code-info-button-text").first
-                if copy_btn.count() > 0:
-                    copy_btn.click()
+            copy_btns = page.locator(".md-code-block-banner div[role='button'], div[role='button']:has-text('Copy'), .code-info-button-text, button:has-text('Copy')").all()
+            if copy_btns:
+                copy_btn = copy_btns[-1]
+                if copy_btn.is_visible(timeout=1000):
+                    copy_btn.click(delay=100, force=True)
                     human_delay(0.5, 1.0)
-                    copied = page.evaluate("navigator.clipboard.readText()")
-                    if copied and len(copied) > 50:
+                    copied = page.evaluate("""async () => {
+                        try {
+                            if (navigator.clipboard && navigator.clipboard.readText) {
+                                return await navigator.clipboard.readText();
+                            }
+                            return "";
+                        } catch (e) {
+                            return "";
+                        }
+                    }""")
+                    if copied and len(copied.strip()) > 50:
                         context.close()
                         return copied
         except Exception:
