@@ -85,8 +85,34 @@ def parse_clean_json(raw_text: str) -> List[Dict[str, Any]]:
     return []
 
 
+def cleanup_session_locks(session_dir: Path):
+    """Removes stale Chromium lock files (SingletonLock, LOCK) created by previous browser runs."""
+    if not session_dir.exists():
+        return
+    lock_names = ["SingletonLock", "SingletonCookie", "SingletonSocket", "LOCK", "lockfile"]
+    try:
+        for item in session_dir.glob("*"):
+            if item.name in lock_names or item.name.startswith("Singleton"):
+                try:
+                    if item.is_dir():
+                        shutil.rmtree(item, ignore_errors=True)
+                    else:
+                        item.unlink(missing_ok=True)
+                except Exception:
+                    pass
+        default_dir = session_dir / "Default"
+        if default_dir.exists():
+            for item in default_dir.glob("LOCK*"):
+                try:
+                    item.unlink(missing_ok=True)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+
 def paste_multipart_prompt(page: Any, chat_input_locator: Any, prompts: List[str]):
-    """Pastes multi-part prompts (Prompt 1, Prompt 2, Prompt 3, Prompt 4) into the chat input.
+    """Pastes multi-part prompts (Prompt 1 to 10) into the chat input.
     
     Pasting each part individually prevents web chat UIs (DeepSeek, Perplexity, Qwen)
     from converting long single-block text into a .txt file attachment.
@@ -116,7 +142,9 @@ def paste_multipart_prompt(page: Any, chat_input_locator: Any, prompts: List[str
 
 def run_deepseek_scraper(pdf_path: Path, prompts: List[str]) -> str:
     """Automates DeepSeek web interface to process a PDF chunk."""
-    session_dir = str(DEEPSEEK_SESSION.resolve())
+    s_path = DEEPSEEK_SESSION.resolve()
+    cleanup_session_locks(s_path)
+    session_dir = str(s_path)
     os.makedirs(session_dir, exist_ok=True)
 
     with sync_playwright() as p:
@@ -124,6 +152,10 @@ def run_deepseek_scraper(pdf_path: Path, prompts: List[str]) -> str:
             user_data_dir=session_dir,
             headless=False,
             args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
                 "--use-fake-ui-for-media-stream",
                 "--use-fake-device-for-media-stream",
                 "--enable-features=ClipboardAPI",
@@ -284,7 +316,9 @@ def run_deepseek_scraper(pdf_path: Path, prompts: List[str]) -> str:
 
 def run_perplexity_scraper(pdf_path: Path, prompts: List[str]) -> str:
     """Automates Perplexity AI web interface to process a PDF chunk."""
-    session_dir = str(PERPLEXITY_SESSION.resolve())
+    s_path = PERPLEXITY_SESSION.resolve()
+    cleanup_session_locks(s_path)
+    session_dir = str(s_path)
     os.makedirs(session_dir, exist_ok=True)
 
     with sync_playwright() as p:
@@ -292,6 +326,10 @@ def run_perplexity_scraper(pdf_path: Path, prompts: List[str]) -> str:
             user_data_dir=session_dir,
             headless=False,
             args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
                 "--use-fake-ui-for-media-stream",
                 "--use-fake-device-for-media-stream",
                 "--enable-features=ClipboardAPI",
@@ -376,7 +414,9 @@ def run_perplexity_scraper(pdf_path: Path, prompts: List[str]) -> str:
 
 def run_qwen_scraper(pdf_path: Path, prompts: List[str]) -> str:
     """Automates Qwen AI web interface to process a PDF chunk."""
-    session_dir = str(QWEN_SESSION.resolve())
+    s_path = QWEN_SESSION.resolve()
+    cleanup_session_locks(s_path)
+    session_dir = str(s_path)
     os.makedirs(session_dir, exist_ok=True)
 
     with sync_playwright() as p:
@@ -384,6 +424,10 @@ def run_qwen_scraper(pdf_path: Path, prompts: List[str]) -> str:
             user_data_dir=session_dir,
             headless=False,
             args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
                 "--use-fake-ui-for-media-stream",
                 "--use-fake-device-for-media-stream",
                 "--enable-features=ClipboardAPI",
@@ -391,8 +435,8 @@ def run_qwen_scraper(pdf_path: Path, prompts: List[str]) -> str:
                 "--disable-blink-features=AutomationControlled"
             ],
             ignore_default_args=["--enable-automation"],
-            viewport={"width": 1280, "height": 800},
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            viewport={"width": 1366, "height": 850},
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
         )
         page = context.pages[0] if context.pages else context.new_page()
         stealth_sync(page)
