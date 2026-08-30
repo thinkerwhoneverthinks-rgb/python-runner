@@ -85,8 +85,21 @@ def parse_clean_json(raw_text: str) -> List[Dict[str, Any]]:
     return []
 
 
+def kill_stale_chrome_processes():
+    """Kills lingering Chrome/Chromium zombie processes on Linux runners."""
+    if sys.platform != "win32":
+        try:
+            import subprocess
+            subprocess.run(["pkill", "-9", "-f", "chrome"], capture_output=True)
+            subprocess.run(["pkill", "-9", "-f", "chromium"], capture_output=True)
+            time.sleep(1)
+        except Exception:
+            pass
+
+
 def cleanup_session_locks(session_dir: Path):
     """Removes stale Chromium lock files (SingletonLock, LOCK) created by previous browser runs."""
+    kill_stale_chrome_processes()
     if not session_dir.exists():
         return
     lock_names = ["SingletonLock", "SingletonCookie", "SingletonSocket", "LOCK", "lockfile"]
