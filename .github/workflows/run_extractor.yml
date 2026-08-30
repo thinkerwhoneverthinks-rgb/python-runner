@@ -34,10 +34,10 @@ jobs:
           playwright install chromium
           playwright install-deps
 
-      - name: Install System Utilities (Xvfb, OpenVPN & Cloudflared)
+      - name: Install System Utilities (Xvfb, D-Bus, OpenVPN & Cloudflared)
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb openvpn openvpn-systemd-resolved wget poppler-utils
+          sudo apt-get install -y xvfb dbus-x11 openvpn openvpn-systemd-resolved wget poppler-utils
           wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
           sudo dpkg -i cloudflared-linux-amd64.deb
 
@@ -64,8 +64,10 @@ jobs:
 
       - name: Start Virtual Display, App Server, and Cloudflare Tunnel
         run: |
-          # 1. Start Xvfb virtual display for Playwright browser automation
-          Xvfb :99 -screen 0 1366x850x24 &
+          # 1. Start D-Bus and Xvfb virtual display for Playwright browser automation
+          eval $(dbus-launch --sh-syntax)
+          export DBUS_SESSION_BUS_ADDRESS
+          Xvfb :99 -screen 0 1366x850x24 -ac +extension GLX +render -noreset &
           export DISPLAY=:99
 
           TARGET_SCRIPT="${{ inputs.script_to_run }}"
