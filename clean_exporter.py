@@ -168,6 +168,8 @@ def build_website_questions_json(
         item: Dict[str, Any] = {
             "id": q_id,
             "type": q_type,
+            "topic": topic,
+            "subtopic": subtopic,
             "question": clean_prompt,
             "image_url": img_url if img_url else None,
             "options": cleaned_options,
