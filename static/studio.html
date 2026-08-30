@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Allen Hybrid Review Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/studio.css">
+  
+  <!-- KaTeX core CSS & JS with mhchem chemistry extension -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/mhchem.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+  
+  <!-- SmilesDrawer for 2D Chemical Molecular Structure Rendering -->
+  <script src="https://unpkg.com/smiles-drawer@2.0.1/dist/smiles-drawer.min.js"></script>
+</head>
+
+<body>
+  <div class="bg-glow"></div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <span class="brand-badge">ALLEN HYBRID</span>
+      <span style="color: var(--text-muted); font-weight: 400;">/ Review Studio</span>
+      <span id="nav-filename" class="stat-pill" style="font-size: 0.8rem; margin-left: 0.5rem;">Document</span>
+    </div>
+
+    <!-- Quick Stats Filters -->
+    <div class="nav-stats">
+      <div class="stat-pill stat-btn active" data-filter="all" id="filter-all" title="Show all questions">
+        <span>Total:</span>
+        <strong id="stat-total">0</strong>
+      </div>
+      <div class="stat-pill stat-btn" data-filter="tier_text" id="filter-text" title="Filter: Text / Chemistry Equations">
+        <span style="color: #34d399;">●</span>
+        <span>Clean Text:</span>
+        <strong id="stat-text">0</strong>
+      </div>
+      <div class="stat-pill stat-btn" data-filter="tier_crop" id="filter-crop" title="Filter: Visual Diagram Crops">
+        <span style="color: #fbbf24;">●</span>
+        <span>Diagram Crops:</span>
+        <strong id="stat-crop">0</strong>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="nav-actions">
+      <a href="/" class="btn btn-secondary btn-sm">← Upload / Parse PDF</a>
+      <button id="btn-import-modal" class="btn btn-secondary btn-sm" title="Manually paste or upload JSON dataset">
+        📥 Import JSON
+      </button>
+      <button id="btn-metadata-modal" class="btn btn-secondary btn-sm" title="Configure Test ID, title, duration, scoring & syllabus">
+        ⚙️ Test Config
+      </button>
+      <button id="btn-cloudinary-modal" class="btn btn-secondary btn-sm" title="Configure Cloud Name & API credentials">
+        ☁️ Cloudinary
+      </button>
+      <button id="btn-export-clean-json" class="btn btn-primary btn-sm" title="Export clean JSON formatted for your website">
+        📥 Export Site JSON
+      </button>
+      <button id="btn-upload-cloudinary-export" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #10b981, #059669);" title="Upload crops to Cloudinary with 0 transformations and export JSON">
+        🚀 Cloudinary + JSON
+      </button>
+    </div>
+  </header>
+
+  <!-- Studio Settings Toolbar -->
+  <div class="export-settings-bar">
+    <div class="settings-field">
+      <label for="export-filename">📄 JSON Filename:</label>
+      <input type="text" id="export-filename" placeholder="output.json" />
+    </div>
+
+    <div class="settings-field">
+      <label for="id-prefix">🏷️ Question ID Prefix:</label>
+      <input type="text" id="id-prefix" placeholder="e.g. xyz_abc_13245anb" />
+      <span class="id-preview-hint" id="id-preview-hint">Format: prefix_topic_subtopic_q1</span>
+    </div>
+
+    <div class="settings-field">
+      <label for="default-marks">⭐ Marks:</label>
+      <input type="text" id="default-marks" value="+4" style="width: 60px;" />
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="toolbar">
+    <div class="filter-group">
+      <button class="filter-tab active" data-filter="all">All Questions</button>
+      <button class="filter-tab" data-filter="tier_text">📝 Text / LaTeX (\ce{...})</button>
+      <button class="filter-tab" data-filter="tier_crop">🖼️ Diagram Crops</button>
+    </div>
+
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search question text, chemical formula, or tag..." />
+    </div>
+  </div>
+
+  <!-- Main Question Cards Container -->
+  <main class="container">
+    <div class="questions-list" id="questions-list">
+      <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
+        <p>Loading questions into Studio...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Test Metadata Modal -->
+  <div class="modal-overlay" id="metadata-modal">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 class="modal-title">⚙️ Quizzy Test Configuration</h3>
+        <button class="modal-close" id="btn-close-meta-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem;">
+          Configure file-level parameters and global scoring rules according to Quizzy 2026 schema.
+        </p>
+
+        <div class="modal-group">
+          <label class="modal-label" for="meta-test-id">Test Slug ID (Required)</label>
+          <input type="text" id="meta-test-id" class="modal-input" placeholder="e.g. allen-mazl-2026-major-01" />
+        </div>
+
+        <div class="modal-group">
+          <label class="modal-label" for="meta-test-name">Test Display Title (Required)</label>
+          <input type="text" id="meta-test-name" class="modal-input" placeholder="e.g. MAJOR TEST - 01" />
+        </div>
+
+        <div class="modal-group">
+          <label class="modal-label" for="meta-display-name">Display Name Override (Optional)</label>
+          <input type="text" id="meta-display-name" class="modal-input" placeholder="e.g. Allen Major Test 01 (Full Class 11)" />
+        </div>
+
+        <div class="modal-group">
+          <label class="modal-label" for="meta-description">Description Banner (Optional)</label>
+          <input type="text" id="meta-description" class="modal-input" placeholder="e.g. Full Class 11 Syllabus Test" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+          <div class="modal-group">
+            <label class="modal-label" for="meta-duration">Duration (Min)</label>
+            <input type="number" id="meta-duration" class="modal-input" value="180" />
+          </div>
+          <div class="modal-group">
+            <label class="modal-label" for="meta-correct-marks">Correct (+Marks)</label>
+            <input type="number" id="meta-correct-marks" class="modal-input" value="4" />
+          </div>
+          <div class="modal-group">
+            <label class="modal-label" for="meta-incorrect-marks">Incorrect (-Marks)</label>
+            <input type="number" id="meta-incorrect-marks" class="modal-input" value="-1" />
+          </div>
+        </div>
+
+        <div class="modal-group" style="margin-top: 0.75rem;">
+          <label class="modal-label" for="meta-syllabus">Syllabus Details (Optional)</label>
+          <textarea id="meta-syllabus" class="modal-input" rows="3" placeholder="Physics: Mechanics&#10;Chemistry: Physical &amp; Organic" style="resize: vertical; font-family: inherit; font-size: 0.85rem;"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" id="btn-cancel-meta">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="btn-save-meta">💾 Save Test Config</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cloudinary Credentials Modal -->
+  <div class="modal-overlay" id="cloudinary-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">☁️ Cloudinary Configuration</h3>
+        <button class="modal-close" id="btn-close-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem;">
+          Credentials are saved in your browser's <code>localStorage</code>. Pre-optimized locally to WebP so <strong>0 Transformation Credits</strong> are billed.
+        </p>
+
+        <div class="modal-group">
+          <label class="modal-label" for="cloud-name">Cloud Name</label>
+          <input type="text" id="cloud-name" class="modal-input" placeholder="e.g. anjwxmku" autocomplete="off" />
+        </div>
+
+        <div class="modal-group">
+          <label class="modal-label" for="cloud-api-key">API Key</label>
+          <input type="text" id="cloud-api-key" class="modal-input" placeholder="e.g. 238786274222253" autocomplete="off" />
+        </div>
+
+        <div class="modal-group">
+          <label class="modal-label" for="cloud-api-secret">API Secret</label>
+          <input type="password" id="cloud-api-secret" class="modal-input" placeholder="Cloudinary API Secret" autocomplete="off" />
+        </div>
+
+        <div class="modal-group">
+          <label class="modal-label" for="cloud-base-folder">Base Folder</label>
+          <input type="text" id="cloud-base-folder" class="modal-input" value="quiz_app" placeholder="quiz_app" />
+        </div>
+
+        <div style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="remember-cloudinary" checked />
+          <label for="remember-cloudinary" style="color: var(--text); font-size: 0.85rem; cursor: pointer;">
+            Remember credentials in this browser
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" id="btn-cancel-cloudinary">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="btn-save-cloudinary">💾 Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual JSON Import Modal -->
+  <div class="modal-overlay" id="import-json-modal">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 class="modal-title">📥 Import / Paste JSON Dataset</h3>
+        <button class="modal-close" id="btn-close-import-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem;">
+          Load question arrays directly into Review Studio by selecting a <code>.json</code> file or pasting JSON text below.
+        </p>
+
+        <div class="modal-group">
+          <label class="modal-label" for="studio-import-file">Upload JSON File</label>
+          <input type="file" id="studio-import-file" class="modal-input" accept=".json,application/json" />
+        </div>
+
+        <div class="modal-group" style="margin-top: 1rem;">
+          <label class="modal-label" for="studio-import-text">Or Paste JSON Text</label>
+          <textarea id="studio-import-text" class="modal-input" rows="8" placeholder='[&#10;  {&#10;    "n": 1,&#10;    "q": "Question prompt...",&#10;    "o": ["Opt 1", "Opt 2", "Opt 3", "Opt 4"],&#10;    "a": 0&#10;  }&#10;]' style="font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; resize: vertical;"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" id="btn-cancel-import">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="btn-submit-studio-import">📥 Load Dataset</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/studio.js"></script>
+</body>
+</html>

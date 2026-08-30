@@ -1,0 +1,35 @@
+2026/08/30-20:09:36.349 c824 Reusing MANIFEST C:\Users\Abhishek Pandey\Desktop\Anurag\antigravity\ai-scraper\perplexity_session\Default\IndexedDB\https_www.perplexity.ai_0.indexeddb.leveldb/MANIFEST-000001
+2026/08/30-20:09:36.351 c824 Recovering log #76
+2026/08/30-20:09:36.365 c824 Reusing old log C:\Users\Abhishek Pandey\Desktop\Anurag\antigravity\ai-scraper\perplexity_session\Default\IndexedDB\https_www.perplexity.ai_0.indexeddb.leveldb/000076.log 
+2026/08/30-20:09:36.894 c824 Level-0 table #80: started
+2026/08/30-20:09:36.912 c824 Level-0 table #80: 1497056 bytes OK
+2026/08/30-20:09:36.914 c824 Delete type=0 #76
+2026/08/30-20:09:36.917 9584 Manual compaction at level-0 from '\x00\x0c\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x0d\x00\x00\x00' @ 0 : 0; will stop at '\x00\x07\x01\x03\x01 \x006\x000\x00f\x00a\x00e\x003\x003\x003\x002\x009\x00c\x001\x002\x003\x006\x009\x007\x005\x00d\x000\x009\x00f\x006\x006\x00f\x00d\x00d\x004\x002\x00f\x00b\x00d' @ 59594 : 0
+2026/08/30-20:09:36.917 9584 Compacting 2@0 + 1@1 files
+2026/08/30-20:09:36.943 9584 Generated table #81@0: 19284 keys, 874178 bytes
+2026/08/30-20:09:36.943 9584 Compacted 2@0 + 1@1 files => 874178 bytes
+2026/08/30-20:09:36.944 9584 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/08/30-20:09:36.944 9584 Delete type=2 #80
+2026/08/30-20:09:36.945 9584 Manual compaction at level-0 from '\x00\x07\x01\x03\x01 \x006\x000\x00f\x00a\x00e\x003\x003\x003\x002\x009\x00c\x001\x002\x003\x006\x009\x007\x005\x00d\x000\x009\x00f\x006\x006\x00f\x00d\x00d\x004\x002\x00f\x00b\x00d' @ 59594 : 0 .. '\x00\x0d\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/08/30-20:10:42.523 c824 Level-0 table #83: started
+2026/08/30-20:10:42.548 c824 Level-0 table #83: 1348271 bytes OK
+2026/08/30-20:10:42.552 c824 Delete type=2 #75
+2026/08/30-20:10:42.552 c824 Delete type=2 #77
+2026/08/30-20:10:42.552 c824 Delete type=0 #79
+2026/08/30-20:10:42.557 9584 Compacting 1@0 + 1@1 files
+2026/08/30-20:10:42.584 9584 Generated table #84@0: 19293 keys, 874830 bytes
+2026/08/30-20:10:42.585 9584 Compacted 1@0 + 1@1 files => 874830 bytes
+2026/08/30-20:10:42.587 9584 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/08/30-20:10:42.587 9584 Delete type=2 #83
+2026/08/30-20:10:42.588 c824 Manual compaction at level-0 from '\x00\x0d\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x0e\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/08/30-20:10:45.622 c824 Level-0 table #86: started
+2026/08/30-20:10:45.646 c824 Level-0 table #86: 1279315 bytes OK
+2026/08/30-20:10:45.648 c824 Delete type=2 #81
+2026/08/30-20:10:45.648 c824 Delete type=0 #82
+2026/08/30-20:10:45.650 b45c Manual compaction at level-0 from '\x00\x0e\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x0f\x00\x00\x00' @ 0 : 0; will stop at '\x00\x0e\x00\x00\x05' @ 76084 : 1
+2026/08/30-20:10:45.650 b45c Compacting 1@0 + 1@1 files
+2026/08/30-20:10:45.673 b45c Generated table #87@0: 21377 keys, 891609 bytes
+2026/08/30-20:10:45.673 b45c Compacted 1@0 + 1@1 files => 891609 bytes
+2026/08/30-20:10:45.675 b45c compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/08/30-20:10:45.676 b45c Delete type=2 #86
+2026/08/30-20:10:45.678 b45c Manual compaction at level-0 from '\x00\x0e\x00\x00\x05' @ 76084 : 1 .. '\x00\x0f\x00\x00\x00' @ 0 : 0; will stop at (end)

@@ -1,0 +1,93 @@
+name: Launch PDF Extractor UI
+
+on:
+  workflow_dispatch:
+    inputs:
+      script_to_run:
+        description: "Choose interface / script to execute:"
+        required: true
+        default: "app.py"
+        type: choice
+        options:
+          - app.py
+          - app_final_strict_json.py
+          - deepseek.py
+          - perplexity.py
+          - qwen.py
+
+jobs:
+  run-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install chromium
+          playwright install-deps
+
+      - name: Install System Utilities (Xvfb, OpenVPN & Cloudflared)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb openvpn openvpn-systemd-resolved wget poppler-utils
+          wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared-linux-amd64.deb
+
+      - name: Select Random VPN Country
+        id: pick-vpn
+        run: |
+          if ls .github/vpn/*.ovpn 1> /dev/null 2>&1; then
+            SELECTED_CONFIG=$(ls .github/vpn/*.ovpn | shuf -n 1)
+            echo "Connecting using: $SELECTED_CONFIG"
+            echo "config_path=$SELECTED_CONFIG" >> "$GITHUB_OUTPUT"
+            echo "has_vpn=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No .ovpn files found in .github/vpn/ - Proceeding without OpenVPN"
+            echo "has_vpn=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Connect to ProtonVPN
+        if: steps.pick-vpn.outputs.has_vpn == 'true'
+        uses: kota65535/github-openvpn-connect-action@v2
+        with:
+          config_file: ${{ steps.pick-vpn.outputs.config_path }}
+          username: ${{ secrets.OVPN_USERNAME }}
+          password: ${{ secrets.OVPN_PASSWORD }}
+
+      - name: Start Virtual Display, App Server, and Cloudflare Tunnel
+        run: |
+          # 1. Start Xvfb virtual display for Playwright browser automation
+          Xvfb :99 -screen 0 1366x850x24 &
+          export DISPLAY=:99
+
+          TARGET_SCRIPT="${{ inputs.script_to_run }}"
+          PORT=8080
+
+          # 2. Start the chosen server based on script type
+          if [ "$TARGET_SCRIPT" = "app.py" ]; then
+            PORT=8080
+            python app.py --port 8080 &
+          elif grep -qi "streamlit" "$TARGET_SCRIPT" 2>/dev/null; then
+            PORT=8501
+            streamlit run "$TARGET_SCRIPT" --server.port 8501 --server.headless true &
+          else
+            PORT=8080
+            python "$TARGET_SCRIPT" &
+          fi
+
+          echo "Waiting for app to start on port $PORT..."
+          sleep 6
+
+          # 3. Open temporary public tunnel using Cloudflare
+          echo "=========================================================="
+          echo "🚀 Look for your public trycloudflare.com link below:"
+          echo "=========================================================="
+          cloudflared tunnel --url http://localhost:$PORT

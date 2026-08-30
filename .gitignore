@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+workspace/
+.DS_Store
+
+# Browser session caches (not needed for login sessions)
+**/Cache/
+**/Code Cache/
+**/GPUCache/
+**/Service Worker/
+**/CacheStorage/
+**/DawnGraphiteCache/
+**/DawnWebGPUCache/
+**/GrShaderCache/
+**/ShaderCache/
+**/GPUPersistentCache/
+**/VideoDecodeStats/
+**/AutofillAiModelCache/
+**/blob_storage/

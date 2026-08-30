@@ -1,0 +1,18 @@
+2026/08/30-19:36:02.719 638c Reusing MANIFEST C:\Users\Abhishek Pandey\Desktop\Anurag\antigravity\ai-scraper\perplexity_session\Default\IndexedDB\https_www.perplexity.ai_0.indexeddb.leveldb/MANIFEST-000001
+2026/08/30-19:36:02.722 638c Recovering log #70
+2026/08/30-19:36:02.728 638c Reusing old log C:\Users\Abhishek Pandey\Desktop\Anurag\antigravity\ai-scraper\perplexity_session\Default\IndexedDB\https_www.perplexity.ai_0.indexeddb.leveldb/000070.log 
+2026/08/30-19:36:03.374 5e9c Level-0 table #74: started
+2026/08/30-19:36:03.379 5e9c Level-0 table #74: 235799 bytes OK
+2026/08/30-19:36:03.381 5e9c Delete type=0 #70
+2026/08/30-19:36:03.382 638c Manual compaction at level-0 from '\x00\x0b\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x0c\x00\x00\x00' @ 0 : 0; will stop at '\x00\x06\x01\x02\x01Q\x00[\x00"\x00p\x00p\x00l\x00x\x00-\x00q\x00u\x00e\x00r\x00y\x00-\x00c\x00a\x00c\x00h\x00e\x00-\x004\x00f\x009\x00a\x000\x002\x006\x00"\x00,\x00"\x00a\x00l\x00l\x00_\x00r\x00e\x00s\x00u\x00l\x00t\x00s\x00"\x00,\x00"\x005\x00f\x00b\x000\x008\x00b\x00b\x005\x00-\x00b\x00c\x002\x002\x00-\x004\x00c\x00b\x001\x00-\x008\x00b\x009\x009\x00-\x009\x008\x006\x00d\x00d\x009\x00d\x00c\x00d\x00b\x003\x000\x00"\x00]' @ 54293 : 1
+2026/08/30-19:36:03.382 638c Compacting 2@0 + 1@1 files
+2026/08/30-19:36:03.412 638c Generated table #75@0: 19273 keys, 849524 bytes
+2026/08/30-19:36:03.412 638c Compacted 2@0 + 1@1 files => 849524 bytes
+2026/08/30-19:36:03.413 638c compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/08/30-19:36:03.414 638c Delete type=2 #74
+2026/08/30-19:36:03.414 638c Manual compaction at level-0 from '\x00\x06\x01\x02\x01Q\x00[\x00"\x00p\x00p\x00l\x00x\x00-\x00q\x00u\x00e\x00r\x00y\x00-\x00c\x00a\x00c\x00h\x00e\x00-\x004\x00f\x009\x00a\x000\x002\x006\x00"\x00,\x00"\x00a\x00l\x00l\x00_\x00r\x00e\x00s\x00u\x00l\x00t\x00s\x00"\x00,\x00"\x005\x00f\x00b\x000\x008\x00b\x00b\x005\x00-\x00b\x00c\x002\x002\x00-\x004\x00c\x00b\x001\x00-\x008\x00b\x009\x009\x00-\x009\x008\x006\x00d\x00d\x009\x00d\x00c\x00d\x00b\x003\x000\x00"\x00]' @ 54293 : 1 .. '\x00\x0c\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/08/30-19:36:31.450 5e9c Level-0 table #77: started
+2026/08/30-19:36:31.482 5e9c Level-0 table #77: 1825080 bytes OK
+2026/08/30-19:36:31.485 5e9c Delete type=2 #69
+2026/08/30-19:36:31.485 5e9c Delete type=2 #71
+2026/08/30-19:36:31.485 5e9c Delete type=0 #73

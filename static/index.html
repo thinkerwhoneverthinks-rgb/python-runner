@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Allen Hybrid AI Parser - PDF Upload</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/studio.css">
+  <style>
+    .hero-container {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 2.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+    }
+    .hero-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    .hero-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    .dropzone {
+      border: 2px dashed rgba(99, 102, 241, 0.4);
+      border-radius: 1rem;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(99, 102, 241, 0.03);
+      transition: all 0.2s ease;
+      margin-bottom: 1.75rem;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.08);
+    }
+    .dropzone-icon {
+      font-size: 3rem;
+      margin-bottom: 0.75rem;
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+      transition: all 0.2s ease;
+    }
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 25px rgba(99, 102, 241, 0.4);
+    }
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .progress-panel {
+      display: none;
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+    }
+    .progress-bar-bg {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6366f1, #34d399);
+      transition: width 0.3s ease;
+    }
+    .progress-status {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <div class="hero-container">
+    <div class="hero-header">
+      <span class="hero-badge">ALLEN HYBRID QUIZ PLATFORM</span>
+      <h1 class="hero-title">Allen Hybrid Quiz Parser</h1>
+      <p class="hero-desc">Extracts chemistry LaTeX formulas (\ce{...}), SMILES notation, and diagram crops.</p>
+    </div>
+
+    <!-- Mode Switcher Tabs -->
+    <div style="display: flex; gap: 0.75rem; margin-bottom: 2rem; background: rgba(15, 23, 42, 0.6); padding: 0.5rem; border-radius: 0.85rem; border: 1px solid var(--border);">
+      <button type="button" id="mode-btn-pdf" class="btn" style="flex: 1; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 0.6rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+        📑 Parse PDF (AI Web Scraper)
+      </button>
+      <button type="button" id="mode-btn-json" class="btn" style="flex: 1; padding: 0.75rem; background: transparent; color: var(--text-muted); border: none; border-radius: 0.6rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+        📋 Direct JSON Import (File / Paste)
+      </button>
+    </div>
+
+    <!-- Mode 1: PDF Upload Form -->
+    <form id="upload-form">
+      <!-- AI Engine Execution & Fallback Order -->
+      <div class="form-group">
+        <label class="form-label">AI Engine Execution Order &amp; Fallback Chain</label>
+        <div style="display: flex; gap: 1rem; align-items: center; background: rgba(15, 23, 42, 0.6); padding: 0.85rem 1rem; border: 1px solid var(--border); border-radius: 0.75rem;">
+          <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text);">
+            <input type="checkbox" id="ai-deepseek" value="deepseek" checked> 🐋 DeepSeek
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text);">
+            <input type="checkbox" id="ai-qwen" value="qwen" checked> 🤖 Qwen AI
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text);">
+            <input type="checkbox" id="ai-perplexity" value="perplexity" checked> 🔍 Perplexity
+          </label>
+        </div>
+        <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.35rem; display: block;">
+          Max 2 consecutive chunks per AI engine. If an AI fails, execution automatically falls back to the next engine.
+        </small>
+      </div>
+
+      <!-- Multi-part Prompts (Prompt 1 to 10) -->
+      <div class="form-group">
+        <label class="form-label">Multi-Part Prompts (10 Blocks — Prevents Web Chat Upload Limits)</label>
+        <div style="display: flex; gap: 0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="prompt-tab-btn active" data-tab="p1" style="padding: 0.35rem 0.65rem; background: var(--primary); color: white; border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P1: Contract</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p2" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P2: mhchem &amp; Math</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p3" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P3: Structure &amp; Keys</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p4" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P4: Topics/Subtopics</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p5" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P5: Cleaning &amp; OCR</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p6" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P6: Options &amp; Match</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p7" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P7: Checklist</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p8" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P8: Custom</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p9" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P9: Custom</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p10" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P10: Custom</button>
+        </div>
+
+        <div id="p1-pane" class="prompt-pane">
+          <textarea id="prompt-1" class="form-input" rows="7" placeholder="Prompt Block 1">You are a PDF-to-JSON extraction engine. Your ONLY job is to convert the provided chemistry question bank PDF into a perfectly structured, hallucination-free JSON array.
+
+ABSOLUTE OUTPUT CONTRACT — FOLLOW THIS EXACTLY:
+1. Your entire response MUST contain exactly ONE Markdown fenced code block.
+2. The code-block opening MUST be exactly: ```json
+3. The code-block closing MUST be exactly: ```
+4. Put the complete JSON array between those two lines.
+5. Output NOTHING before the opening fence and NOTHING after the closing fence.
+6. Do not write explanations, reasoning, notes, headings, comments, apologies, or status messages.
+7. The JSON must be complete, valid, and parseable by Python json.loads(). Never output truncated JSON.
+8. Use double quotes for every JSON key and every JSON string. Never use single quotes.
+9. Escape every backslash inside JSON strings. For example: write \\ce{H2O}, \\times, \\frac{1}{2}, \\rightarrow, \\mathrm{g}, \\times 10^{23} inside JSON strings.
+10. Do not render formulas as visual math. Keep formulas as plain text inside the JSON strings.
+11. Do not output bare math words such as "times10^23" when LaTeX is required; always use \\times 10^{23}.
+12. Never use Unicode superscripts/subscripts like ², ³, ₁, ₂. Always use LaTeX: ^{2}, ^{3}, _{1}, _{2}.
+13. Never output "..." or "truncated" or "remaining questions follow". Every single question in the PDF must appear in the JSON.</textarea>
+        </div>
+
+        <div id="p2-pane" class="prompt-pane" style="display: none;">
+          <textarea id="prompt-2" class="form-input" rows="7" placeholder="Prompt Block 2">STRICT EXTRACTION RULES:
+1. Extract ONLY questions present in the PDF. Never invent, infer, or hallucinate missing questions. If a question number is missing in the PDF, skip it — do NOT create a placeholder.
+2. For Chemistry formulas, reactions, ionic equations, and chemical names, use LaTeX mhchem syntax: \\ce{CH3-CH2-OH}, \\ce{KMnO4 + HCl -> KCl + MnCl2 + H2O + Cl2}, \\ce{Fe^{2+}}, \\ce{H2O}, \\ce{CO2}, \\ce{NH3}, \\ce{O2}, \\ce{SO2}, \\ce{NO3^-}, \\ce{BaCl2}, \\ce{Na3PO4}, \\ce{Ba3(PO4)2}, \\ce{Al2O3}, \\ce{CH4}, \\ce{C4H10}, \\ce{C8H18}, \\ce{N2}, \\ce{H2}, \\ce{Cl2}, \\ce{CO}, \\ce{HCl}, \\ce{Na2CO3}, \\ce{NaOH}, \\ce{NaCl}, \\ce{Na2SO4}, \\ce{Na3PO4}, \\ce{C3H4}, \\ce{CH3COOH}, \\ce{N2H2}, \\ce{N2O3}, \\ce{Cr2O3}, \\ce{CrO2}, \\ce{SnCl2}, \\ce{SnCl4}, \\ce{MgO}, \\ce{Na2O}, \\ce{BaO}, \\ce{H2SO4}, \\ce{NH4+}, \\ce{(NH4)3PO4}, \\ce{CH3CHO}, \\ce{CH3OH}, \\ce{C2H6}, \\ce{C2H4}, \\ce{C2H2}, \\ce{C6H12O6}, \\ce{C3H6O3}, \\ce{C2H4O2}, \\ce{CH2O}, \\ce{P2S3}, \\ce{P3S2}, \\ce{P3S4}, \\ce{P4S3}, \\ce{IO}, \\ce{I2O}, \\ce{I5O2}, \\ce{I2O5}, \\ce{M2O}, \\ce{M2O3}, \\ce{MO}, \\ce{M3O4}, \\ce{CH3NH2}, \\ce{CH3CN}, \\ce{C2H5CN}, \\ce{CH2(NH)2}, \\ce{XY}, \\ce{X2Y}, \\ce{XY2}, \\ce{X3Y}, \\ce{X2Y2}, \\ce{X3Y3}, \\ce{X2Y3}, \\ce{X3Y2}, \\ce{S2O}, \\ce{SO}, \\ce{SO2}, \\ce{SO3}.
+3. For Physics and Mathematics, use standard LaTeX: $\\frac{1}{2}$ or $6.02 \\times 10^{23}$. For Chemistry, prefer \\ce{} wrapper.
+4. If a question contains a 2D organic molecular structure, place its SMILES string in the "s" field. If no structure, set "s": null.</textarea>
+        </div>
+
+        <div id="p3-pane" class="prompt-pane" style="display: none;">
+          <textarea id="prompt-3" class="form-input" rows="7" placeholder="Prompt Block 3">5. Use <br /> inside string values for clean line breaks between multi-part sections (e.g., between Statement-I and Statement-II, between Assertion and Reason, between question stem and options, between reaction equation and question text).
+6. For linked or paragraph-based questions, prepend the common paragraph to the "q" field of every question in that group. Do NOT create separate "common paragraph" objects.
+7. For match-the-column questions, use a structured object in the "m" field with exactly this shape:
+   {
+     "listI": {
+       "title": "Column I",
+       "items": [
+         { "label": "A", "text": "..." },
+         { "label": "B", "text": "..." }
+       ]
+     },
+     "listII": {
+       "title": "Column II",
+       "items": [
+         { "label": "P", "text": "..." },
+         { "label": "Q", "text": "..." }
+       ]
+     }
+   }
+   If not a match column, set "m": null.
+8. Set "d": true when a diagram or figure needs cropping; otherwise set "d": false. Default to false unless a clear diagram/structure image is described.
+9. Use only these keys where applicable: "n", "q", "o", "a", "e", "d", "s", "m", "sub", "top", "subtop".
+10. If a value is unknown, use an appropriate empty value: "", [], {}, or false. Do not omit required structure and do not add commentary.
+11. The "a" field is the ZERO-BASED index of the correct option. Option (1) = 0, Option (2) = 1, Option (3) = 2, Option (4) = 3. Cross-verify with the answer key in the PDF. If the answer key says "Answer: 3", then "a": 2. If answer key says "Answer: 4", then "a": 3. NEVER get this wrong.
+12. The "e" field is the question code (e.g., "CMC001", "CMC137"). Extract exactly as printed in the PDF, including letter case.
+13. The "n" field is the serial question number as it appears in the PDF. Maintain original numbering even if gaps exist.</textarea>
+        </div>
+
+        <div id="p4-pane" class="prompt-pane" style="display: none;">
+          <textarea id="prompt-4" class="form-input" rows="7" placeholder="Prompt Block 4">TOPIC AND SUBTOPIC EXTRACTION — ZERO HALLUCINATION RULE:
+1. "sub" = "CHEMISTRY" (always, for chemistry PDFs).
+2. "top" and "subtop" MUST be extracted EXACTLY as they appear in the PDF section headers. You are FORBIDDEN from generating, inventing, normalizing, or modifying topic/subtopic names. Use the text EXACTLY as printed.
+3. The PDF has a hierarchical structure. Look for these header patterns:
+   - Main chapter title (usually in header/footer or at start): "Some Basic Concepts of Chemistry" → this goes in "top" for ALL questions in the document.
+   - Exercise-level headers: "Exercise -I", "Exercise –III (Analytical Questions)" → this goes in "top" if it is the primary classification.
+   - Section-level headers within exercises: "QUESTIONS BASED ON MOLES", "QUESTIONS BASED ON PERCENTAGE, EMPIRICAL FORMULA & MOLECULAR FORMULA", "QUESTIONS BASED ON STOICHIOMETRY", "QUESTIONS BASED ON LAWS OF CHEMICAL COMBINATION" → these go in "subtop".
+   - If the exercise header says "Exercise -I (Conceptual Questions)" → "top": "Conceptual", "subtop": "Questions Based on Moles" (from the next section header).
+   - If the exercise header says "Exercise –III (Analytical Questions)" → "top": "Analytical", "subtop": "General" (if no further section header exists under it).
+4. RULE: If the PDF prints "Conceptual" as the exercise type and "Questions Based on Moles" as the section header, then:
+   - "top": "Conceptual"
+   - "subtop": "Questions Based on Moles"
+   - Do NOT change to "Mole Concept". Do NOT normalize. Use EXACT text from PDF.
+5. RULE: If the PDF prints "Analytical" as the exercise type and has NO subsection headers underneath, then:
+   - "top": "Analytical"
+   - "subtop": "General"
+6. RULE: If a section has NO explicit subtopic header at all, use "subtop": "General". Do NOT invent one.
+7. Every question under a section header inherits that section's "top" and "subtop" until a new header appears.
+8. The "top" field should reflect the EXERCISE TYPE (Conceptual, Analytical, Build Up Your Understanding, Master Your Understanding, etc.) as printed in the PDF.
+9. The "subtop" field should reflect the SECTION HEADER (Questions Based on Moles, Questions Based on Percentage Empirical Formula & Molecular Formula, etc.) as printed in the PDF.
+10. If the PDF does not explicitly print a "top" value (exercise type), derive it from the closest parent header. If absolutely none exists, use "top": "General" and "subtop": "General".</textarea>
+        </div>
+
+        <div id="p5-pane" class="prompt-pane" style="display: none;">
+          <textarea id="prompt-5" class="form-input" rows="7" placeholder="Prompt Block 5">FORMATTING AND CLEANLINESS RULES:
+1. Preserve the PDF's visual structure in the JSON text: 
+   - For Statement-I / Statement-II questions: put <br /> after "Statement-I : ..." and before "Statement-II : ..."
+   - For Assertion-Reason questions: put <br /> after "Assertion (A): ..." and before "Reason (R): ..."
+   - For questions with inline reactions: keep the reaction on its own line using <br /> if it appears separated in the PDF.
+2. Remove ALL artifacts from OCR/PDF extraction: "m o r o f", "o f", "hannnn", "khannnn", "@saqi_khannnn", broken LaTeX fragments, duplicated words, and random character sequences. Clean the text to readable English.
+3. Fix broken exponent notation: "6.02× 1011.5" becomes "$6.02 \\times 10^{11.5}$". "3.01× 1023" becomes "$3.01 \\times 10^{23}$". "1.505× 1023" becomes "$1.505 \\times 10^{23}$".
+4. Fix broken fractions: "frac66.22" becomes proper LaTeX \\frac{...}{...}. "6.0210" artifacts become clean "$6.02 \\times 10^{23}$".
+5. Ensure proper spacing around operators: "9g of Al" → "9 g of Al", "0.5g atom" → "0.5 g atom", "1.2×10^{-3}g" → "$1.2 \\times 10^{-3}$ g".
+6. For isotope notation like "126C" or "_6^{12}C", use proper LaTeX: $_{6}^{12}\\mathrm{C}$.
+7. For units: "g L–1" → "g L$^{-1}$", "mL" → "mL", "amu" → "amu", "cc" → "cc", "STP" → "STP", "NTP" → "NTP".
+8. For answer options that are purely chemical formulas, wrap in \\ce{}.
+9. For answer options with mathematical expressions, wrap the math in $...$.</textarea>
+        </div>
+
+        <div id="p6-pane" class="prompt-pane" style="display: none;">
+          <textarea id="prompt-6" class="form-input" rows="7" placeholder="Prompt Block 6">OPTION EXTRACTION RULES:
+1. There are ALWAYS 4 options per question, numbered (1), (2), (3), (4) in the PDF.
+2. Extract each option as a clean string in the "o" array in order: [option1, option2, option3, option4].
+3. If an option contains a chemical formula, use \\ce{}.
+4. If an option contains math, use $...$.
+5. Do NOT include the option number (1), (2), etc. in the string — only the content.
+
+MATCH-THE-COLUMN OPTION FORMAT:
+1. The "o" array for match columns contains the 4 possible match combinations like:
+   "(A) → (S), (B) → (R), (C) → (Q), (D) → (P)"
+2. The "m" field contains the actual Column I and Column II data.
+3. The "a" field is still the zero-based index of the correct combination.
+
+MULTI-CORRECT / MULTIPLE-STATEMENT QUESTIONS:
+1. If the question presents statements (A), (B), (C), (D) and asks which combination is correct, treat it as a standard 4-option MCQ.
+2. Put the statements in the "q" field separated by <br />.
+3. The options in "o" will be combinations like "A, B both are correct.", "A, B & D are correct.", etc.</textarea>
+        </div>
+
+        <div id="p7-pane" class="prompt-pane" style="display: none;">
+          <textarea id="prompt-7" class="form-input" rows="7" placeholder="Prompt Block 7">FINAL SELF-CHECK BEFORE RESPONDING:
+- Confirm the response starts with ```json and ends with ```.
+- Confirm there is exactly one fenced code block.
+- Confirm the text inside the fence is one complete valid JSON array.
+- Confirm all backslashes inside JSON strings are properly escaped (\\ not \).
+- Confirm every question from the PDF is present with correct "n", "e", "a".
+- Confirm "a" values are zero-based and match the answer key.
+- Confirm "top" and "subtop" values are extracted EXACTLY from PDF headers — no invention, no normalization.
+- Confirm no Unicode math symbols exist — only ASCII LaTeX.
+- Confirm no trailing commas in JSON arrays/objects.
+- Confirm "sub": "CHEMISTRY" for all questions.
+- Output ONLY the json code block.</textarea>
+        </div>
+
+        <div id="p8-pane" class="prompt-pane" style="display: none;">
+          <textarea id="prompt-8" class="form-input" rows="7" placeholder="Prompt Block 8 (Custom User Prompt - Optional)"></textarea>
+        </div>
+
+        <div id="p9-pane" class="prompt-pane" style="display: none;">
+          <textarea id="prompt-9" class="form-input" rows="7" placeholder="Prompt Block 9 (Custom User Prompt - Optional)"></textarea>
+        </div>
+
+        <div id="p10-pane" class="prompt-pane" style="display: none;">
+          <textarea id="prompt-10" class="form-input" rows="7" placeholder="Prompt Block 10 (Custom User Prompt - Optional)"></textarea>
+        </div>
+
+        <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.35rem; display: block;">
+          Blocks 1–7 are pre-filled with your strict extraction system. Blocks 8–10 are open for your custom rules. Prompts are pasted sequentially into the browser before hitting Send.
+        </small>
+      </div>
+
+      <!-- Processing Mode & Chunk Size -->
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="chunk-mode">Processing Mode</label>
+          <select id="chunk-mode" class="form-select">
+            <option value="chunk" selected>⚡ Smart Chunking (Anti-Hallucination)</option>
+            <option value="single">📄 Single Full PDF (All at Once)</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="chunk-size-container">
+          <label class="form-label" for="chunk-size">Pages per AI Chunk</label>
+          <select id="chunk-size" class="form-select">
+            <option value="5">5 Pages / Chunk</option>
+            <option value="10" selected>10 Pages / Chunk (Recommended)</option>
+            <option value="12">12 Pages / Chunk</option>
+            <option value="14">14 Pages / Chunk</option>
+            <option value="15">15 Pages / Chunk</option>
+            <option value="20">20 Pages / Chunk</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Optional Gemini API Key Fallback -->
+      <div class="form-group">
+        <label class="form-label" for="api-key">Gemini API Key (Optional Fallback)</label>
+        <input type="password" id="api-key" class="form-input" placeholder="AIzaSy... (optional backup if web scrapers fail)" autocomplete="off">
+      </div>
+
+      <!-- File Dropzone -->
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-icon">📑</div>
+        <h3 id="dropzone-title" style="margin-bottom: 0.25rem; font-weight: 600; color: var(--text);">Click or Drag & Drop PDF</h3>
+        <p id="dropzone-sub" style="color: var(--text-muted); font-size: 0.85rem;">Supports Allen module PDFs, NEET papers, and Question Banks</p>
+        <input type="file" id="pdf-file-input" accept=".pdf" style="display: none;" required>
+      </div>
+
+      <button type="submit" id="btn-submit" class="btn-submit" disabled>
+        🚀 Start Parsing PDF via AI Scraper
+      </button>
+
+      <!-- Live Progress Panel -->
+      <div class="progress-panel" id="progress-panel">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-status">
+          <span id="progress-msg">Initializing AI scraper...</span>
+          <span id="progress-pct">0%</span>
+        </div>
+      </div>
+    </form>
+
+    <!-- Mode 2: Manual JSON Import Form -->
+    <form id="manual-json-form" style="display: none;">
+      <div class="form-group">
+        <label class="form-label" for="manual-json-title">Dataset / Chapter Title</label>
+        <input type="text" id="manual-json-title" class="form-input" placeholder="e.g. Some Basic Concepts of Chemistry" />
+      </div>
+
+      <!-- JSON File Dropzone -->
+      <div class="dropzone" id="json-dropzone">
+        <div class="dropzone-icon">📄</div>
+        <h3 id="json-dropzone-title" style="margin-bottom: 0.25rem; font-weight: 600; color: var(--text);">Click or Drag &amp; Drop JSON File</h3>
+        <p id="json-dropzone-sub" style="color: var(--text-muted); font-size: 0.85rem;">Upload .json file containing questions array</p>
+        <input type="file" id="json-file-input" accept=".json,application/json" style="display: none;">
+      </div>
+
+      <div style="text-align: center; margin: 1rem 0; color: var(--text-muted); font-weight: 600; font-size: 0.85rem;">
+        ── OR PASTE JSON TEXT BELOW ──
+      </div>
+
+      <!-- Raw JSON Textarea -->
+      <div class="form-group">
+        <label class="form-label" for="manual-json-text">Paste Raw JSON Array / Object</label>
+        <textarea id="manual-json-text" class="form-input" rows="8" placeholder='[&#10;  {&#10;    "n": 1,&#10;    "q": "Question prompt text...",&#10;    "o": ["Opt 1", "Opt 2", "Opt 3", "Opt 4"],&#10;    "a": 0,&#10;    "e": "Solution / Code",&#10;    "d": false&#10;  }&#10;]' style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;"></textarea>
+      </div>
+
+      <button type="submit" id="btn-import-json" class="btn-submit">
+        📥 Load JSON into Review Studio
+      </button>
+
+      <div id="import-status" style="display: none; margin-top: 1rem; padding: 0.85rem; border-radius: 0.6rem; text-align: center; font-weight: 500;"></div>
+    </form>
+  </div>
+
+  <script>
+    // Mode Switcher Elements
+    const modeBtnPdf = document.getElementById('mode-btn-pdf');
+    const modeBtnJson = document.getElementById('mode-btn-json');
+    const uploadForm = document.getElementById('upload-form');
+    const manualJsonForm = document.getElementById('manual-json-form');
+
+    // PDF Upload Form Elements
+    const apiKeyInput = document.getElementById('api-key');
+    const chunkModeSelect = document.getElementById('chunk-mode');
+    const chunkSizeSelect = document.getElementById('chunk-size');
+    const chunkSizeContainer = document.getElementById('chunk-size-container');
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('pdf-file-input');
+    const dropzoneTitle = document.getElementById('dropzone-title');
+    const dropzoneSub = document.getElementById('dropzone-sub');
+    const btnSubmit = document.getElementById('btn-submit');
+    const progressPanel = document.getElementById('progress-panel');
+    const progressFill = document.getElementById('progress-fill');
+    const progressMsg = document.getElementById('progress-msg');
+    const progressPct = document.getElementById('progress-pct');
+
+    const promptTabs = document.querySelectorAll('.prompt-tab-btn');
+    const promptPanes = document.querySelectorAll('.prompt-pane');
+
+    // Manual JSON Import Form Elements
+    const jsonDropzone = document.getElementById('json-dropzone');
+    const jsonFileInput = document.getElementById('json-file-input');
+    const jsonDropzoneTitle = document.getElementById('json-dropzone-title');
+    const jsonDropzoneSub = document.getElementById('json-dropzone-sub');
+    const manualJsonText = document.getElementById('manual-json-text');
+    const manualJsonTitle = document.getElementById('manual-json-title');
+    const btnImportJson = document.getElementById('btn-import-json');
+    const importStatus = document.getElementById('import-status');
+
+    let selectedFile = null;
+    let selectedJsonFile = null;
+
+    // Mode Switcher Handlers
+    if (modeBtnPdf && modeBtnJson) {
+      modeBtnPdf.addEventListener('click', () => {
+        modeBtnPdf.style.background = 'var(--primary)';
+        modeBtnPdf.style.color = 'white';
+        modeBtnJson.style.background = 'transparent';
+        modeBtnJson.style.color = 'var(--text-muted)';
+        uploadForm.style.display = 'block';
+        manualJsonForm.style.display = 'none';
+      });
+
+      modeBtnJson.addEventListener('click', () => {
+        modeBtnJson.style.background = 'var(--primary)';
+        modeBtnJson.style.color = 'white';
+        modeBtnPdf.style.background = 'transparent';
+        modeBtnPdf.style.color = 'var(--text-muted)';
+        uploadForm.style.display = 'none';
+        manualJsonForm.style.display = 'block';
+      });
+    }
+
+    // Prompt Tabs Switching
+    promptTabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.getAttribute('data-tab');
+        promptTabs.forEach(b => {
+          b.classList.remove('active');
+          b.style.background = 'rgba(255,255,255,0.1)';
+          b.style.color = 'var(--text)';
+        });
+        btn.classList.add('active');
+        btn.style.background = 'var(--primary)';
+        btn.style.color = 'white';
+
+        promptPanes.forEach(pane => pane.style.display = 'none');
+        const activePane = document.getElementById(`${targetTab}-pane`);
+        if (activePane) activePane.style.display = 'block';
+      });
+    });
+
+    if (chunkModeSelect) {
+      chunkModeSelect.addEventListener('change', () => {
+        if (chunkModeSelect.value === 'single') {
+          chunkSizeContainer.style.display = 'none';
+        } else {
+          chunkSizeContainer.style.display = 'block';
+        }
+      });
+    }
+
+    // PDF Dropzone Events
+    if (dropzone && fileInput) {
+      dropzone.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          setFile(e.target.files[0]);
+        }
+      });
+
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+
+      dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+          setFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    function setFile(file) {
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        alert('Please upload a valid PDF file.');
+        return;
+      }
+      selectedFile = file;
+      dropzoneTitle.textContent = `Selected: ${file.name}`;
+      dropzoneSub.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+      validateForm();
+    }
+
+    function validateForm() {
+      if (btnSubmit) {
+        btnSubmit.disabled = !selectedFile;
+      }
+    }
+
+    // PDF Upload Form Submission
+    if (uploadForm) {
+      uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!selectedFile) return;
+
+        const apiKey = (apiKeyInput ? apiKeyInput.value.trim() : '');
+        const chunkSize = chunkModeSelect.value === 'single' ? 0 : parseInt(chunkSizeSelect.value, 10);
+
+        // Collect AI Order from checkboxes
+        const aiOrder = [];
+        const dsCheck = document.getElementById('ai-deepseek');
+        const qwCheck = document.getElementById('ai-qwen');
+        const pxCheck = document.getElementById('ai-perplexity');
+        if (dsCheck && dsCheck.checked) aiOrder.push('deepseek');
+        if (qwCheck && qwCheck.checked) aiOrder.push('qwen');
+        if (pxCheck && pxCheck.checked) aiOrder.push('perplexity');
+        if (aiOrder.length === 0) aiOrder.push('deepseek');
+
+        const formData = new FormData();
+        formData.append('pdf', selectedFile);
+        formData.append('apiKey', apiKey);
+        formData.append('chunkSize', chunkSize.toString());
+        formData.append('aiOrder', JSON.stringify(aiOrder));
+
+        for (let pIdx = 1; pIdx <= 10; pIdx++) {
+          const el = document.getElementById(`prompt-${pIdx}`);
+          const pVal = el ? el.value.trim() : '';
+          formData.append(`prompt${pIdx}`, pVal);
+        }
+
+        try {
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+
+          // Start polling status
+          pollJobStatus();
+        } catch (err) {
+          alert('Upload failed: ' + err.message);
+          btnSubmit.disabled = false;
+          progressPanel.style.display = 'none';
+        }
+      });
+    }
+
+    function pollJobStatus() {
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetch('/api/status');
+          const job = await res.json();
+
+          if (job.state === 'running') {
+            const pct = Math.max(15, Math.min(95, Math.round((job.done / job.total) * 100)));
+            progressFill.style.width = `${pct}%`;
+            progressPct.textContent = `${pct}%`;
+            progressMsg.textContent = job.message || 'Processing...';
+          } else if (job.state === 'finished') {
+            clearInterval(interval);
+            progressFill.style.width = '100%';
+            progressPct.textContent = '100%';
+            progressMsg.textContent = 'Done! Opening Review Studio...';
+            setTimeout(() => {
+              window.location.href = '/studio';
+            }, 800);
+          } else if (job.state === 'error') {
+            clearInterval(interval);
+            alert('Error: ' + job.message);
+            btnSubmit.disabled = false;
+            progressPanel.style.display = 'none';
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }, 1500);
+    }
+
+    // Manual JSON Dropzone & File Handling
+    if (jsonDropzone && jsonFileInput) {
+      jsonDropzone.addEventListener('click', () => jsonFileInput.click());
+      jsonFileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleJsonFile(e.target.files[0]);
+        }
+      });
+
+      jsonDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        jsonDropzone.classList.add('dragover');
+      });
+
+      jsonDropzone.addEventListener('dragleave', () => jsonDropzone.classList.remove('dragover'));
+
+      jsonDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        jsonDropzone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+          handleJsonFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    function handleJsonFile(file) {
+      if (!file.name.toLowerCase().endsWith('.json')) {
+        alert('Please select a valid .json file.');
+        return;
+      }
+      selectedJsonFile = file;
+      jsonDropzoneTitle.textContent = `Selected: ${file.name}`;
+      jsonDropzoneSub.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+      if (!manualJsonTitle.value) {
+        manualJsonTitle.value = file.name.replace(/\.json$/i, '');
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        manualJsonText.value = event.target.result;
+      };
+      reader.readAsText(file);
+    }
+
+    if (manualJsonForm) {
+      manualJsonForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const rawText = manualJsonText.value.trim();
+        const title = manualJsonTitle.value.trim() || 'Manual Import';
+
+        if (!rawText) {
+          alert('Please paste JSON text or select a .json file.');
+          return;
+        }
+
+        // Quick validate JSON client-side
+        try {
+          let clean = rawText;
+          if (clean.startsWith('```')) {
+            clean = clean.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
+          }
+          JSON.parse(clean);
+        } catch (err) {
+          alert('Invalid JSON syntax: ' + err.message);
+          return;
+        }
+
+        btnImportJson.disabled = true;
+        btnImportJson.textContent = '⏳ Loading questions into Studio...';
+        importStatus.style.display = 'block';
+        importStatus.style.background = 'rgba(99, 102, 241, 0.15)';
+        importStatus.style.color = '#818cf8';
+        importStatus.textContent = 'Formatting dataset and redirecting to Studio...';
+
+        try {
+          const res = await fetch('/api/import-json', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              json_text: rawText,
+              title: title
+            })
+          });
+
+          const resData = await res.json();
+          if (resData.error) throw new Error(resData.error);
+
+          importStatus.style.background = 'rgba(16, 185, 129, 0.15)';
+          importStatus.style.color = '#34d399';
+          importStatus.textContent = `Success! Loaded ${resData.count} questions. Opening Studio...`;
+
+          setTimeout(() => {
+            window.location.href = '/studio';
+          }, 600);
+        } catch (err) {
+          btnImportJson.disabled = false;
+          btnImportJson.textContent = '📥 Load JSON into Review Studio';
+          importStatus.style.background = 'rgba(239, 68, 68, 0.15)';
+          importStatus.style.color = '#f87171';
+          importStatus.textContent = 'Error: ' + err.message;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
