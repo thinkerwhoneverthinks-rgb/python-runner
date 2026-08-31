@@ -42,6 +42,7 @@ def get_session_dir(name: str) -> Path:
 DEEPSEEK_SESSION = get_session_dir("deepseek_session")
 PERPLEXITY_SESSION = get_session_dir("perplexity_session")
 QWEN_SESSION = get_session_dir("qwen_session")
+GROK_SESSION = get_session_dir("grok_session")
 
 PAGE_TIMEOUT_MS = 35000
 UPLOAD_TIMEOUT_MS = 30000
@@ -536,6 +537,150 @@ def run_qwen_scraper(pdf_path: Path, prompts: List[str]) -> str:
         raise RuntimeError("Failed to retrieve response text from Qwen.")
 
 
+def run_grok_scraper(pdf_path: Path, prompts: List[str]) -> str:
+    """Automates Grok (xAI) web interface (grok.com) to process a PDF chunk."""
+    s_path = GROK_SESSION.resolve()
+    cleanup_session_locks(s_path)
+    session_dir = str(s_path)
+    os.makedirs(session_dir, exist_ok=True)
+
+    with sync_playwright() as p:
+        context = p.chromium.launch_persistent_context(
+            user_data_dir=session_dir,
+            headless=False,
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--disable-software-rasterizer",
+                "--use-fake-ui-for-media-stream",
+                "--use-fake-device-for-media-stream",
+                "--enable-features=ClipboardAPI",
+                "--enable-blink-features=ClipboardAPI",
+                "--disable-blink-features=AutomationControlled"
+            ],
+            ignore_default_args=["--enable-automation"],
+            viewport={"width": 1366, "height": 850},
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        )
+        page = context.pages[0] if context.pages else context.new_page()
+        stealth_sync(page)
+
+        try:
+            context.grant_permissions(["clipboard-read", "clipboard-write"], origin="https://grok.com")
+        except Exception:
+            pass
+
+        page.set_default_timeout(PAGE_TIMEOUT_MS)
+        page.bring_to_front()
+        print("[Grok] Navigating to https://grok.com/ ...")
+        page.goto("https://grok.com/", wait_until="domcontentloaded", timeout=PAGE_TIMEOUT_MS)
+        human_delay(2.0, 4.0)
+
+        # Upload file
+        upload_success = False
+        try:
+            attach_btn = page.locator('button[aria-label="Attach"], button[data-testid="attach-button"]').first
+            if attach_btn.is_visible(timeout=3000):
+                attach_btn.click(delay=100)
+                human_delay(0.5, 1.0)
+                upload_menu_item = page.locator('text="Upload a file"').first
+                with page.expect_file_chooser(timeout=4000) as fc_menu:
+                    upload_menu_item.click(delay=100)
+                fc_menu.value.set_files(str(pdf_path))
+                upload_success = True
+        except Exception:
+            pass
+
+        if not upload_success:
+            try:
+                file_input = page.locator('input[type="file"]').first
+                file_input.set_input_files(str(pdf_path))
+                upload_success = True
+            except Exception:
+                pass
+
+        human_delay(3.0, 5.0)
+
+        # Multi-part prompt paste
+        chat_box = page.locator('textarea, div[data-testid="chat-input"] .ProseMirror, div[contenteditable="true"][role="textbox"]').first
+        chat_box.wait_for(state="visible", timeout=20000)
+        paste_multipart_prompt(page, chat_box, prompts)
+        human_delay(2.0, 3.5)
+
+        # Submit
+        for attempt in range(3):
+            page.keyboard.press("Enter", delay=100)
+            human_delay(2.0, 3.5)
+
+        # Wait for generation
+        last_text = ""
+        stable_count = 0
+        gen_start = time.monotonic()
+
+        while time.monotonic() - gen_start < GENERATION_TIMEOUT_SECONDS:
+            time.sleep(2)
+            current_text = ""
+            try:
+                code_blocks = page.locator("pre.shiki, pre code, pre, div.prose pre").all()
+                if code_blocks:
+                    current_text = code_blocks[-1].inner_text(timeout=500)
+                else:
+                    msgs = page.locator("div.message-bubble, div[data-testid*='message'], div.prose").all()
+                    if msgs:
+                        current_text = msgs[-1].inner_text(timeout=500)
+            except Exception:
+                pass
+
+            if current_text and len(current_text.strip()) > 80:
+                trimmed = current_text.strip()
+                if (trimmed.startswith("[") and trimmed.endswith("]")) or (trimmed.startswith("```") and trimmed.endswith("```")):
+                    try:
+                        parsed = parse_clean_json(trimmed)
+                        if parsed and len(parsed) > 0:
+                            print(f"[Grok] Clean JSON completed ({len(parsed)} questions detected)!")
+                            context.close()
+                            return trimmed
+                    except Exception:
+                        pass
+
+                if current_text == last_text:
+                    stable_count += 1
+                    if stable_count >= 2:
+                        break
+                else:
+                    stable_count = 0
+                    last_text = current_text
+
+        # Try Copy button
+        try:
+            copy_btn = page.locator('button:has(svg path[d*="-5.155700"]), button[aria-label*="Copy"], button:has-text("Copy")').last
+            if copy_btn.is_visible(timeout=1000):
+                copy_btn.click(delay=100, force=True)
+                human_delay(0.5, 1.0)
+                copied = page.evaluate("""async () => {
+                    try {
+                        if (navigator.clipboard && navigator.clipboard.readText) {
+                            return await navigator.clipboard.readText();
+                        }
+                        return "";
+                    } catch (e) {
+                        return "";
+                    }
+                }""")
+                if copied and len(copied.strip()) > 50:
+                    context.close()
+                    return copied
+        except Exception:
+            pass
+
+        context.close()
+        if last_text:
+            return last_text
+        raise RuntimeError("Failed to retrieve response text from Grok.")
+
+
 def execute_single_chunk(pdf_chunk_path: Path, prompts: List[str], provider: str) -> List[Dict[str, Any]]:
     """Dispatches chunk to specific AI provider and parses JSON response."""
     provider_clean = provider.strip().lower()
@@ -546,6 +691,8 @@ def execute_single_chunk(pdf_chunk_path: Path, prompts: List[str], provider: str
         raw_output = run_perplexity_scraper(pdf_chunk_path, prompts)
     elif provider_clean == "qwen":
         raw_output = run_qwen_scraper(pdf_chunk_path, prompts)
+    elif provider_clean in ("grok", "groq"):
+        raw_output = run_grok_scraper(pdf_chunk_path, prompts)
     else:
         raise ValueError(f"Unknown AI provider requested: {provider}")
 
@@ -560,7 +707,7 @@ def process_chunks_with_load_balancer(
 ) -> List[List[Dict[str, Any]]]:
     """Processes PDF chunks with fallback chain and max 2 consecutive chunks per AI constraint."""
     if not ai_order:
-        ai_order = ["deepseek", "qwen", "perplexity"]
+        ai_order = ["deepseek", "qwen", "perplexity", "grok"]
 
     results: List[List[Dict[str, Any]]] = []
     current_ai_idx = 0

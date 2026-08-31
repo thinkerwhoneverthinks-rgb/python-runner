@@ -311,16 +311,27 @@ def format_raw_questions_for_studio(raw_data: Any, doc_title: str = "Manual Impo
             except ValueError:
                 correct_idx = 0
 
+        if q.get("exnm"):
+            topic_val = q.get("exnm") or doc_title
+            subtopic_val = q.get("top") or "General"
+            ex_name = q.get("exnm")
+        else:
+            topic_val = q.get("topic") or q.get("top") or doc_title
+            subtopic_val = q.get("subtopic") or q.get("subtop") or "General"
+            ex_name = q.get("exercise_name", "Conceptual Questions")
+
         formatted_qs.append({
             "id": q.get("id", f"q_{idx}"),
             "sequence": idx,
             "num": q_num,
             "tag": q.get("tag", f"Q{q_num:03d}" if isinstance(q_num, int) else f"Q{idx:03d}"),
             "subject": q.get("sub", q.get("subject", "CHEMISTRY")),
-            "topic": q.get("top", q.get("topic", doc_title)),
+            "topic": topic_val,
+            "exnm": q.get("exnm"),
+            "top": q.get("top"),
             "exercise_key": q.get("exercise_key", "conceptual"),
-            "exercise_name": q.get("exercise_name", "Conceptual Questions"),
-            "subtopic": q.get("subtop", q.get("subtopic", "General")),
+            "exercise_name": ex_name,
+            "subtopic": subtopic_val,
             "prompt": q.get("q", q.get("prompt", "")),
             "options": opts,
             "correct_index": correct_idx if isinstance(correct_idx, int) else 0,

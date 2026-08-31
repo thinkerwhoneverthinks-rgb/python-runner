@@ -181,6 +181,9 @@
           <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text);">
             <input type="checkbox" id="ai-perplexity" value="perplexity" checked> 🔍 Perplexity
           </label>
+          <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text);">
+            <input type="checkbox" id="ai-grok" value="grok" checked> ⚡ Grok
+          </label>
         </div>
         <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.35rem; display: block;">
           Max 2 consecutive chunks per AI engine. If an AI fails, execution automatically falls back to the next engine.
@@ -192,11 +195,11 @@
         <label class="form-label">Multi-Part Prompts (10 Blocks — Prevents Web Chat Upload Limits)</label>
         <div style="display: flex; gap: 0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
           <button type="button" class="prompt-tab-btn active" data-tab="p1" style="padding: 0.35rem 0.65rem; background: var(--primary); color: white; border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P1: Contract</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p2" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P2: mhchem &amp; Math</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p3" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P3: Structure &amp; Keys</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p4" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P4: Topics/Subtopics</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p5" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P5: Cleaning &amp; OCR</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p6" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P6: Options &amp; Match</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p2" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P2: Numbering</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p3" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P3: Exercise ("exnm")</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p4" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P4: Topic ("top")</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p5" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P5: Formatting</button>
+          <button type="button" class="prompt-tab-btn" data-tab="p6" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P6: Keys &amp; Answers</button>
           <button type="button" class="prompt-tab-btn" data-tab="p7" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P7: Checklist</button>
           <button type="button" class="prompt-tab-btn" data-tab="p8" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P8: Custom</button>
           <button type="button" class="prompt-tab-btn" data-tab="p9" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P9: Custom</button>
@@ -204,134 +207,104 @@
         </div>
 
         <div id="p1-pane" class="prompt-pane">
-          <textarea id="prompt-1" class="form-input" rows="7" placeholder="Prompt Block 1">You are a PDF-to-JSON extraction engine. Your ONLY job is to convert the provided chemistry question bank PDF into a perfectly structured, hallucination-free JSON array.
+          <textarea id="prompt-1" class="form-input" rows="7" placeholder="Prompt Block 1">You are an expert exam-paper and multiple-choice-question parser.
 
-ABSOLUTE OUTPUT CONTRACT — FOLLOW THIS EXACTLY:
+Extract ALL multiple-choice questions that actually exist in the provided PDF page(s).
+
+## ABSOLUTE OUTPUT CONTRACT — FOLLOW THIS EXACTLY
 1. Your entire response MUST contain exactly ONE Markdown fenced code block.
 2. The code-block opening MUST be exactly: ```json
 3. The code-block closing MUST be exactly: ```
 4. Put the complete JSON array between those two lines.
 5. Output NOTHING before the opening fence and NOTHING after the closing fence.
 6. Do not write explanations, reasoning, notes, headings, comments, apologies, or status messages.
-7. The JSON must be complete, valid, and parseable by Python json.loads(). Never output truncated JSON.
+7. The JSON must be complete, valid, and parseable by Python `json.loads()`. Never output truncated JSON.
 8. Use double quotes for every JSON key and every JSON string. Never use single quotes.
-9. Escape every backslash inside JSON strings. For example: write \\ce{H2O}, \\times, \\frac{1}{2}, \\rightarrow, \\mathrm{g}, \\times 10^{23} inside JSON strings.
-10. Do not render formulas as visual math. Keep formulas as plain text inside the JSON strings.
-11. Do not output bare math words such as "times10^23" when LaTeX is required; always use \\times 10^{23}.
-12. Never use Unicode superscripts/subscripts like ², ³, ₁, ₂. Always use LaTeX: ^{2}, ^{3}, _{1}, _{2}.
-13. Never output "..." or "truncated" or "remaining questions follow". Every single question in the PDF must appear in the JSON.</textarea>
+9. Escape every backslash inside JSON strings.
+10. Do not render formulas as visual math. Keep formulas as plain text inside JSON strings.
+11. Do not invent, solve, correct, or infer information that is not supported by the PDF.</textarea>
         </div>
 
         <div id="p2-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-2" class="form-input" rows="7" placeholder="Prompt Block 2">STRICT EXTRACTION RULES:
-1. Extract ONLY questions present in the PDF. Never invent, infer, or hallucinate missing questions. If a question number is missing in the PDF, skip it — do NOT create a placeholder.
-2. For Chemistry formulas, reactions, ionic equations, and chemical names, use LaTeX mhchem syntax: \\ce{CH3-CH2-OH}, \\ce{KMnO4 + HCl -> KCl + MnCl2 + H2O + Cl2}, \\ce{Fe^{2+}}, \\ce{H2O}, \\ce{CO2}, \\ce{NH3}, \\ce{O2}, \\ce{SO2}, \\ce{NO3^-}, \\ce{BaCl2}, \\ce{Na3PO4}, \\ce{Ba3(PO4)2}, \\ce{Al2O3}, \\ce{CH4}, \\ce{C4H10}, \\ce{C8H18}, \\ce{N2}, \\ce{H2}, \\ce{Cl2}, \\ce{CO}, \\ce{HCl}, \\ce{Na2CO3}, \\ce{NaOH}, \\ce{NaCl}, \\ce{Na2SO4}, \\ce{Na3PO4}, \\ce{C3H4}, \\ce{CH3COOH}, \\ce{N2H2}, \\ce{N2O3}, \\ce{Cr2O3}, \\ce{CrO2}, \\ce{SnCl2}, \\ce{SnCl4}, \\ce{MgO}, \\ce{Na2O}, \\ce{BaO}, \\ce{H2SO4}, \\ce{NH4+}, \\ce{(NH4)3PO4}, \\ce{CH3CHO}, \\ce{CH3OH}, \\ce{C2H6}, \\ce{C2H4}, \\ce{C2H2}, \\ce{C6H12O6}, \\ce{C3H6O3}, \\ce{C2H4O2}, \\ce{CH2O}, \\ce{P2S3}, \\ce{P3S2}, \\ce{P3S4}, \\ce{P4S3}, \\ce{IO}, \\ce{I2O}, \\ce{I5O2}, \\ce{I2O5}, \\ce{M2O}, \\ce{M2O3}, \\ce{MO}, \\ce{M3O4}, \\ce{CH3NH2}, \\ce{CH3CN}, \\ce{C2H5CN}, \\ce{CH2(NH)2}, \\ce{XY}, \\ce{X2Y}, \\ce{XY2}, \\ce{X3Y}, \\ce{X2Y2}, \\ce{X3Y3}, \\ce{X2Y3}, \\ce{X3Y2}, \\ce{S2O}, \\ce{SO}, \\ce{SO2}, \\ce{SO3}.
-3. For Physics and Mathematics, use standard LaTeX: $\\frac{1}{2}$ or $6.02 \\times 10^{23}$. For Chemistry, prefer \\ce{} wrapper.
-4. If a question contains a 2D organic molecular structure, place its SMILES string in the "s" field. If no structure, set "s": null.</textarea>
+          <textarea id="prompt-2" class="form-input" rows="7" placeholder="Prompt Block 2">## QUESTION EXTRACTION RULES
+1. Extract ONLY questions that actually exist in the PDF. Never invent or infer missing questions.
+2. Preserve the question numbering exactly as printed in the PDF:
+   - Do NOT renumber questions based on extraction order.
+   - If numbering starts again from `1` in another exercise, preserve that new numbering exactly.
+   - Use the visible printed question number in "n", not internal IDs such as `CMC001`, `CMC002`, etc.
+3. Extract the question text and all options faithfully from the PDF.
+4. For linked, paragraph-based, or statement-based questions, prepend the common paragraph/statements to the "q" field of every question belonging to that group.
+5. Use `<br />` inside string values to represent meaningful line breaks in multi-part questions, statements, options, or other structured content.
+   - Preserve important structural line breaks from the PDF where they improve readability.
+   - Do NOT insert `<br />` randomly in the middle of normal sentences.
+6. Do not include PDF page numbers, website URLs, watermarks, social-media handles, repeated headers, or footer text as question content.</textarea>
         </div>
 
         <div id="p3-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-3" class="form-input" rows="7" placeholder="Prompt Block 3">5. Use <br /> inside string values for clean line breaks between multi-part sections (e.g., between Statement-I and Statement-II, between Assertion and Reason, between question stem and options, between reaction equation and question text).
-6. For linked or paragraph-based questions, prepend the common paragraph to the "q" field of every question in that group. Do NOT create separate "common paragraph" objects.
-7. For match-the-column questions, use a structured object in the "m" field with exactly this shape:
-   {
-     "listI": {
-       "title": "Column I",
-       "items": [
-         { "label": "A", "text": "..." },
-         { "label": "B", "text": "..." }
-       ]
-     },
-     "listII": {
-       "title": "Column II",
-       "items": [
-         { "label": "P", "text": "..." },
-         { "label": "Q", "text": "..." }
-       ]
-     }
-   }
-   If not a match column, set "m": null.
-8. Set "d": true when a diagram or figure needs cropping; otherwise set "d": false. Default to false unless a clear diagram/structure image is described.
-9. Use only these keys where applicable: "n", "q", "o", "a", "e", "d", "s", "m", "sub", "top", "subtop".
-10. If a value is unknown, use an appropriate empty value: "", [], {}, or false. Do not omit required structure and do not add commentary.
-11. The "a" field is the ZERO-BASED index of the correct option. Option (1) = 0, Option (2) = 1, Option (3) = 2, Option (4) = 3. Cross-verify with the answer key in the PDF. If the answer key says "Answer: 3", then "a": 2. If answer key says "Answer: 4", then "a": 3. NEVER get this wrong.
-12. The "e" field is the question code (e.g., "CMC001", "CMC137"). Extract exactly as printed in the PDF, including letter case.
-13. The "n" field is the serial question number as it appears in the PDF. Maintain original numbering even if gaps exist.</textarea>
+          <textarea id="prompt-3" class="form-input" rows="7" placeholder="Prompt Block 3">## EXERCISE RULES — VERY IMPORTANT
+The PDF itself is the ONLY source of truth for exercise names and topics.
+
+### "exnm" — Exercise Name
+1. Identify the exercise from the actual exercise heading printed in the PDF.
+2. Put the exercise name/type from the PDF in "exnm".
+3. Do NOT invent or classify an exercise based on the question content.
+4. Once an exercise heading appears, it applies to the following questions until another exercise heading appears.
+5. If question numbering restarts under a new exercise, preserve the new printed numbering.
+6. Examples of exercise information:
+   - "Exercise - I (Conceptual Questions)"
+   - "Exercise – III (Analytical Questions)"
+7. Store the meaningful exercise name/type in "exnm" according to the PDF. Do not use internal codes or unrelated header text.</textarea>
         </div>
 
         <div id="p4-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-4" class="form-input" rows="7" placeholder="Prompt Block 4">TOPIC AND SUBTOPIC EXTRACTION — ZERO HALLUCINATION RULE:
-1. "sub" = "CHEMISTRY" (always, for chemistry PDFs).
-2. "top" and "subtop" MUST be extracted EXACTLY as they appear in the PDF section headers. You are FORBIDDEN from generating, inventing, normalizing, or modifying topic/subtopic names. Use the text EXACTLY as printed.
-3. The PDF has a hierarchical structure. Look for these header patterns:
-   - Main chapter title (usually in header/footer or at start): "Some Basic Concepts of Chemistry" → this goes in "top" for ALL questions in the document.
-   - Exercise-level headers: "Exercise -I", "Exercise –III (Analytical Questions)" → this goes in "top" if it is the primary classification.
-   - Section-level headers within exercises: "QUESTIONS BASED ON MOLES", "QUESTIONS BASED ON PERCENTAGE, EMPIRICAL FORMULA & MOLECULAR FORMULA", "QUESTIONS BASED ON STOICHIOMETRY", "QUESTIONS BASED ON LAWS OF CHEMICAL COMBINATION" → these go in "subtop".
-   - If the exercise header says "Exercise -I (Conceptual Questions)" → "top": "Conceptual", "subtop": "Questions Based on Moles" (from the next section header).
-   - If the exercise header says "Exercise –III (Analytical Questions)" → "top": "Analytical", "subtop": "General" (if no further section header exists under it).
-4. RULE: If the PDF prints "Conceptual" as the exercise type and "Questions Based on Moles" as the section header, then:
-   - "top": "Conceptual"
-   - "subtop": "Questions Based on Moles"
-   - Do NOT change to "Mole Concept". Do NOT normalize. Use EXACT text from PDF.
-5. RULE: If the PDF prints "Analytical" as the exercise type and has NO subsection headers underneath, then:
-   - "top": "Analytical"
-   - "subtop": "General"
-6. RULE: If a section has NO explicit subtopic header at all, use "subtop": "General". Do NOT invent one.
-7. Every question under a section header inherits that section's "top" and "subtop" until a new header appears.
-8. The "top" field should reflect the EXERCISE TYPE (Conceptual, Analytical, Build Up Your Understanding, Master Your Understanding, etc.) as printed in the PDF.
-9. The "subtop" field should reflect the SECTION HEADER (Questions Based on Moles, Questions Based on Percentage Empirical Formula & Molecular Formula, etc.) as printed in the PDF.
-10. If the PDF does not explicitly print a "top" value (exercise type), derive it from the closest parent header. If absolutely none exists, use "top": "General" and "subtop": "General".</textarea>
+          <textarea id="prompt-4" class="form-input" rows="7" placeholder="Prompt Block 4">### "top" — Topic
+1. Assign "top" ONLY from an explicit topic heading actually written in the PDF.
+2. Do NOT determine the topic yourself from the subject matter of the questions.
+3. For example, if the PDF explicitly contains: "QUESTIONS BASED ON MOLES", then use that PDF heading as the "top" value for the questions under it.
+4. Keep that topic for all following questions until another genuine topic heading appears.
+5. Do NOT create a new topic for individual questions based on what they appear to be testing.
+6. Do NOT rename, simplify, reinterpret, or replace the topic with your own terminology. Use the wording of the PDF.
+7. Headers like "Master Your Understanding", "Build Up Your Understanding", chapter names, or running headers are NOT topics unless the PDF clearly presents them as an actual topic heading.
+8. If an exercise has no explicit topic heading, use "top": "general".
+   Example: "Exercise – III (Analytical Questions)" with no subheadings -> "exnm": "Analytical Questions", "top": "general".
+9. Never assign "top" using your own understanding. The PDF's explicit heading is the only authority.</textarea>
         </div>
 
         <div id="p5-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-5" class="form-input" rows="7" placeholder="Prompt Block 5">FORMATTING AND CLEANLINESS RULES:
-1. Preserve the PDF's visual structure in the JSON text: 
-   - For Statement-I / Statement-II questions: put <br /> after "Statement-I : ..." and before "Statement-II : ..."
-   - For Assertion-Reason questions: put <br /> after "Assertion (A): ..." and before "Reason (R): ..."
-   - For questions with inline reactions: keep the reaction on its own line using <br /> if it appears separated in the PDF.
-2. Remove ALL artifacts from OCR/PDF extraction: "m o r o f", "o f", "hannnn", "khannnn", "@saqi_khannnn", broken LaTeX fragments, duplicated words, and random character sequences. Clean the text to readable English.
-3. Fix broken exponent notation: "6.02× 1011.5" becomes "$6.02 \\times 10^{11.5}$". "3.01× 1023" becomes "$3.01 \\times 10^{23}$". "1.505× 1023" becomes "$1.505 \\times 10^{23}$".
-4. Fix broken fractions: "frac66.22" becomes proper LaTeX \\frac{...}{...}. "6.0210" artifacts become clean "$6.02 \\times 10^{23}$".
-5. Ensure proper spacing around operators: "9g of Al" → "9 g of Al", "0.5g atom" → "0.5 g atom", "1.2×10^{-3}g" → "$1.2 \\times 10^{-3}$ g".
-6. For isotope notation like "126C" or "_6^{12}C", use proper LaTeX: $_{6}^{12}\\mathrm{C}$.
-7. For units: "g L–1" → "g L$^{-1}$", "mL" → "mL", "amu" → "amu", "cc" → "cc", "STP" → "STP", "NTP" → "NTP".
-8. For answer options that are purely chemical formulas, wrap in \\ce{}.
-9. For answer options with mathematical expressions, wrap the math in $...$.</textarea>
+          <textarea id="prompt-5" class="form-input" rows="7" placeholder="Prompt Block 5">## FORMATTING RULES
+1. For Chemistry formulas, reactions, ionic equations, and chemical names, use LaTeX/mhchem syntax where appropriate:
+   \\ce{H2O}, \\ce{KMnO4 + HCl -> KCl + MnCl2 + H2O + Cl2}, \\ce{Fe^{2+}}
+2. For Physics and Mathematics, use standard LaTeX where appropriate: $\\frac{1}{2}$, $6.02 \\times 10^{23}$.
+3. Keep mathematical and chemical information faithful to the PDF. Do not silently correct apparent OCR errors. Extract what the PDF actually says.
+4. If a question contains a 2D organic molecular structure, place its SMILES string in the "s" field when it can be reliably determined (otherwise "s": null).
+5. Set "d": true when a question contains a diagram or figure that needs cropping; otherwise set "d": false.
+6. For match-the-column questions, use structured object in "m" with "listI" and "listII" (or "m": null if not match).</textarea>
         </div>
 
         <div id="p6-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-6" class="form-input" rows="7" placeholder="Prompt Block 6">OPTION EXTRACTION RULES:
-1. There are ALWAYS 4 options per question, numbered (1), (2), (3), (4) in the PDF.
-2. Extract each option as a clean string in the "o" array in order: [option1, option2, option3, option4].
-3. If an option contains a chemical formula, use \\ce{}.
-4. If an option contains math, use $...$.
-5. Do NOT include the option number (1), (2), etc. in the string — only the content.
-
-MATCH-THE-COLUMN OPTION FORMAT:
-1. The "o" array for match columns contains the 4 possible match combinations like:
-   "(A) → (S), (B) → (R), (C) → (Q), (D) → (P)"
-2. The "m" field contains the actual Column I and Column II data.
-3. The "a" field is still the zero-based index of the correct combination.
-
-MULTI-CORRECT / MULTIPLE-STATEMENT QUESTIONS:
-1. If the question presents statements (A), (B), (C), (D) and asks which combination is correct, treat it as a standard 4-option MCQ.
-2. Put the statements in the "q" field separated by <br />.
-3. The options in "o" will be combinations like "A, B both are correct.", "A, B & D are correct.", etc.</textarea>
+          <textarea id="prompt-6" class="form-input" rows="7" placeholder="Prompt Block 6">## JSON KEYS AND HIERARCHY RULES
+1. Use only these JSON keys where applicable:
+   "n", "q", "o", "a", "d", "s", "m", "sub", "top", "exnm"
+2. Do NOT use "subtop".
+3. Do NOT use an "e" or explanation field. The PDF does not contain explanations.
+4. "sub" = "CHEMISTRY" (or relevant subject).
+5. If a value is unknown, use an appropriate empty value ("", [], {}, or false).
+6. Answer Key: If an answer key is present in the PDF, extract zero-based index into "a" (0 for option 1, 1 for option 2, 2 for option 3, 3 for option 4). Match answers using printed question numbers. If no answer key, set "a": null.
+7. The core hierarchy is: Exercise heading ("exnm") -> Topic heading ("top") -> Questions ("n", "q", "o", "a").</textarea>
         </div>
 
         <div id="p7-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-7" class="form-input" rows="7" placeholder="Prompt Block 7">FINAL SELF-CHECK BEFORE RESPONDING:
-- Confirm the response starts with ```json and ends with ```.
-- Confirm there is exactly one fenced code block.
-- Confirm the text inside the fence is one complete valid JSON array.
-- Confirm all backslashes inside JSON strings are properly escaped (\\ not \).
-- Confirm every question from the PDF is present with correct "n", "e", "a".
-- Confirm "a" values are zero-based and match the answer key.
-- Confirm "top" and "subtop" values are extracted EXACTLY from PDF headers — no invention, no normalization.
-- Confirm no Unicode math symbols exist — only ASCII LaTeX.
-- Confirm no trailing commas in JSON arrays/objects.
-- Confirm "sub": "CHEMISTRY" for all questions.
-- Output ONLY the json code block.</textarea>
+          <textarea id="prompt-7" class="form-input" rows="7" placeholder="Prompt Block 7">## FINAL SELF-CHECK BEFORE RESPONDING
+Before outputting, verify:
+- Starts with ```json and ends with ```.
+- Exactly ONE fenced code block with valid JSON array.
+- All JSON strings use double quotes and properly escaped backslashes.
+- Question numbers match printed PDF numbers without renumbering.
+- Exercise names in "exnm" and topics in "top" come strictly from PDF headings.
+- "top": "general" is used when no explicit topic heading exists.
+- NO "subtop" field and NO "e" explanation field exist.
+- No questions invented, none omitted, no answers guessed without key.
+- Output ONLY the JSON code block.</textarea>
         </div>
 
         <div id="p8-pane" class="prompt-pane" style="display: none;">
@@ -581,9 +554,11 @@ MULTI-CORRECT / MULTIPLE-STATEMENT QUESTIONS:
         const dsCheck = document.getElementById('ai-deepseek');
         const qwCheck = document.getElementById('ai-qwen');
         const pxCheck = document.getElementById('ai-perplexity');
+        const gkCheck = document.getElementById('ai-grok');
         if (dsCheck && dsCheck.checked) aiOrder.push('deepseek');
         if (qwCheck && qwCheck.checked) aiOrder.push('qwen');
         if (pxCheck && pxCheck.checked) aiOrder.push('perplexity');
+        if (gkCheck && gkCheck.checked) aiOrder.push('grok');
         if (aiOrder.length === 0) aiOrder.push('deepseek');
 
         const formData = new FormData();

@@ -108,9 +108,13 @@ def build_website_questions_json(
 
     for idx, q in enumerate(questions, start=1):
         seq = q.get("sequence", idx)
-        raw_subj = (q.get("subject") or q.get("sub") or "CHEMISTRY").strip().upper()
-        topic = q.get("topic") or q.get("top") or "General"
-        subtopic = q.get("subtopic") or q.get("subtop") or "General"
+        # Resolve topic from exnm (Exercise Name) and subtopic from top (Topic Heading)
+        if q.get("exnm"):
+            topic = q.get("exnm") or "General"
+            subtopic = q.get("top") or "General"
+        else:
+            topic = q.get("topic") or q.get("top") or "General"
+            subtopic = q.get("subtopic") or "General"
         
         if raw_subj not in sections_map:
             sections_map[raw_subj] = []
