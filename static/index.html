@@ -278,7 +278,30 @@ The PDF itself is the ONLY source of truth for exercise names and topics.
 3. Keep mathematical and chemical information faithful to the PDF. Do not silently correct apparent OCR errors. Extract what the PDF actually says.
 4. If a question contains a 2D organic molecular structure, place its SMILES string in the "s" field when it can be reliably determined (otherwise "s": null).
 5. Set "d": true when a question contains a diagram or figure that needs cropping; otherwise set "d": false.
-6. For match-the-column questions, use structured object in "m" with "listI" and "listII" (or "m": null if not match).</textarea>
+6. MATCH-THE-COLUMN QUESTIONS ("m"):
+For match questions, use structured object in "m":
+{
+  "listI": {
+    "title": "List-I",
+    "items": [
+      { "label": "A", "text": "..." },
+      { "label": "B", "text": "..." },
+      { "label": "C", "text": "..." },
+      { "label": "D", "text": "..." }
+    ]
+  },
+  "listII": {
+    "title": "List-II",
+    "items": [
+      { "label": "P", "text": "..." },
+      { "label": "Q", "text": "..." },
+      { "label": "R", "text": "..." },
+      { "label": "S", "text": "..." }
+    ]
+  }
+}
+For non-match questions, set "m": null.
+The "o" array contains the 4 combination choices like: ["(A) -> (P), (B) -> (Q), (C) -> (R), (D) -> (S)", ...].</textarea>
         </div>
 
         <div id="p6-pane" class="prompt-pane" style="display: none;">
