@@ -54,6 +54,155 @@ class StudioQuestion:
     cloudinary_url: Optional[str] = None
 
 
+ANSWER_KEY_PROMPT = r"""You are an expert answer key table extractor for exam papers.
+Extract ALL answers from the provided answer key table PDF page(s).
+
+OUTPUT CONTRACT:
+Your response MUST contain exactly ONE Markdown fenced code block starting with ```json and ending with ```.
+Inside, put a JSON object grouping answers by their printed Exercise Name:
+
+```json
+{
+  "Exercise - I (Conceptual Questions)": {
+    "1": 3,
+    "2": 1,
+    "3": 0,
+    "4": 2
+  },
+  "Exercise – III (Analytical Questions)": {
+    "1": 2,
+    "2": 0
+  }
+}
+```
+
+RULES:
+1. Answers MUST be ZERO-BASED integer indices:
+   - Option (1) -> 0
+   - Option (2) -> 1
+   - Option (3) -> 2
+   - Option (4) -> 3
+2. Keys must be string question numbers as printed ("1", "2", "3", ...).
+3. Group by the exact Exercise Name as printed on the page. If no exercise name exists, use "General".
+4. Output NOTHING before or after the json code block."""
+
+
+def parse_page_range_string(total_pages: int, mode: str = "last", pages_str: str = "") -> List[int]:
+    """Parses user page range specification into 0-based page index list."""
+    mode_clean = str(mode or "").strip().lower()
+    if mode_clean == "none":
+        return []
+    if mode_clean == "last" or not pages_str.strip():
+        return [max(0, total_pages - 1)]
+
+    pages: List[int] = []
+    parts = re.split(r'[,;]+', pages_str.strip())
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        if "-" in part:
+            m = re.match(r'^(\d+)\s*-\s*(\d+)$', part)
+            if m:
+                start_p = int(m.group(1))
+                end_p = int(m.group(2))
+                for p in range(min(start_p, end_p), max(start_p, end_p) + 1):
+                    zero_idx = p - 1
+                    if 0 <= zero_idx < total_pages and zero_idx not in pages:
+                        pages.append(zero_idx)
+        else:
+            try:
+                p = int(part)
+                zero_idx = p - 1
+                if 0 <= zero_idx < total_pages and zero_idx not in pages:
+                    pages.append(zero_idx)
+            except ValueError:
+                pass
+
+    return sorted(pages) if pages else [max(0, total_pages - 1)]
+
+
+def normalize_key(text: str) -> str:
+    """Normalizes exercise string for fuzzy matching (removes roman numerals, spaces, punctuation)."""
+    s = str(text or "").lower()
+    s = re.sub(r'exercise\s*[-–—:]*\s*', 'ex', s)
+    s = re.sub(r'[^a-z0-9]+', '', s)
+    return s
+
+
+def merge_answer_keys(questions: List[Dict[str, Any]], raw_answer_data: Any) -> int:
+    """Merges parsed answer key map into questions array.
+    
+    Returns the count of successfully matched answers.
+    """
+    if not questions or not raw_answer_data:
+        return 0
+
+    merged_count = 0
+
+    if isinstance(raw_answer_data, list):
+        lookup = {}
+        for item in raw_answer_data:
+            if isinstance(item, dict):
+                ex = normalize_key(item.get("exnm") or item.get("exercise") or item.get("topic") or "")
+                n = str(item.get("n", item.get("num", "")))
+                a = item.get("a", item.get("answer", item.get("correct")))
+                if n and a is not None:
+                    lookup[(ex, n)] = int(a)
+                    if ex:
+                        lookup[("", n)] = int(a)
+
+        for q in questions:
+            q_ex = normalize_key(q.get("exnm") or q.get("topic") or "")
+            q_n = str(q.get("n", q.get("sequence", "")))
+            if (q_ex, q_n) in lookup:
+                q["a"] = lookup[(q_ex, q_n)]
+                q["correct_index"] = q["a"]
+                merged_count += 1
+            elif ("", q_n) in lookup:
+                q["a"] = lookup[("", q_n)]
+                q["correct_index"] = q["a"]
+                merged_count += 1
+
+    elif isinstance(raw_answer_data, dict):
+        is_nested = any(isinstance(v, dict) for v in raw_answer_data.values())
+        if is_nested:
+            norm_ex_map: Dict[str, Dict[str, int]] = {}
+            for ex_title, answers in raw_answer_data.items():
+                if isinstance(answers, dict):
+                    norm_title = normalize_key(ex_title)
+                    norm_ex_map[norm_title] = {str(k): int(v) for k, v in answers.items() if str(v).isdigit() or isinstance(v, int)}
+
+            single_ex_key = list(norm_ex_map.keys())[0] if len(norm_ex_map) == 1 else None
+
+            for q in questions:
+                q_ex = normalize_key(q.get("exnm") or q.get("topic") or "")
+                q_n = str(q.get("n", q.get("sequence", "")))
+
+                matched_answers = None
+                for norm_title, answers in norm_ex_map.items():
+                    if norm_title in q_ex or q_ex in norm_title:
+                        matched_answers = answers
+                        break
+
+                if not matched_answers and single_ex_key:
+                    matched_answers = norm_ex_map[single_ex_key]
+
+                if matched_answers and q_n in matched_answers:
+                    q["a"] = matched_answers[q_n]
+                    q["correct_index"] = q["a"]
+                    merged_count += 1
+        else:
+            for q in questions:
+                q_n = str(q.get("n", q.get("sequence", "")))
+                if q_n in raw_answer_data:
+                    q["a"] = int(raw_answer_data[q_n])
+                    q["correct_index"] = q["a"]
+                    merged_count += 1
+
+    return merged_count
+
+
 def process_pdf_pipeline(
     pdf_path: Path,
     output_dir: Path,
@@ -63,6 +212,8 @@ def process_pdf_pipeline(
     chunk_size: int = 10,
     model_name: str = "deepseek",
     custom_prompt: str = "",
+    answer_key_mode: str = "last",
+    answer_key_pages: str = "",
     progress_callback: Optional[Callable[[int, int, str], None]] = None
 ) -> Dict[str, Any]:
     """Runs the complete parsing and cropping pipeline using Playwright Scrapers.
@@ -73,6 +224,8 @@ def process_pdf_pipeline(
         prompts: Multi-part prompt list [Prompt 1, Prompt 2, Prompt 3, Prompt 4].
         ai_order: List of preferred AI engines in fallback order (e.g. ['deepseek', 'qwen', 'perplexity']).
         chunk_size: Pages per chunk for AI parsing (default 10).
+        answer_key_mode: 'last' (auto last page), 'custom' (page range), or 'none'.
+        answer_key_pages: Custom page range string (e.g. '21-22').
         progress_callback: Callback for progress updates.
         
     Returns:
@@ -107,13 +260,20 @@ def process_pdf_pipeline(
     # Step 1: Slice PDF into Chunks & Execute AI Scrapers with Load Balancer
     progress(1, 4, f"Splitting PDF into chunks ({chunk_size} pages/chunk) for AI Scrapers...")
 
-    # Calculate chunk ranges
-    if chunk_size <= 0 or total_pages <= chunk_size:
-        chunks_ranges = [(0, total_pages - 1)]
+    # Calculate chunk ranges (excluding answer key page if it was at the end and in last mode)
+    effective_total_pages = total_pages
+    ak_page_indices = parse_page_range_string(total_pages, answer_key_mode, answer_key_pages)
+    
+    # If last page is answer key, don't waste question chunk on it
+    if answer_key_mode == "last" and total_pages > 1:
+        effective_total_pages = total_pages - 1
+
+    if chunk_size <= 0 or effective_total_pages <= chunk_size:
+        chunks_ranges = [(0, effective_total_pages - 1)]
     else:
         chunks_ranges = []
-        for start in range(0, total_pages, chunk_size):
-            end = min(start + chunk_size - 1, total_pages - 1)
+        for start in range(0, effective_total_pages, chunk_size):
+            end = min(start + chunk_size - 1, effective_total_pages - 1)
             chunks_ranges.append((start, end))
 
     chunk_files: List[Path] = []
@@ -156,6 +316,31 @@ def process_pdf_pipeline(
             temp_chunk_dir.cleanup()
         except Exception:
             pass
+
+    # Step 1.5: Dedicated Answer Key Extraction (if requested)
+    if ak_page_indices and parsed_ai_questions:
+        progress(1, 4, f"Extracting Answer Key from page(s): {[p + 1 for p in ak_page_indices]}...")
+        temp_ak_dir = tempfile.TemporaryDirectory()
+        try:
+            ak_doc = fitz.open()
+            for p_idx in ak_page_indices:
+                ak_doc.insert_pdf(doc, from_page=p_idx, to_page=p_idx)
+            ak_pdf_file = Path(temp_ak_dir.name) / "answer_key.pdf"
+            ak_doc.save(str(ak_pdf_file))
+            ak_doc.close()
+
+            ak_target_ai = ai_order[0] if ai_order else "deepseek"
+            print(f"[Pipeline] Processing Answer Key using {ak_target_ai}...")
+            raw_ak_data = SCRAPER.execute_single_chunk(ak_pdf_file, [ANSWER_KEY_PROMPT], ak_target_ai)
+            matched_count = merge_answer_keys(parsed_ai_questions, raw_ak_data)
+            print(f"[Pipeline] Answer Key extraction complete! Matched answers for {matched_count} questions.")
+        except Exception as ak_err:
+            print(f"[Pipeline] Answer Key extraction warning: {ak_err}")
+        finally:
+            try:
+                temp_ak_dir.cleanup()
+            except Exception:
+                pass
 
 
     # Determine which questions contain diagrams (d: true)

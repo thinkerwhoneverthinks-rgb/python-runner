@@ -54,7 +54,9 @@ class Job:
         model_name: str = "deepseek",
         custom_prompt: str = "",
         prompts: Optional[List[str]] = None,
-        ai_order: Optional[List[str]] = None
+        ai_order: Optional[List[str]] = None,
+        answer_key_mode: str = "last",
+        answer_key_pages: str = ""
     ):
         self.id = uuid.uuid4().hex[:10]
         self.dir = work_dir / self.id
@@ -69,6 +71,8 @@ class Job:
         self.custom_prompt = custom_prompt
         self.prompts = prompts or [custom_prompt]
         self.ai_order = ai_order or ["deepseek", "qwen", "perplexity"]
+        self.answer_key_mode = answer_key_mode or "last"
+        self.answer_key_pages = answer_key_pages or ""
         self.state = "queued"
         self.message = "Queued for processing..."
         self.done = 0
@@ -92,6 +96,8 @@ class Job:
                 chunk_size=self.chunk_size,
                 model_name=self.model_name,
                 custom_prompt=self.custom_prompt,
+                answer_key_mode=self.answer_key_mode,
+                answer_key_pages=self.answer_key_pages,
                 progress_callback=self.progress
             )
             self.result_data = res
@@ -106,11 +112,11 @@ class Job:
             self.message = f"Error: {e}"
 
 
-def parse_multipart_upload(body: bytes, content_type: str) -> Tuple[Optional[str], Optional[bytes], Optional[str], int, str, str, List[str], List[str]]:
-    """Extracts upload parameters, including prompts array (1..4) and ai_order."""
+def parse_multipart_upload(body: bytes, content_type: str) -> Tuple[Optional[str], Optional[bytes], Optional[str], int, str, str, List[str], List[str], str, str]:
+    """Extracts upload parameters, including prompts array (1..10), ai_order, and answer_key options."""
     m = re.search(r'boundary=(?:"([^"]+)"|([^;]+))', content_type or "")
     if not m:
-        return None, None, None, 10, "deepseek", "", [], ["deepseek", "qwen", "perplexity"]
+        return None, None, None, 10, "deepseek", "", [], ["deepseek", "qwen", "perplexity"], "last", ""
     boundary = ("--" + (m.group(1) or m.group(2)).strip()).encode()
 
     filename = None
@@ -121,6 +127,8 @@ def parse_multipart_upload(body: bytes, content_type: str) -> Tuple[Optional[str
     custom_prompt = ""
     prompt_parts = [""] * 10
     ai_order = ["deepseek", "qwen", "perplexity"]
+    answer_key_mode = "last"
+    answer_key_pages = ""
 
     for part in body.split(boundary):
         if not part.strip(b"\r\n-") or b"\r\n\r\n" not in part:
@@ -147,6 +155,10 @@ def parse_multipart_upload(body: bytes, content_type: str) -> Tuple[Optional[str
                 model_name = m_val
         elif 'name="customPrompt"' in head_s or 'name="custom_prompt"' in head_s:
             custom_prompt = data_clean.decode("utf-8", "replace").strip()
+        elif 'name="answerKeyMode"' in head_s or 'name="answer_key_mode"' in head_s:
+            answer_key_mode = data_clean.decode("utf-8", "replace").strip()
+        elif 'name="answerKeyPages"' in head_s or 'name="answer_key_pages"' in head_s:
+            answer_key_pages = data_clean.decode("utf-8", "replace").strip()
         elif 'name="aiOrder"' in head_s or 'name="ai_order"' in head_s:
             raw_order = data_clean.decode("utf-8", "replace").strip()
             if raw_order:
@@ -166,7 +178,7 @@ def parse_multipart_upload(body: bytes, content_type: str) -> Tuple[Optional[str
     if not active_prompts and custom_prompt:
         active_prompts = [custom_prompt]
 
-    return filename, pdf_bytes, api_key, chunk_size, model_name, custom_prompt, active_prompts, ai_order
+    return filename, pdf_bytes, api_key, chunk_size, model_name, custom_prompt, active_prompts, ai_order, answer_key_mode, answer_key_pages
 
 
 
@@ -238,7 +250,7 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/upload":
             ct = self.headers.get("Content-Type", "")
-            fn, pdf_b, api_key, chunk_size, model_name, custom_prompt, active_prompts, ai_order = parse_multipart_upload(body, ct)
+            fn, pdf_b, api_key, chunk_size, model_name, custom_prompt, active_prompts, ai_order, ak_mode, ak_pages = parse_multipart_upload(body, ct)
             if not fn or not pdf_b:
                 self.send_json({"error": "No PDF file provided"}, code=400)
                 return
@@ -253,7 +265,9 @@ class Handler(BaseHTTPRequestHandler):
                 model_name=model_name,
                 custom_prompt=custom_prompt,
                 prompts=active_prompts,
-                ai_order=ai_order
+                ai_order=ai_order,
+                answer_key_mode=ak_mode,
+                answer_key_pages=ak_pages
             )
             t = threading.Thread(target=active_job.run, daemon=True)
             t.start()

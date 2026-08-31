@@ -370,6 +370,29 @@ Before outputting, verify:
         </div>
       </div>
 
+      <!-- Dedicated Answer Key Extraction -->
+      <div class="form-group" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 0.85rem; border-radius: 0.5rem;">
+        <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>🎯 Dedicated Answer Key Extraction</span>
+          <span style="font-size: 0.75rem; color: var(--primary); font-weight: 500;">100% Accurate Python Merger</span>
+        </label>
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-top: 0.4rem;">
+          <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.85rem; color: var(--text);">
+            <input type="radio" name="answer-key-mode" value="last" checked> 📌 Last Page (Auto)
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.85rem; color: var(--text);">
+            <input type="radio" name="answer-key-mode" value="custom"> 🔢 Custom Range:
+          </label>
+          <input type="text" id="answer-key-pages" class="form-input" placeholder="e.g. 21-22 or 18" style="width: 140px; padding: 0.25rem 0.5rem; font-size: 0.8rem; display: inline-block;">
+          <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.85rem; color: var(--text-muted);">
+            <input type="radio" name="answer-key-mode" value="none"> 🚫 Skip / No Key
+          </label>
+        </div>
+        <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.35rem; display: block;">
+          Question chunks are parsed independently without guessing. The answer key page is extracted separately and merged by Exercise & Question Number in Python.
+        </small>
+      </div>
+
       <!-- Optional Gemini API Key Fallback -->
       <div class="form-group">
         <label class="form-label" for="api-key">Gemini API Key (Optional Fallback)</label>
@@ -584,11 +607,18 @@ Before outputting, verify:
         if (gkCheck && gkCheck.checked) aiOrder.push('grok');
         if (aiOrder.length === 0) aiOrder.push('deepseek');
 
+        const akModeRadio = document.querySelector('input[name="answer-key-mode"]:checked');
+        const akMode = akModeRadio ? akModeRadio.value : 'last';
+        const akPagesInput = document.getElementById('answer-key-pages');
+        const akPages = akPagesInput ? akPagesInput.value.trim() : '';
+
         const formData = new FormData();
         formData.append('pdf', selectedFile);
         formData.append('apiKey', apiKey);
         formData.append('chunkSize', chunkSize.toString());
         formData.append('aiOrder', JSON.stringify(aiOrder));
+        formData.append('answerKeyMode', akMode);
+        formData.append('answerKeyPages', akPages);
 
         for (let pIdx = 1; pIdx <= 10; pIdx++) {
           const el = document.getElementById(`prompt-${pIdx}`);
