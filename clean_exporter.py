@@ -108,6 +108,7 @@ def build_website_questions_json(
 
     for idx, q in enumerate(questions, start=1):
         seq = q.get("sequence", idx)
+        raw_subj = (q.get("subject") or q.get("sub") or "CHEMISTRY").strip().upper()
         # Resolve topic from exnm (Exercise Name) and subtopic from top (Topic Heading)
         if q.get("exnm"):
             topic = q.get("exnm") or "General"
