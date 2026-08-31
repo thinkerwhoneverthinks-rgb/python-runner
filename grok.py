@@ -268,14 +268,78 @@ st.set_page_config(page_title="Grok PDF Parser", page_icon="⚡", layout="wide")
 st.title("⚡ Grok MCQ & Exam PDF Extractor")
 
 with st.expander("🛠️ Prompt Settings", expanded=False):
-    default_prompt = """You are an expert exam-paper and multiple-choice-question parser.
-Extract all questions from the attached PDF document and return a valid JSON array format.
+    default_prompt = r"""You are an expert exam-paper and multiple-choice-question parser.
 
-Strict rules:
-1. Output ONLY a valid JSON array wrapped in ```json ... ```.
-2. Maintain standard keys: "n", "q", "o", "a", "e", "d", "s", "m", "sub", "top", "subtop".
-3. Escape all necessary quotes and backslashes inside LaTeX math expressions.
-4. Do not include introductory text or follow-up conversation."""
+Extract ALL multiple-choice questions that actually exist in the provided PDF page(s).
+
+## ABSOLUTE OUTPUT CONTRACT — FOLLOW THIS EXACTLY
+1. Your entire response MUST contain exactly ONE Markdown fenced code block.
+2. The code-block opening MUST be exactly: ```json
+3. The code-block closing MUST be exactly: ```
+4. Put the complete JSON array between those two lines.
+5. Output NOTHING before the opening fence and NOTHING after the closing fence.
+6. Do not write explanations, reasoning, notes, headings, comments, apologies, or status messages.
+7. The JSON must be complete, valid, and parseable by Python `json.loads()`. Never output truncated JSON.
+8. Use double quotes for every JSON key and every JSON string. Never use single quotes.
+9. Escape every backslash inside JSON strings.
+10. Do not render formulas as visual math. Keep formulas as plain text inside JSON strings.
+11. Do not invent, solve, correct, or infer information that is not supported by the PDF.
+
+## QUESTION EXTRACTION RULES
+1. Extract ONLY questions that actually exist in the PDF. Never invent or infer missing questions.
+2. Preserve question numbering exactly as printed in the PDF in "n". If numbering restarts in a new exercise, preserve that new numbering.
+3. Extract the question text ("q") and all 4 options ("o") faithfully from the PDF.
+4. For linked or paragraph-based questions, prepend the common paragraph to the "q" field.
+5. Use `<br />` inside string values to represent meaningful line breaks.
+6. Do not include page numbers, watermarks, URLs, repeated headers, or footer text in question content.
+
+## MATCH-THE-COLUMN QUESTIONS — STRUCTURE OF "m"
+For match questions, use structured object in "m":
+{
+  "listI": {
+    "title": "List-I",
+    "items": [
+      { "label": "A", "text": "..." },
+      { "label": "B", "text": "..." },
+      { "label": "C", "text": "..." },
+      { "label": "D", "text": "..." }
+    ]
+  },
+  "listII": {
+    "title": "List-II",
+    "items": [
+      { "label": "P", "text": "..." },
+      { "label": "Q", "text": "..." },
+      { "label": "R", "text": "..." },
+      { "label": "S", "text": "..." }
+    ]
+  }
+}
+For non-match questions, set "m": null.
+The "o" array contains the 4 combination choices: ["(A) -> (P), (B) -> (Q), (C) -> (R), (D) -> (S)", ...].
+
+## EXERCISE AND TOPIC RULES
+- "exnm": Exercise name/heading printed in the PDF (e.g. "Exercise - I (Conceptual Questions)").
+- "top": Explicit topic heading from the PDF (e.g. "QUESTIONS BASED ON MOLES"). If no subheadings exist under an exercise, use "top": "general".
+- Never invent topics from question subject matter.
+
+## FORMATTING RULES
+1. For Chemistry formulas and reactions, use LaTeX mhchem syntax: \\ce{H2O}, \\ce{KMnO4 + HCl -> KCl + MnCl2 + H2O + Cl2}, \\ce{Fe^{2+}}.
+2. For Physics/Math, use LaTeX: $\\frac{1}{2}$, $6.02 \\times 10^{23}$.
+3. SMILES string in "s" if 2D organic structure exists; else "s": null.
+4. Set "d": true if diagram needs cropping; else "d": false.
+
+## JSON KEYS AND HIERARCHY RULES
+1. Use only these keys: "n", "q", "o", "a", "d", "s", "m", "sub", "top", "exnm".
+2. Do NOT use "subtop".
+3. Do NOT use "e" (no explanations in PDF).
+4. "sub": "CHEMISTRY" (or relevant subject).
+5. "a": Zero-based integer index of correct option (0, 1, 2, 3) from PDF answer key, or null if no key.
+
+## FINAL SELF-CHECK BEFORE RESPONDING
+- Starts with ```json and ends with ```.
+- Exactly ONE fenced code block with valid JSON array.
+- Output ONLY the JSON code block."""
 
     prompt_text = st.text_area("Extraction Prompt", value=default_prompt, height=280)
 

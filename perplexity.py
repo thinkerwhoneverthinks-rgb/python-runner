@@ -215,39 +215,77 @@ st.markdown("Automated batch question extraction via Perplexity web UI automatio
 with st.sidebar:
     st.header("Extraction Prompt")
     default_prompt = r"""You are an expert exam-paper and multiple-choice-question parser.
+
 Extract ALL multiple-choice questions that actually exist in the provided PDF page(s).
 
-ABSOLUTE OUTPUT CONTRACT — FOLLOW THIS EXACTLY:
+## ABSOLUTE OUTPUT CONTRACT — FOLLOW THIS EXACTLY
 1. Your entire response MUST contain exactly ONE Markdown fenced code block.
 2. The code-block opening MUST be exactly: ```json
 3. The code-block closing MUST be exactly: ```
 4. Put the complete JSON array between those two lines.
 5. Output NOTHING before the opening fence and NOTHING after the closing fence.
 6. Do not write explanations, reasoning, notes, headings, comments, apologies, or status messages.
-7. The JSON must be complete, valid, and parseable by Python json.loads(). Never output truncated JSON.
+7. The JSON must be complete, valid, and parseable by Python `json.loads()`. Never output truncated JSON.
 8. Use double quotes for every JSON key and every JSON string. Never use single quotes.
-9. Escape every backslash inside JSON strings. For example, write \\ce{H2O}, \\times, and \\frac{1}{2} inside JSON strings.
-10. Do not render formulas as visual math. Keep formulas as plain text inside the JSON strings.
-11. Do not output bare math words such as "times10^23" when LaTeX is required; use \\times 10^{23}.
+9. Escape every backslash inside JSON strings.
+10. Do not render formulas as visual math. Keep formulas as plain text inside JSON strings.
+11. Do not invent, solve, correct, or infer information that is not supported by the PDF.
 
-STRICT EXTRACTION RULES:
-1. Extract only questions present in the PDF. Never invent or infer missing questions.
-2. For Chemistry formulas, reactions, ionic equations, and chemical names, use LaTeX mhchem syntax such as \\ce{CH3-CH2-OH}, \\ce{KMnO4 + HCl -> KCl + MnCl2 + H2O + Cl2}, and \\ce{Fe^{2+}}.
-3. For Physics and Mathematics, use standard LaTeX such as $\frac{1}{2}$ or $6.02 \times 10^{23}$.
-4. If a question contains a 2D organic molecular structure, place its SMILES string in the "s" field.
-5. Use <br /> inside string values for clean line breaks between multi-part sections.
-6. For linked or paragraph-based questions, prepend the common paragraph to the "q" field of every question in that group.
-7. For match-the-column questions, use a structured object in the "m" field.
-8. Set "d": true when a diagram or figure needs cropping; otherwise set it to false.
-9. Use only these keys where applicable: "n", "q", "o", "a", "e", "d", "s", "m", "sub", "top", "subtop".
-10. If a value is unknown, use an appropriate empty value such as "", [], {}, or false. Do not omit required structure and do not add commentary.
+## QUESTION EXTRACTION RULES
+1. Extract ONLY questions that actually exist in the PDF. Never invent or infer missing questions.
+2. Preserve question numbering exactly as printed in the PDF in "n". If numbering restarts in a new exercise, preserve that new numbering.
+3. Extract the question text ("q") and all 4 options ("o") faithfully from the PDF.
+4. For linked or paragraph-based questions, prepend the common paragraph to the "q" field.
+5. Use `<br />` inside string values to represent meaningful line breaks.
+6. Do not include page numbers, watermarks, URLs, repeated headers, or footer text in question content.
 
-FINAL SELF-CHECK BEFORE RESPONDING:
-- Confirm the response starts with ```json and ends with ```.
-- Confirm there is exactly one fenced code block.
-- Confirm the text inside the fence is one complete valid JSON array.
-- Confirm all backslashes inside JSON strings are escaped.
-- Then output only that code block."""
+## MATCH-THE-COLUMN QUESTIONS — STRUCTURE OF "m"
+For match questions, use structured object in "m":
+{
+  "listI": {
+    "title": "List-I",
+    "items": [
+      { "label": "A", "text": "..." },
+      { "label": "B", "text": "..." },
+      { "label": "C", "text": "..." },
+      { "label": "D", "text": "..." }
+    ]
+  },
+  "listII": {
+    "title": "List-II",
+    "items": [
+      { "label": "P", "text": "..." },
+      { "label": "Q", "text": "..." },
+      { "label": "R", "text": "..." },
+      { "label": "S", "text": "..." }
+    ]
+  }
+}
+For non-match questions, set "m": null.
+The "o" array contains the 4 combination choices: ["(A) -> (P), (B) -> (Q), (C) -> (R), (D) -> (S)", ...].
+
+## EXERCISE AND TOPIC RULES
+- "exnm": Exercise name/heading printed in the PDF (e.g. "Exercise - I (Conceptual Questions)").
+- "top": Explicit topic heading from the PDF (e.g. "QUESTIONS BASED ON MOLES"). If no subheadings exist under an exercise, use "top": "general".
+- Never invent topics from question subject matter.
+
+## FORMATTING RULES
+1. For Chemistry formulas and reactions, use LaTeX mhchem syntax: \\ce{H2O}, \\ce{KMnO4 + HCl -> KCl + MnCl2 + H2O + Cl2}, \\ce{Fe^{2+}}.
+2. For Physics/Math, use LaTeX: $\\frac{1}{2}$, $6.02 \\times 10^{23}$.
+3. SMILES string in "s" if 2D organic structure exists; else "s": null.
+4. Set "d": true if diagram needs cropping; else "d": false.
+
+## JSON KEYS AND HIERARCHY RULES
+1. Use only these keys: "n", "q", "o", "a", "d", "s", "m", "sub", "top", "exnm".
+2. Do NOT use "subtop".
+3. Do NOT use "e" (no explanations in PDF).
+4. "sub": "CHEMISTRY" (or relevant subject).
+5. "a": Zero-based integer index of correct option (0, 1, 2, 3) from PDF answer key, or null if no key.
+
+## FINAL SELF-CHECK BEFORE RESPONDING
+- Starts with ```json and ends with ```.
+- Exactly ONE fenced code block with valid JSON array.
+- Output ONLY the JSON code block."""
 
     prompt_text = st.text_area("Extraction Prompt", value=default_prompt, height=320)
 
