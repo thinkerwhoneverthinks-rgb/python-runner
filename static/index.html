@@ -592,6 +592,19 @@ Before outputting, verify:
         e.preventDefault();
         if (!selectedFile) return;
 
+        // INSTANT VISUAL FEEDBACK & BUTTON LOCK
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '⏳ Uploading & Launching AI Pipeline...';
+        btnSubmit.style.opacity = '0.7';
+        btnSubmit.style.cursor = 'not-allowed';
+
+        if (progressPanel) {
+          progressPanel.style.display = 'block';
+          progressFill.style.width = '8%';
+          progressPct.textContent = '8%';
+          progressMsg.textContent = 'Uploading PDF and starting AI scraper browser session...';
+        }
+
         const apiKey = (apiKeyInput ? apiKeyInput.value.trim() : '');
         const chunkSize = chunkModeSelect.value === 'single' ? 0 : parseInt(chunkSizeSelect.value, 10);
 
@@ -639,6 +652,9 @@ Before outputting, verify:
         } catch (err) {
           alert('Upload failed: ' + err.message);
           btnSubmit.disabled = false;
+          btnSubmit.innerHTML = '🚀 Start Parsing PDF via AI Scraper';
+          btnSubmit.style.opacity = '1';
+          btnSubmit.style.cursor = 'pointer';
           progressPanel.style.display = 'none';
         }
       });

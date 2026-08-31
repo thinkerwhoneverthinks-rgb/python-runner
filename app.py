@@ -256,22 +256,27 @@ class Handler(BaseHTTPRequestHandler):
                 return
 
             global active_job
-            active_job = Job(
-                pdf_b,
-                fn,
-                WORK_DIR,
-                api_key=api_key,
-                chunk_size=chunk_size,
-                model_name=model_name,
-                custom_prompt=custom_prompt,
-                prompts=active_prompts,
-                ai_order=ai_order,
-                answer_key_mode=ak_mode,
-                answer_key_pages=ak_pages
-            )
-            t = threading.Thread(target=active_job.run, daemon=True)
-            t.start()
-            self.send_json({"id": active_job.id, "state": "queued"})
+            with state_lock:
+                if active_job and active_job.state in ("queued", "running"):
+                    self.send_json({"id": active_job.id, "state": active_job.state, "message": "A job is already running"})
+                    return
+
+                active_job = Job(
+                    pdf_b,
+                    fn,
+                    WORK_DIR,
+                    api_key=api_key,
+                    chunk_size=chunk_size,
+                    model_name=model_name,
+                    custom_prompt=custom_prompt,
+                    prompts=active_prompts,
+                    ai_order=ai_order,
+                    answer_key_mode=ak_mode,
+                    answer_key_pages=ak_pages
+                )
+                t = threading.Thread(target=active_job.run, daemon=True)
+                t.start()
+                self.send_json({"id": active_job.id, "state": "queued"})
 
         elif path == "/api/cloudinary-upload":
             try:
