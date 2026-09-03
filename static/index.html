@@ -144,11 +144,193 @@
       display: flex;
       justify-content: space-between;
     }
+
+    /* Top Navigation Bar */
+    .app-top-nav {
+      max-width: 860px;
+      margin: 1.5rem auto 0 auto;
+      padding: 0.65rem 1.25rem;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      backdrop-filter: blur(14px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+    .nav-brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .nav-logo-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 0.65rem;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+    .nav-brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .nav-brand-name {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .nav-brand-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .nav-view-switcher {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(10, 15, 30, 0.6);
+      padding: 0.35rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+    }
+    .view-switch-btn {
+      padding: 0.55rem 1.15rem;
+      border-radius: 0.55rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.2s ease;
+    }
+    .view-switch-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .view-switch-btn.active {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Quizard UI Elements */
+    .chip-badge {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 9999px;
+      font-size: 0.76rem;
+      color: #818cf8;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .chip-badge:hover {
+      background: rgba(99, 102, 241, 0.25);
+      border-color: #818cf8;
+      color: white;
+      transform: translateY(-1px);
+    }
+    .qz-terminal {
+      background: #080c14;
+      border: 1px solid #1e293b;
+      border-radius: 0.75rem;
+      padding: 0.85rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      height: 250px;
+      overflow-y: auto;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+    .qz-terminal::-webkit-scrollbar {
+      width: 6px;
+    }
+    .qz-terminal::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.25);
+      border-radius: 3px;
+    }
+    .qz-log-line {
+      padding: 0.12rem 0;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .qz-stat-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    .qz-stat-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-2px);
+    }
+    .qz-stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+      margin-top: 0.25rem;
+    }
+    .qz-stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .qz-download-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.6rem;
+      transition: all 0.2s ease;
+    }
+    .qz-download-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      background: rgba(15, 23, 42, 0.8);
+    }
   </style>
 </head>
 <body>
   <div class="bg-glow"></div>
 
+  <!-- Unified Top Navigation Bar -->
+  <header class="app-top-nav">
+    <div class="nav-brand-group">
+      <div class="nav-logo-badge">⚡</div>
+      <div class="nav-brand-text">
+        <span class="nav-brand-name">QUIZ RUNNER STUDIO</span>
+        <span class="nav-brand-sub">Unified Extraction &amp; Scraping Suite</span>
+      </div>
+    </div>
+    <div class="nav-view-switcher">
+      <button type="button" id="nav-btn-allen" class="view-switch-btn active">
+        📑 Allen Hybrid Parser
+      </button>
+      <button type="button" id="nav-btn-quizard" class="view-switch-btn">
+        ⚡ Quizard Extractor
+      </button>
+    </div>
+  </header>
+
+  <!-- View 1: Allen Hybrid Parser -->
+  <div id="view-allen">
   <div class="hero-container">
     <div class="hero-header">
       <span class="hero-badge">ALLEN HYBRID QUIZ PLATFORM</span>
@@ -455,6 +637,207 @@ Before outputting, verify:
       <div id="import-status" style="display: none; margin-top: 1rem; padding: 0.85rem; border-radius: 0.6rem; text-align: center; font-weight: 500;"></div>
     </form>
   </div>
+  </div> <!-- /#view-allen -->
+
+  <!-- View 2: Quizard Batch Extractor -->
+  <div id="view-quizard" style="display: none;">
+    <div class="hero-container" style="margin-top: 1.5rem;">
+      <div class="hero-header">
+        <span class="hero-badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border-color: rgba(168, 85, 247, 0.3);">
+          ⚡ AUTOMATED QUIZ SCRAPER
+        </span>
+        <h1 class="hero-title" style="background: linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          Quizard Batch Extractor
+        </h1>
+        <p class="hero-desc">Directly crawl tests, syllabus, question images &amp; answers from Quizard formatted for Quizzy.</p>
+      </div>
+
+      <!-- Quizard Form -->
+      <form id="quizard-form">
+        <!-- Base URL -->
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <label class="form-label" for="qz-base-url" style="margin-bottom: 0;">Quizard Server URL</label>
+            <button type="button" id="qz-btn-reset-url" style="background: transparent; border: none; color: #818cf8; font-size: 0.78rem; cursor: pointer; text-decoration: underline;">
+              Reset Default
+            </button>
+          </div>
+          <input type="url" id="qz-base-url" class="form-input" value="https://quizard-v3-new-4fb72be6e76b.herokuapp.com/" required />
+        </div>
+
+        <!-- Category Name -->
+        <div class="form-group">
+          <label class="form-label" for="qz-category">Category Name</label>
+          <input type="text" id="qz-category" class="form-input" value="DROPPER Tests" placeholder="e.g. DROPPER Tests" required />
+          <div style="display: flex; gap: 0.4rem; margin-top: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <span style="font-size: 0.78rem; color: var(--text-muted);">Quick picks:</span>
+            <span class="chip-badge qz-cat-chip" data-cat="DROPPER Tests">DROPPER Tests</span>
+            <span class="chip-badge qz-cat-chip" data-cat="11th Tests">11th Tests</span>
+            <span class="chip-badge qz-cat-chip" data-cat="12th Tests">12th Tests</span>
+            <span class="chip-badge qz-cat-chip" data-cat="NEET Tests">NEET Tests</span>
+            <span class="chip-badge qz-cat-chip" data-cat="JEE Tests">JEE Tests</span>
+          </div>
+        </div>
+
+        <!-- Batch Names -->
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <label class="form-label" for="qz-batches" style="margin-bottom: 0;">Batch Name(s) or 'all'</label>
+            <button type="button" id="qz-btn-set-all" class="chip-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">
+              ⚡ Set to 'all'
+            </button>
+          </div>
+          <input type="text" id="qz-batches" class="form-input" value="all" placeholder="e.g. all or Yakeen NEET 2025, Lakshya NEET" required />
+          <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.35rem; display: block;">
+            Type <code>all</code> to automatically discover every batch in this category, or specify comma-separated batch names.
+          </small>
+        </div>
+
+        <!-- Execution Options -->
+        <div class="grid-2">
+          <div class="form-group" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 0.85rem 1rem; border-radius: 0.75rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text); font-size: 0.9rem; font-weight: 500;">
+              <input type="checkbox" id="qz-use-syllabus" checked style="accent-color: #6366f1; width: 16px; height: 16px;">
+              <span>📜 Rich Syllabus API Extraction</span>
+            </label>
+            <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+              Queries background API for exact subject instructions &amp; formats for Quizzy.
+            </small>
+          </div>
+
+          <div class="form-group" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 0.85rem 1rem; border-radius: 0.75rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text); font-size: 0.9rem; font-weight: 500;">
+              <input type="checkbox" id="qz-headless" checked style="accent-color: #6366f1; width: 16px; height: 16px;">
+              <span>🖥️ Headless Mode (Quiet)</span>
+            </label>
+            <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+              Keep checked for background operation, or uncheck to watch the browser live.
+            </small>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+          <button type="submit" id="qz-btn-start" class="btn-submit" style="flex: 2; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);">
+            🚀 Start Quizard Extraction
+          </button>
+          <button type="button" id="qz-btn-stop" class="btn-submit" disabled style="flex: 1; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; box-shadow: none;">
+            ⏹️ Abort / Stop
+          </button>
+        </div>
+
+        <!-- Live Progress Panel -->
+        <div class="progress-panel" id="qz-progress-panel" style="display: none; margin-top: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span id="qz-state-badge" class="hero-badge" style="margin-bottom: 0; padding: 0.2rem 0.6rem; font-size: 0.75rem;">
+                RUNNING
+              </span>
+              <span id="qz-status-msg" style="font-size: 0.88rem; color: var(--text); font-weight: 500;">Processing...</span>
+            </div>
+            <span id="qz-status-pct" style="font-weight: 700; color: #818cf8; font-size: 0.95rem;">0%</span>
+          </div>
+
+          <div class="progress-bar-bg" style="margin-bottom: 0.75rem;">
+            <div class="progress-bar-fill" id="qz-progress-fill" style="background: linear-gradient(90deg, #a855f7, #6366f1, #34d399);"></div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+            <div>Active Batch: <strong id="qz-active-batch" style="color: var(--text);">-</strong></div>
+            <div>Active Test: <strong id="qz-active-test" style="color: var(--text);">-</strong></div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Live Terminal Viewer -->
+      <div style="margin-top: 1.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <label class="form-label" style="margin-bottom: 0; display: flex; align-items: center; gap: 0.5rem;">
+            <span>💻 Live Extraction Log Console</span>
+            <span id="qz-log-counter" style="font-size: 0.75rem; color: var(--text-muted);">(0 lines)</span>
+          </label>
+          <div style="display: flex; gap: 0.6rem; align-items: center;">
+            <label style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+              <input type="checkbox" id="qz-chk-autoscroll" checked style="accent-color: #6366f1;"> Auto-scroll
+            </label>
+            <button type="button" id="qz-btn-clear-logs" class="chip-badge" style="background: transparent; color: var(--text-muted);">
+              Clear
+            </button>
+          </div>
+        </div>
+        <div id="qz-terminal" class="qz-terminal">
+          <div style="color: #64748b; font-style: italic;">Quizard log console ready. Click "Start Quizard Extraction" to begin.</div>
+        </div>
+      </div>
+
+      <!-- Execution Summary & Downloads (Visible when finished or has files) -->
+      <div id="qz-summary-section" style="display: none; margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="color: var(--text); font-size: 1.25rem; font-weight: 700; margin: 0;">
+            📊 Execution Summary &amp; Output Files
+          </h3>
+          <button type="button" id="qz-btn-open-folder" class="btn" style="padding: 0.4rem 0.85rem; background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 0.5rem; font-size: 0.82rem; cursor: pointer;">
+            📂 Open Output Folder
+          </button>
+        </div>
+
+        <!-- 4-Stat Grid -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.85rem; margin-bottom: 1.25rem;">
+          <div class="qz-stat-card">
+            <div class="qz-stat-label">Batches</div>
+            <div class="qz-stat-value" id="qz-sum-batches" style="color: #a78bfa;">0</div>
+          </div>
+          <div class="qz-stat-card">
+            <div class="qz-stat-label">Tests Saved</div>
+            <div class="qz-stat-value" id="qz-sum-saved" style="color: #34d399;">0</div>
+          </div>
+          <div class="qz-stat-card">
+            <div class="qz-stat-label">Skipped</div>
+            <div class="qz-stat-value" id="qz-sum-skipped" style="color: #60a5fa;">0</div>
+          </div>
+          <div class="qz-stat-card">
+            <div class="qz-stat-label">Failed</div>
+            <div class="qz-stat-value" id="qz-sum-failed" style="color: #f87171;">0</div>
+          </div>
+        </div>
+
+        <!-- Success Banner -->
+        <div id="qz-success-banner" style="display: none; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.25rem; text-align: center; color: #34d399; font-weight: 600;">
+          🎉 All tests completed successfully! No errors found.
+        </div>
+
+        <!-- Failed Tests Callout -->
+        <div id="qz-failed-box" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+            <div style="color: #f87171; font-weight: 600; font-size: 0.95rem;">
+              ⚠️ Some Tests Failed to Generate
+            </div>
+            <button type="button" id="qz-btn-copy-failed" class="pill-btn" style="padding: 0.35rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 0.4rem; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
+              📋 Copy Failed Batches to Retry
+            </button>
+          </div>
+          <div id="qz-failed-list" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #fca5a5; max-height: 120px; overflow-y: auto;">
+          </div>
+        </div>
+
+        <!-- Generated ZIP Packages -->
+        <div style="margin-bottom: 1rem;">
+          <label class="form-label">📦 Generated ZIP Packages (Ready for Quizzy)</label>
+          <div id="qz-zip-list">
+            <div style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No ZIP packages generated yet.</div>
+          </div>
+        </div>
+
+        <!-- Generated Test JSON Files -->
+        <div>
+          <label class="form-label">📄 Extracted Test JSON Files</label>
+          <div id="qz-json-list" style="max-height: 220px; overflow-y: auto;">
+            <div style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No JSON files generated yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> <!-- /#view-quizard -->
 
   <script>
     // Mode Switcher Elements
@@ -792,6 +1175,420 @@ Before outputting, verify:
           importStatus.textContent = 'Error: ' + err.message;
         }
       });
+    }
+
+    // ==========================================
+    // SPA Top-Level Navigation Switcher (No Reload)
+    // ==========================================
+    const navBtnAllen = document.getElementById('nav-btn-allen');
+    const navBtnQuizard = document.getElementById('nav-btn-quizard');
+    const viewAllen = document.getElementById('view-allen');
+    const viewQuizard = document.getElementById('view-quizard');
+
+    function switchView(viewName) {
+      if (viewName === 'quizard') {
+        viewAllen.style.display = 'none';
+        viewQuizard.style.display = 'block';
+        navBtnQuizard.classList.add('active');
+        navBtnAllen.classList.remove('active');
+        window.location.hash = '#quizard';
+        checkQuizardRunningStatus();
+      } else {
+        viewQuizard.style.display = 'none';
+        viewAllen.style.display = 'block';
+        navBtnAllen.classList.add('active');
+        navBtnQuizard.classList.remove('active');
+        window.location.hash = '#allen';
+      }
+    }
+
+    if (navBtnAllen && navBtnQuizard) {
+      navBtnAllen.addEventListener('click', () => switchView('allen'));
+      navBtnQuizard.addEventListener('click', () => switchView('quizard'));
+    }
+
+    // Check hash on load
+    if (window.location.hash === '#quizard') {
+      switchView('quizard');
+    }
+
+    // ==========================================
+    // Quizard Extractor Client Controller
+    // ==========================================
+    const qzForm = document.getElementById('quizard-form');
+    const qzBaseUrlInput = document.getElementById('qz-base-url');
+    const qzBtnResetUrl = document.getElementById('qz-btn-reset-url');
+    const qzCategoryInput = document.getElementById('qz-category');
+    const qzBatchesInput = document.getElementById('qz-batches');
+    const qzBtnSetAll = document.getElementById('qz-btn-set-all');
+    const qzUseSyllabusChk = document.getElementById('qz-use-syllabus');
+    const qzHeadlessChk = document.getElementById('qz-headless');
+    const qzBtnStart = document.getElementById('qz-btn-start');
+    const qzBtnStop = document.getElementById('qz-btn-stop');
+
+    const qzProgressPanel = document.getElementById('qz-progress-panel');
+    const qzStateBadge = document.getElementById('qz-state-badge');
+    const qzStatusMsg = document.getElementById('qz-status-msg');
+    const qzStatusPct = document.getElementById('qz-status-pct');
+    const qzProgressFill = document.getElementById('qz-progress-fill');
+    const qzActiveBatch = document.getElementById('qz-active-batch');
+    const qzActiveTest = document.getElementById('qz-active-test');
+
+    const qzTerminal = document.getElementById('qz-terminal');
+    const qzLogCounter = document.getElementById('qz-log-counter');
+    const qzChkAutoscroll = document.getElementById('qz-chk-autoscroll');
+    const qzBtnClearLogs = document.getElementById('qz-btn-clear-logs');
+
+    const qzSummarySection = document.getElementById('qz-summary-section');
+    const qzSumBatches = document.getElementById('qz-sum-batches');
+    const qzSumSaved = document.getElementById('qz-sum-saved');
+    const qzSumSkipped = document.getElementById('qz-sum-skipped');
+    const qzSumFailed = document.getElementById('qz-sum-failed');
+    const qzSuccessBanner = document.getElementById('qz-success-banner');
+    const qzFailedBox = document.getElementById('qz-failed-box');
+    const qzFailedList = document.getElementById('qz-failed-list');
+    const qzBtnCopyFailed = document.getElementById('qz-btn-copy-failed');
+    const qzZipList = document.getElementById('qz-zip-list');
+    const qzJsonList = document.getElementById('qz-json-list');
+    const qzBtnOpenFolder = document.getElementById('qz-btn-open-folder');
+
+    let qzPollInterval = null;
+    let qzLastLogIdx = 0;
+    let failedBatchesRetryStr = '';
+
+    // Quick pick category chips
+    document.querySelectorAll('.qz-cat-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        qzCategoryInput.value = chip.getAttribute('data-cat');
+        qzCategoryInput.focus();
+      });
+    });
+
+    if (qzBtnSetAll) {
+      qzBtnSetAll.addEventListener('click', () => {
+        qzBatchesInput.value = 'all';
+        qzBatchesInput.focus();
+      });
+    }
+
+    if (qzBtnResetUrl) {
+      qzBtnResetUrl.addEventListener('click', () => {
+        qzBaseUrlInput.value = 'https://quizard-v3-new-4fb72be6e76b.herokuapp.com/';
+      });
+    }
+
+    if (qzBtnClearLogs) {
+      qzBtnClearLogs.addEventListener('click', () => {
+        qzTerminal.innerHTML = '<div style="color: #64748b; font-style: italic;">Log cleared.</div>';
+        qzLogCounter.textContent = '(0 lines)';
+      });
+    }
+
+    if (qzBtnOpenFolder) {
+      qzBtnOpenFolder.addEventListener('click', async () => {
+        try {
+          await fetch('/api/quizard/open-folder', { method: 'POST' });
+        } catch (e) {
+          console.error('Error opening folder:', e);
+        }
+      });
+    }
+
+    if (qzBtnCopyFailed) {
+      qzBtnCopyFailed.addEventListener('click', () => {
+        if (!failedBatchesRetryStr) return;
+        navigator.clipboard.writeText(failedBatchesRetryStr).then(() => {
+          qzBatchesInput.value = failedBatchesRetryStr;
+          const origText = qzBtnCopyFailed.textContent;
+          qzBtnCopyFailed.textContent = '✅ Copied & Pasted to Input!';
+          setTimeout(() => { qzBtnCopyFailed.textContent = origText; }, 2000);
+        });
+      });
+    }
+
+    // Submit / Start Job
+    if (qzForm) {
+      qzForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const category = qzCategoryInput.value.trim();
+        const batches = qzBatchesInput.value.trim() || 'all';
+        const baseUrl = qzBaseUrlInput.value.trim();
+        const useSyllabus = qzUseSyllabusChk.checked;
+        const headless = qzHeadlessChk.checked;
+
+        if (!category) {
+          alert('Please specify a category name.');
+          return;
+        }
+
+        qzBtnStart.disabled = true;
+        qzBtnStart.textContent = '⏳ Launching Quizard Extraction...';
+        qzBtnStop.disabled = false;
+
+        qzProgressPanel.style.display = 'block';
+        qzStateBadge.textContent = 'STARTING';
+        qzStateBadge.style.background = 'rgba(99, 102, 241, 0.2)';
+        qzStateBadge.style.color = '#818cf8';
+        qzStatusMsg.textContent = 'Initializing Playwright runner...';
+        qzProgressFill.style.width = '5%';
+        qzStatusPct.textContent = '5%';
+
+        qzTerminal.innerHTML = '';
+        qzLastLogIdx = 0;
+
+        try {
+          const res = await fetch('/api/quizard/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              category: category,
+              batches: batches,
+              base_url: baseUrl,
+              use_api_syllabus: useSyllabus,
+              headless: headless
+            })
+          });
+
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+
+          qzBtnStart.textContent = '⚡ Extraction In Progress...';
+          startQuizardPolling();
+        } catch (err) {
+          alert('Failed to start Quizard extraction: ' + err.message);
+          qzBtnStart.disabled = false;
+          qzBtnStart.textContent = '🚀 Start Quizard Extraction';
+          qzBtnStop.disabled = true;
+          qzProgressPanel.style.display = 'none';
+        }
+      });
+    }
+
+    // Stop Job
+    if (qzBtnStop) {
+      qzBtnStop.addEventListener('click', async () => {
+        qzBtnStop.disabled = true;
+        qzBtnStop.textContent = '⏳ Stopping...';
+        try {
+          await fetch('/api/quizard/stop', { method: 'POST' });
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    }
+
+    function appendLogs(logs) {
+      if (!logs || logs.length === 0) return;
+      const frag = document.createDocumentFragment();
+      logs.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'qz-log-line';
+
+        let colorStyle = 'color: #cbd5e1;';
+        if (item.level === 'success') colorStyle = 'color: #34d399; font-weight: 500;';
+        else if (item.level === 'warning') colorStyle = 'color: #fbbf24;';
+        else if (item.level === 'error') colorStyle = 'color: #f87171; font-weight: 600;';
+        else if (item.level === 'batch') colorStyle = 'color: #c084fc; font-weight: 700;';
+
+        row.innerHTML = `<span style="color: #64748b; font-size: 0.78rem;">[${item.time}]</span> <span style="${colorStyle}">${escapeHtml(item.msg)}</span>`;
+        frag.appendChild(row);
+      });
+      qzTerminal.appendChild(frag);
+
+      if (qzChkAutoscroll.checked) {
+        qzTerminal.scrollTop = qzTerminal.scrollHeight;
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function startQuizardPolling() {
+      if (qzPollInterval) clearInterval(qzPollInterval);
+      qzPollInterval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/quizard/status?since=${qzLastLogIdx}`);
+          const job = await res.json();
+
+          if (job.state === 'idle') return;
+
+          // Logs
+          if (job.logs && job.logs.length > 0) {
+            appendLogs(job.logs);
+            qzLastLogIdx = job.log_total || (qzLastLogIdx + job.logs.length);
+            qzLogCounter.textContent = `(${qzLastLogIdx} lines)`;
+          }
+
+          // Active info
+          qzActiveBatch.textContent = job.active_batch || '-';
+          qzActiveTest.textContent = job.active_test || '-';
+
+          if (job.state === 'running') {
+            qzStateBadge.textContent = 'RUNNING';
+            qzStateBadge.style.background = 'rgba(99, 102, 241, 0.2)';
+            qzStateBadge.style.color = '#818cf8';
+            const pct = Math.max(8, Math.min(95, Math.round((job.done / job.total) * 100)));
+            qzProgressFill.style.width = `${pct}%`;
+            qzStatusPct.textContent = `${pct}%`;
+            qzStatusMsg.textContent = job.message || 'Extracting tests...';
+            qzBtnStop.disabled = false;
+          } else if (job.state === 'finished' || job.state === 'stopped' || job.state === 'error') {
+            clearInterval(qzPollInterval);
+            qzBtnStart.disabled = false;
+            qzBtnStart.textContent = '🚀 Start Quizard Extraction';
+            qzBtnStop.disabled = true;
+            qzBtnStop.textContent = '⏹️ Abort / Stop';
+
+            if (job.state === 'finished') {
+              qzStateBadge.textContent = 'FINISHED';
+              qzStateBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+              qzStateBadge.style.color = '#34d399';
+              qzProgressFill.style.width = '100%';
+              qzStatusPct.textContent = '100%';
+              qzStatusMsg.textContent = 'All batches completed!';
+            } else if (job.state === 'stopped') {
+              qzStateBadge.textContent = 'STOPPED';
+              qzStateBadge.style.background = 'rgba(245, 158, 11, 0.2)';
+              qzStateBadge.style.color = '#fbbf24';
+              qzStatusMsg.textContent = 'Extraction stopped by user.';
+            } else {
+              qzStateBadge.textContent = 'ERROR';
+              qzStateBadge.style.background = 'rgba(239, 68, 68, 0.2)';
+              qzStateBadge.style.color = '#f87171';
+              qzStatusMsg.textContent = job.message || 'Error occurred';
+            }
+
+            renderQuizardSummary(job);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }, 1000);
+    }
+
+    async function checkQuizardRunningStatus() {
+      try {
+        const res = await fetch('/api/quizard/status');
+        const job = await res.json();
+        if (job.state === 'running') {
+          qzProgressPanel.style.display = 'block';
+          qzBtnStart.disabled = true;
+          qzBtnStart.textContent = '⚡ Extraction In Progress...';
+          qzBtnStop.disabled = false;
+          startQuizardPolling();
+        } else if (job.state === 'finished' || job.state === 'stopped') {
+          if (job.summary && Object.keys(job.summary).length > 0) {
+            renderQuizardSummary(job);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderQuizardSummary(job) {
+      qzSummarySection.style.display = 'block';
+      const sum = job.summary || {};
+
+      qzSumBatches.textContent = sum.batches_processed || (job.zip_files ? job.zip_files.length : 0);
+      qzSumSaved.textContent = sum.total_saved || 0;
+      qzSumSkipped.textContent = sum.total_skipped || 0;
+      qzSumFailed.textContent = sum.total_failed || 0;
+
+      // Failed tracker
+      const failedTracker = job.failed_tracker || sum.failed_tracker || {};
+      const failedKeys = Object.keys(failedTracker);
+      failedBatchesRetryStr = sum.failed_batches_string || failedKeys.join(', ');
+
+      if (failedKeys.length > 0) {
+        qzSuccessBanner.style.display = 'none';
+        qzFailedBox.style.display = 'block';
+        let failHtml = '';
+        for (const [batch, tests] of Object.entries(failedTracker)) {
+          failHtml += `<div style="margin-bottom: 0.35rem;"><strong>Batch: ${escapeHtml(batch)}</strong><br />`;
+          tests.forEach(t => {
+            failHtml += `&nbsp;&nbsp;❌ ${escapeHtml(t)}<br />`;
+          });
+          failHtml += '</div>';
+        }
+        qzFailedList.innerHTML = failHtml;
+      } else {
+        qzFailedBox.style.display = 'none';
+        qzSuccessBanner.style.display = 'block';
+      }
+
+      // Render ZIP download list
+      const zipFiles = job.zip_files || sum.zip_files || [];
+      if (zipFiles.length > 0) {
+        qzZipList.innerHTML = zipFiles.map(z => `
+          <div class="qz-download-card">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span style="font-size: 1.5rem;">📦</span>
+              <div>
+                <div style="color: var(--text); font-weight: 600; font-size: 0.95rem;">${escapeHtml(z.filename)}</div>
+                <div style="color: var(--text-muted); font-size: 0.78rem;">
+                  Batch: <strong>${escapeHtml(z.batch)}</strong> &bull; Size: ${(z.size_bytes / 1024).toFixed(1)} KB ${z.test_count ? '&bull; ' + z.test_count + ' tests' : ''}
+                </div>
+              </div>
+            </div>
+            <a href="/api/quizard/download?file=${encodeURIComponent(z.filename)}" class="btn" style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 0.6rem; font-weight: 600; font-size: 0.85rem; text-decoration: none;">
+              ⬇️ Download ZIP
+            </a>
+          </div>
+        `).join('');
+      } else {
+        qzZipList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No ZIP packages generated.</div>';
+      }
+
+      // Render Test JSON list
+      const jsonFiles = job.json_files || [];
+      if (jsonFiles.length > 0) {
+        qzJsonList.innerHTML = jsonFiles.map(j => `
+          <div class="qz-download-card" style="padding: 0.6rem 0.85rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden;">
+              <span style="font-size: 1.2rem;">📄</span>
+              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <span style="color: var(--text); font-weight: 500; font-size: 0.88rem;">${escapeHtml(j.test || j.filename)}</span>
+                <span style="color: var(--text-muted); font-size: 0.75rem; margin-left: 0.35rem;">(${escapeHtml(j.batch)})</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.4rem; flex-shrink: 0;">
+              <button type="button" class="chip-badge qz-btn-studio-load" data-rel="${escapeHtml(j.rel_path)}" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">
+                🔍 Studio
+              </button>
+              <a href="/api/quizard/download?file=${encodeURIComponent(j.rel_path)}" class="chip-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; text-decoration: none;">
+                ⬇️ JSON
+              </a>
+            </div>
+          </div>
+        `).join('');
+
+        // Wire load to studio
+        document.querySelectorAll('.qz-btn-studio-load').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const relPath = btn.getAttribute('data-rel');
+            btn.textContent = '⏳ Loading...';
+            try {
+              const r = await fetch('/api/quizard/load-to-studio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rel_path: relPath })
+              });
+              const d = await r.json();
+              if (d.error) throw new Error(d.error);
+              window.location.href = '/studio';
+            } catch (err) {
+              alert('Failed to load in studio: ' + err.message);
+              btn.textContent = '🔍 Studio';
+            }
+          });
+        });
+      } else {
+        qzJsonList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No individual test JSON files.</div>';
+      }
     }
   </script>
 </body>

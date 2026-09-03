@@ -18,10 +18,16 @@ import mimetypes
 import os
 import re
 import shutil
+import sys
 import tempfile
 import threading
 import traceback
 import uuid
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -30,17 +36,24 @@ from urllib.parse import parse_qs, unquote, urlparse
 import clean_exporter as CLEAN_EXP
 import cloudinary_service as CLOUD_SRV
 import pipeline as PIPE
+import quizard_extractor as QUIZARD
 
 HERE = Path(__file__).parent
 STATIC_DIR = HERE / "static"
 WORK_DIR = HERE / "workspace"
 WORK_DIR.mkdir(parents=True, exist_ok=True)
+QUIZARD_OUTPUT_DIR = WORK_DIR / "quizard_outputs"
+QUIZARD_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Global active project state
 active_job: Optional[Job] = None
 active_data: Dict[str, Any] = {"metadata": {}, "questions": []}
 active_crops_dir: Path = WORK_DIR / "crops"
 state_lock = threading.Lock()
+
+# Quizard extraction state
+active_quizard_job: Optional[QUIZARD.QuizardJob] = None
+quizard_lock = threading.Lock()
 
 
 class Job:
@@ -205,6 +218,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        global active_job, active_quizard_job
         parsed = urlparse(self.path)
         path = parsed.path
 
@@ -221,7 +235,6 @@ class Handler(BaseHTTPRequestHandler):
                 crop_file = active_crops_dir / rel
             self.serve_file(crop_file)
         elif path == "/api/status":
-            global active_job
             if not active_job:
                 self.send_json({"state": "idle", "message": "No job running"})
                 return
@@ -239,10 +252,58 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/api/data":
             with state_lock:
                 self.send_json(active_data)
+        elif path == "/api/quizard/status":
+            with quizard_lock:
+                if not active_quizard_job:
+                    self.send_json({"state": "idle", "message": "No Quizard job running", "logs": []})
+                    return
+                qs = parse_qs(parsed.query)
+                since_idx = int(qs.get("since", ["0"])[0])
+                res = {
+                    "id": active_quizard_job.id,
+                    "state": active_quizard_job.state,
+                    "message": active_quizard_job.message,
+                    "done": active_quizard_job.done,
+                    "total": active_quizard_job.total,
+                    "active_batch": active_quizard_job.active_batch,
+                    "active_test": active_quizard_job.active_test,
+                    "logs": active_quizard_job.logs[since_idx:],
+                    "log_total": len(active_quizard_job.logs),
+                    "summary": active_quizard_job.summary,
+                    "zip_files": active_quizard_job.zip_files,
+                    "json_files": active_quizard_job.json_files,
+                    "failed_tracker": active_quizard_job.failed_tracker,
+                }
+                self.send_json(res)
+        elif path == "/api/quizard/download":
+            qs = parse_qs(parsed.query)
+            rel_file = qs.get("file", [""])[0]
+            if not rel_file:
+                self.send_error(400, "Missing file parameter")
+                return
+            safe_path = (QUIZARD_OUTPUT_DIR / rel_file).resolve()
+            if not str(safe_path).startswith(str(QUIZARD_OUTPUT_DIR.resolve())):
+                self.send_error(403, "Access Denied")
+                return
+            if not safe_path.is_file():
+                self.send_error(404, "File Not Found")
+                return
+            ctype = "application/zip" if safe_path.suffix.lower() == ".zip" else "application/json"
+            self.serve_file(safe_path, ctype)
+        elif path == "/api/quizard/files":
+            zips = []
+            for z in QUIZARD_OUTPUT_DIR.glob("*.zip"):
+                zips.append({
+                    "filename": z.name,
+                    "size_bytes": z.stat().st_size,
+                    "modified": z.stat().st_mtime
+                })
+            self.send_json({"zips": sorted(zips, key=lambda x: x["modified"], reverse=True)})
         else:
             self.send_error(404, "File Not Found")
 
     def do_POST(self):
+        global active_job, active_quizard_job
         parsed = urlparse(self.path)
         path = parsed.path
         length = int(self.headers.get("Content-Length", 0))
@@ -255,7 +316,6 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({"error": "No PDF file provided"}, code=400)
                 return
 
-            global active_job
             with state_lock:
                 if active_job and active_job.state in ("queued", "running"):
                     self.send_json({"id": active_job.id, "state": active_job.state, "message": "A job is already running"})
@@ -375,6 +435,115 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({"success": True})
             except Exception as e:
                 self.send_json({"error": str(e)}, code=500)
+
+        elif path == "/api/quizard/start":
+            try:
+                payload = json.loads(body.decode("utf-8")) if body else {}
+            except Exception:
+                payload = {}
+            cat = payload.get("category", "").strip()
+            if not cat:
+                self.send_json({"error": "Category name is required"}, code=400)
+                return
+            batches = payload.get("batches", "all").strip()
+            base_url = payload.get("base_url", QUIZARD.DEFAULT_BASE_URL).strip()
+            use_syllabus = bool(payload.get("use_api_syllabus", True))
+            headless = bool(payload.get("headless", True))
+
+            with quizard_lock:
+                if active_quizard_job and active_quizard_job.state in ("queued", "running"):
+                    self.send_json({"id": active_quizard_job.id, "state": active_quizard_job.state, "message": "A Quizard job is already running"})
+                    return
+
+                active_quizard_job = QUIZARD.QuizardJob(
+                    category=cat,
+                    batches=batches,
+                    base_url=base_url,
+                    use_api_syllabus=use_syllabus,
+                    headless=headless,
+                    output_dir=QUIZARD_OUTPUT_DIR
+                )
+                t = threading.Thread(target=active_quizard_job.run, daemon=True)
+                t.start()
+                self.send_json({"id": active_quizard_job.id, "state": "queued"})
+
+        elif path == "/api/quizard/stop":
+            with quizard_lock:
+                if active_quizard_job and active_quizard_job.state in ("queued", "running"):
+                    active_quizard_job.stop()
+                    self.send_json({"success": True, "message": "Stop signal sent"})
+                else:
+                    self.send_json({"success": False, "message": "No active job running"})
+
+        elif path == "/api/quizard/open-folder":
+            try:
+                folder = str(QUIZARD_OUTPUT_DIR.resolve())
+                if os.name == 'nt':
+                    os.startfile(folder)
+                self.send_json({"success": True, "path": folder})
+            except Exception as e:
+                self.send_json({"error": str(e)}, code=500)
+
+        elif path == "/api/quizard/load-to-studio":
+            try:
+                payload = json.loads(body.decode("utf-8")) if body else {}
+                rel_path = payload.get("rel_path", "")
+                json_path = (QUIZARD_OUTPUT_DIR / rel_path).resolve()
+                if not json_path.is_file():
+                    self.send_json({"error": "File not found"}, code=404)
+                    return
+                raw_data = json.loads(json_path.read_text(encoding="utf-8"))
+                flat_questions = []
+                q_seq = 1
+                for sec in raw_data.get("sections", []):
+                    sec_name = sec.get("name", "General")
+                    for q in sec.get("questions", []):
+                        q_id = q.get("id", f"q{q_seq}")
+                        opts = q.get("options", ["A", "B", "C", "D"])
+                        corr = q.get("correct", 0)
+                        img_url = q.get("image_url", "")
+                        q_type = q.get("type", "MCQ")
+                        flat_questions.append({
+                            "id": q_id,
+                            "sequence": q_seq,
+                            "num": q_seq,
+                            "tag": f"q_{q_seq}",
+                            "subject": sec_name,
+                            "topic": raw_data.get("name", "Quizard Test"),
+                            "exercise_key": "quizard_batch",
+                            "exercise_name": sec_name,
+                            "subtopic": q_type,
+                            "prompt": f"[{sec_name}] Question {q_seq} ({q_type})",
+                            "options": opts if isinstance(opts, list) else ["A", "B", "C", "D"],
+                            "correct_index": corr if isinstance(corr, int) else 0,
+                            "solution": "",
+                            "smiles": None,
+                            "has_diagram": bool(img_url),
+                            "mode": "crop" if img_url else "text",
+                            "image_filename": "",
+                            "crop_path": "",
+                            "image_data_uri": img_url,
+                            "cloudinary_url": img_url,
+                            "type": q_type
+                        })
+                        q_seq += 1
+
+                formatted_data = {
+                    "metadata": {
+                        "title": raw_data.get("name", "Quizard Test"),
+                        "id": raw_data.get("id", ""),
+                        "description": raw_data.get("description", ""),
+                        "duration": raw_data.get("duration", 180),
+                        "marking": raw_data.get("marking", {"correct": 4, "incorrect": -1}),
+                        "syllabus": raw_data.get("syllabus", {})
+                    },
+                    "questions": flat_questions
+                }
+                with state_lock:
+                    active_data = formatted_data
+                self.send_json({"success": True, "count": len(flat_questions), "title": raw_data.get("name", "Test")})
+            except Exception as e:
+                self.send_json({"error": f"Failed to load to studio: {e}"}, code=500)
 
         else:
             self.send_error(404, "Endpoint Not Found")
