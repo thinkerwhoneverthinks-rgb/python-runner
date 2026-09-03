@@ -289,7 +289,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_error(404, "File Not Found")
                 return
             ctype = "application/zip" if safe_path.suffix.lower() == ".zip" else "application/json"
-            self.serve_file(safe_path, ctype)
+            self.serve_file(safe_path, forced_type=ctype, download_name=safe_path.name)
         elif path == "/api/quizard/files":
             zips = []
             for z in QUIZARD_OUTPUT_DIR.glob("*.zip"):
@@ -548,7 +548,7 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self.send_error(404, "Endpoint Not Found")
 
-    def serve_file(self, file_path: Path, forced_type: Optional[str] = None):
+    def serve_file(self, file_path: Path, forced_type: Optional[str] = None, download_name: Optional[str] = None):
         if not file_path.is_file():
             self.send_error(404, "File Not Found")
             return
@@ -560,6 +560,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", ctype)
             self.send_header("Content-Length", str(len(content)))
             self.send_header("Access-Control-Allow-Origin", "*")
+            if download_name:
+                safe_name = download_name.replace('"', '').replace('\r', '').replace('\n', '')
+                self.send_header("Content-Disposition", f'attachment; filename="{safe_name}"')
             self.end_headers()
             self.wfile.write(content)
         except Exception as e:

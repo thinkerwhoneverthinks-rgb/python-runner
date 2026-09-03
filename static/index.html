@@ -1534,7 +1534,7 @@ Before outputting, verify:
                 </div>
               </div>
             </div>
-            <a href="/api/quizard/download?file=${encodeURIComponent(z.filename)}" class="btn" style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 0.6rem; font-weight: 600; font-size: 0.85rem; text-decoration: none;">
+            <a href="/api/quizard/download?file=${encodeURIComponent(z.filename)}" download="${escapeHtml(z.filename)}" class="btn" style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 0.6rem; font-weight: 600; font-size: 0.85rem; text-decoration: none;">
               ⬇️ Download ZIP
             </a>
           </div>
@@ -1559,7 +1559,7 @@ Before outputting, verify:
               <button type="button" class="chip-badge qz-btn-studio-load" data-rel="${escapeHtml(j.rel_path)}" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">
                 🔍 Studio
               </button>
-              <a href="/api/quizard/download?file=${encodeURIComponent(j.rel_path)}" class="chip-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; text-decoration: none;">
+              <a href="/api/quizard/download?file=${encodeURIComponent(j.rel_path)}" download="${escapeHtml(j.filename)}" class="chip-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; text-decoration: none;">
                 ⬇️ JSON
               </a>
             </div>
