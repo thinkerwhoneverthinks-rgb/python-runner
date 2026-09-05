@@ -271,10 +271,32 @@
       padding: 1rem;
       text-align: center;
       transition: all 0.2s ease;
+      position: relative;
     }
     .qz-stat-card:hover {
       border-color: rgba(99, 102, 241, 0.4);
       transform: translateY(-2px);
+    }
+    .qz-stat-card.clickable {
+      cursor: pointer;
+      user-select: none;
+    }
+    .qz-stat-card.clickable:hover {
+      border-color: #60a5fa;
+      background: rgba(30, 58, 138, 0.25);
+      box-shadow: 0 8px 25px rgba(96, 165, 250, 0.2);
+      transform: translateY(-3px);
+    }
+    .qz-stat-card.clickable:active {
+      transform: translateY(-1px);
+    }
+    .qz-stat-hint {
+      font-size: 0.7rem;
+      color: #60a5fa;
+      margin-top: 0.25rem;
+      display: inline-block;
+      font-weight: 500;
+      opacity: 0.9;
     }
     .qz-stat-value {
       font-size: 1.8rem;
@@ -304,6 +326,98 @@
     .qz-download-card:hover {
       border-color: rgba(99, 102, 241, 0.4);
       background: rgba(15, 23, 42, 0.8);
+    }
+
+    /* Skipped Modal */
+    .qz-modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(3, 7, 18, 0.82);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 1.5rem;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes modalScaleIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .qz-modal-card {
+      background: #0f172a;
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      border-radius: 1.25rem;
+      width: 100%;
+      max-width: 760px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(96, 165, 250, 0.15);
+      animation: modalScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .qz-modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.95);
+    }
+    .qz-modal-body {
+      padding: 1.25rem 1.5rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .qz-modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.95);
+    }
+    .qz-batch-group {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 0.85rem;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .qz-batch-group-header {
+      padding: 0.75rem 1rem;
+      background: rgba(96, 165, 250, 0.08);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #93c5fd;
+      font-size: 0.92rem;
+    }
+    .qz-skipped-item {
+      padding: 0.65rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background 0.15s ease;
+    }
+    .qz-skipped-item:last-child {
+      border-bottom: none;
+    }
+    .qz-skipped-item:hover {
+      background: rgba(255, 255, 255, 0.03);
     }
   </style>
 </head>
@@ -791,19 +905,44 @@ Before outputting, verify:
             <div class="qz-stat-label">Tests Saved</div>
             <div class="qz-stat-value" id="qz-sum-saved" style="color: #34d399;">0</div>
           </div>
-          <div class="qz-stat-card">
+          <div class="qz-stat-card clickable" id="qz-card-skipped" title="Click to view skipped tests with batch names" role="button" tabindex="0">
             <div class="qz-stat-label">Skipped</div>
             <div class="qz-stat-value" id="qz-sum-skipped" style="color: #60a5fa;">0</div>
+            <span class="qz-stat-hint">👆 Click to view</span>
           </div>
-          <div class="qz-stat-card">
+          <div class="qz-stat-card clickable" id="qz-card-failed" title="Click to view failed tests" role="button" tabindex="0">
             <div class="qz-stat-label">Failed</div>
             <div class="qz-stat-value" id="qz-sum-failed" style="color: #f87171;">0</div>
+            <span class="qz-stat-hint" style="color: #f87171;">👆 Click to view</span>
           </div>
         </div>
 
         <!-- Success Banner -->
         <div id="qz-success-banner" style="display: none; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.25rem; text-align: center; color: #34d399; font-weight: 600;">
           🎉 All tests completed successfully! No errors found.
+        </div>
+
+        <!-- Skipped Tests Callout / Drawer (Expandable) -->
+        <div id="qz-skipped-box" style="display: none; background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="color: #60a5fa; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">
+              <span>⏭️ Skipped Tests (Already on Disk)</span>
+              <span id="qz-skipped-inline-count" class="chip-badge" style="background: rgba(96, 165, 250, 0.2); color: #93c5fd;">0 tests</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" id="qz-btn-open-skipped-modal" class="pill-btn" style="padding: 0.35rem 0.75rem; background: rgba(96, 165, 250, 0.2); color: #93c5fd; border: 1px solid rgba(96, 165, 250, 0.4); border-radius: 0.4rem; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
+                🔍 Detailed View
+              </button>
+              <button type="button" id="qz-btn-copy-skipped" class="pill-btn" style="padding: 0.35rem 0.75rem; background: #3b82f6; color: white; border: none; border-radius: 0.4rem; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
+                📋 Copy Skipped List
+              </button>
+            </div>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.78rem; margin-bottom: 0.6rem;">
+            These tests already exist on disk from previous downloads and were safely skipped without re-crawling.
+          </p>
+          <div id="qz-skipped-list" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #bfdbfe; max-height: 180px; overflow-y: auto;">
+          </div>
         </div>
 
         <!-- Failed Tests Callout -->
@@ -1489,28 +1628,342 @@ Before outputting, verify:
       }
     }
 
+    // Skipped & Failed Interactive Controls
+    const qzCardSkipped = document.getElementById('qz-card-skipped');
+    const qzCardFailed = document.getElementById('qz-card-failed');
+    const qzSkippedBox = document.getElementById('qz-skipped-box');
+    const qzSkippedList = document.getElementById('qz-skipped-list');
+    const qzSkippedInlineCount = document.getElementById('qz-skipped-inline-count');
+    const qzBtnOpenSkippedModal = document.getElementById('qz-btn-open-skipped-modal');
+    const qzBtnCopySkipped = document.getElementById('qz-btn-copy-skipped');
+
+    const qzSkippedModal = document.getElementById('qz-skipped-modal');
+    const qzModalClose = document.getElementById('qz-modal-close');
+    const qzModalDoneBtn = document.getElementById('qz-modal-done-btn');
+    const qzModalSearch = document.getElementById('qz-modal-search');
+    const qzModalBody = document.getElementById('qz-modal-body');
+    const qzModalCopyAll = document.getElementById('qz-modal-copy-all');
+    const qzModalCountBadge = document.getElementById('qz-modal-count-badge');
+
+    let currentSkippedTracker = {};
+    let currentSkippedList = [];
+    let currentFailedTracker = {};
+
+    function openSkippedModal() {
+      if (!qzSkippedModal) return;
+      qzSkippedModal.style.display = 'flex';
+      if (qzModalSearch) {
+        qzModalSearch.value = '';
+        qzModalSearch.focus();
+      }
+      renderSkippedModalBody('');
+    }
+
+    function closeSkippedModal() {
+      if (qzSkippedModal) {
+        qzSkippedModal.style.display = 'none';
+      }
+    }
+
+    if (qzCardSkipped) {
+      qzCardSkipped.addEventListener('click', () => {
+        openSkippedModal();
+      });
+      qzCardSkipped.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openSkippedModal();
+        }
+      });
+    }
+
+    if (qzCardFailed) {
+      qzCardFailed.addEventListener('click', () => {
+        if (qzFailedBox && qzFailedBox.style.display !== 'none') {
+          qzFailedBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          qzFailedBox.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.4)';
+          setTimeout(() => { qzFailedBox.style.boxShadow = 'none'; }, 1500);
+        }
+      });
+    }
+
+    if (qzBtnOpenSkippedModal) {
+      qzBtnOpenSkippedModal.addEventListener('click', openSkippedModal);
+    }
+
+    if (qzModalClose) qzModalClose.addEventListener('click', closeSkippedModal);
+    if (qzModalDoneBtn) qzModalDoneBtn.addEventListener('click', closeSkippedModal);
+
+    if (qzSkippedModal) {
+      qzSkippedModal.addEventListener('click', (e) => {
+        if (e.target === qzSkippedModal) closeSkippedModal();
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && qzSkippedModal && qzSkippedModal.style.display === 'flex') {
+        closeSkippedModal();
+      }
+    });
+
+    if (qzModalSearch) {
+      qzModalSearch.addEventListener('input', (e) => {
+        renderSkippedModalBody(e.target.value.trim().toLowerCase());
+      });
+    }
+
+    function generateSkippedText() {
+      let text = '=== SKIPPED TESTS SUMMARY ===\n';
+      const batches = Object.keys(currentSkippedTracker);
+      if (batches.length === 0 && currentSkippedList.length > 0) {
+        currentSkippedList.forEach(item => {
+          text += `Batch: ${item.batch} | Test: ${item.test}\n`;
+        });
+      } else {
+        batches.forEach(b => {
+          text += `\n[Batch: ${b}]\n`;
+          (currentSkippedTracker[b] || []).forEach(t => {
+            text += `  - ${t}\n`;
+          });
+        });
+      }
+      return text.trim();
+    }
+
+    if (qzBtnCopySkipped) {
+      qzBtnCopySkipped.addEventListener('click', () => {
+        const text = generateSkippedText();
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+          const orig = qzBtnCopySkipped.textContent;
+          qzBtnCopySkipped.textContent = '✅ Copied!';
+          setTimeout(() => { qzBtnCopySkipped.textContent = orig; }, 1800);
+        });
+      });
+    }
+
+    if (qzModalCopyAll) {
+      qzModalCopyAll.addEventListener('click', () => {
+        const text = generateSkippedText();
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+          const orig = qzModalCopyAll.textContent;
+          qzModalCopyAll.textContent = '✅ Copied to Clipboard!';
+          setTimeout(() => { qzModalCopyAll.textContent = orig; }, 1800);
+        });
+      });
+    }
+
+    function renderSkippedModalBody(filterQuery = '') {
+      if (!qzModalBody) return;
+      const batches = Object.keys(currentSkippedTracker);
+
+      let totalVisible = 0;
+      let html = '';
+
+      if (batches.length === 0 && currentSkippedList.length === 0) {
+        qzModalBody.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 2.5rem 1rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎉</div>
+            <div style="font-weight: 600; color: var(--text);">No skipped tests in this run!</div>
+            <div style="font-size: 0.85rem; margin-top: 0.25rem;">Every test was extracted fresh or queue is empty.</div>
+          </div>
+        `;
+        if (qzModalCountBadge) qzModalCountBadge.textContent = '0 Tests Skipped';
+        return;
+      }
+
+      // Group by batch
+      const grouped = {};
+      if (batches.length > 0) {
+        batches.forEach(b => {
+          grouped[b] = currentSkippedTracker[b] || [];
+        });
+      } else {
+        currentSkippedList.forEach(item => {
+          if (!grouped[item.batch]) grouped[item.batch] = [];
+          grouped[item.batch].push(item.test);
+        });
+      }
+
+      for (const [batchName, tests] of Object.entries(grouped)) {
+        const matchedTests = tests.filter(t => {
+          if (!filterQuery) return true;
+          return batchName.toLowerCase().includes(filterQuery) || t.toLowerCase().includes(filterQuery);
+        });
+
+        if (matchedTests.length === 0) continue;
+
+        totalVisible += matchedTests.length;
+
+        const safeBatch = batchName.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        html += `
+          <div class="qz-batch-group">
+            <div class="qz-batch-group-header">
+              <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden; text-overflow: ellipsis;">
+                <span>📁</span>
+                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(batchName)}</span>
+              </div>
+              <span class="chip-badge" style="background: rgba(96, 165, 250, 0.2); color: #93c5fd; font-size: 0.75rem; flex-shrink: 0;">
+                ${matchedTests.length} skipped
+              </span>
+            </div>
+            <div>
+              ${matchedTests.map(testName => {
+                const safeTest = testName.replace(/[^a-zA-Z0-9_-]/g, '_');
+                const relPath = `${safeBatch}/${safeTest}.json`;
+                return `
+                  <div class="qz-skipped-item">
+                    <div style="display: flex; align-items: center; gap: 0.6rem; min-width: 0; flex: 1; padding-right: 0.5rem;">
+                      <span style="color: #60a5fa; font-size: 0.95rem;">⏭️</span>
+                      <div style="min-width: 0;">
+                        <div style="color: var(--text); font-weight: 500; font-size: 0.88rem; word-break: break-word;">${escapeHtml(testName)}</div>
+                        <div style="color: var(--text-muted); font-size: 0.74rem;">Status: <span style="color: #93c5fd;">Already saved on disk</span></div>
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 0.35rem; flex-shrink: 0;">
+                      <button type="button" class="chip-badge qz-btn-copy-single" data-name="${escapeHtml(testName)}" title="Copy test name" style="background: rgba(255, 255, 255, 0.08); color: var(--text-secondary);">
+                        📋 Copy
+                      </button>
+                      <button type="button" class="chip-badge qz-btn-studio-load" data-rel="${escapeHtml(relPath)}" title="Open in Studio" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">
+                        🔍 Studio
+                      </button>
+                      <a href="/api/quizard/download?file=${encodeURIComponent(relPath)}" download="${escapeHtml(safeTest)}.json" class="chip-badge" title="Download JSON" style="background: rgba(16, 185, 129, 0.2); color: #34d399; text-decoration: none;">
+                        ⬇️ JSON
+                      </a>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      if (totalVisible === 0) {
+        qzModalBody.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 2rem 1rem;">
+            🔍 No skipped tests match "<strong>${escapeHtml(filterQuery)}</strong>"
+          </div>
+        `;
+      } else {
+        qzModalBody.innerHTML = html;
+      }
+
+      if (qzModalCountBadge) {
+        qzModalCountBadge.textContent = `${totalVisible} Tests Displayed`;
+      }
+
+      // Wire copy single button
+      qzModalBody.querySelectorAll('.qz-btn-copy-single').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const name = btn.getAttribute('data-name');
+          if (!name) return;
+          navigator.clipboard.writeText(name).then(() => {
+            const orig = btn.textContent;
+            btn.textContent = '✅';
+            setTimeout(() => { btn.textContent = orig; }, 1200);
+          });
+        });
+      });
+
+      // Wire studio load buttons
+      qzModalBody.querySelectorAll('.qz-btn-studio-load').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const relPath = btn.getAttribute('data-rel');
+          btn.textContent = '⏳';
+          try {
+            const r = await fetch('/api/quizard/load-to-studio', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ rel_path: relPath })
+            });
+            const d = await r.json();
+            if (d.error) throw new Error(d.error);
+            window.location.href = '/studio';
+          } catch (err) {
+            alert('Failed to load in studio: ' + err.message);
+            btn.textContent = '🔍 Studio';
+          }
+        });
+      });
+    }
+
     function renderQuizardSummary(job) {
       qzSummarySection.style.display = 'block';
       const sum = job.summary || {};
 
-      qzSumBatches.textContent = sum.batches_processed || (job.zip_files ? job.zip_files.length : 0);
-      qzSumSaved.textContent = sum.total_saved || 0;
-      qzSumSkipped.textContent = sum.total_skipped || 0;
-      qzSumFailed.textContent = sum.total_failed || 0;
+      const batchesProcessed = sum.batches_processed || (job.zip_files ? job.zip_files.length : 0);
+      const totalSaved = sum.total_saved || 0;
+      const totalSkipped = sum.total_skipped || 0;
+      const totalFailed = sum.total_failed || 0;
+
+      qzSumBatches.textContent = batchesProcessed;
+      qzSumSaved.textContent = totalSaved;
+      qzSumSkipped.textContent = totalSkipped;
+      qzSumFailed.textContent = totalFailed;
+
+      // Extract and cache skipped tracker
+      currentSkippedTracker = job.skipped_tracker || sum.skipped_tracker || {};
+      currentSkippedList = job.skipped_list || sum.skipped_list || [];
+
+      // Fallback: If total_skipped > 0 but tracker empty, parse from job logs
+      if (totalSkipped > 0 && Object.keys(currentSkippedTracker).length === 0 && currentSkippedList.length === 0 && job.logs) {
+        let activeBatchFallback = 'General Batch';
+        job.logs.forEach(l => {
+          const bMatch = l.msg.match(/STARTING BATCH \[\d+\/\d+\]: '([^']+)'/i);
+          if (bMatch) activeBatchFallback = bMatch[1];
+          const skipMatch = l.msg.match(/Skipping:\s+(.+?)\s+\(File already exists\)/i);
+          if (skipMatch) {
+            const testTitle = skipMatch[1].trim();
+            if (!currentSkippedTracker[activeBatchFallback]) currentSkippedTracker[activeBatchFallback] = [];
+            if (!currentSkippedTracker[activeBatchFallback].includes(testTitle)) {
+              currentSkippedTracker[activeBatchFallback].push(testTitle);
+            }
+          }
+        });
+      }
+
+      // Render Inline Skipped Box
+      const skippedBatches = Object.keys(currentSkippedTracker);
+      const totalSkippedCount = skippedBatches.reduce((acc, b) => acc + currentSkippedTracker[b].length, 0) || currentSkippedList.length || totalSkipped;
+
+      if (totalSkippedCount > 0 && (skippedBatches.length > 0 || currentSkippedList.length > 0)) {
+        qzSkippedBox.style.display = 'block';
+        qzSkippedInlineCount.textContent = `${totalSkippedCount} tests`;
+        let skipHtml = '';
+        if (skippedBatches.length > 0) {
+          for (const [batch, tests] of Object.entries(currentSkippedTracker)) {
+            skipHtml += `<div style="margin-bottom: 0.5rem;"><strong style="color: #93c5fd;">📁 Batch: ${escapeHtml(batch)}</strong> (${tests.length} tests)<br />`;
+            tests.forEach(t => {
+              skipHtml += `&nbsp;&nbsp;⏭️ <span style="color: var(--text);">${escapeHtml(t)}</span><br />`;
+            });
+            skipHtml += '</div>';
+          }
+        } else {
+          currentSkippedList.forEach(item => {
+            skipHtml += `&nbsp;&nbsp;⏭️ <strong style="color: #93c5fd;">${escapeHtml(item.batch)}:</strong> <span style="color: var(--text);">${escapeHtml(item.test)}</span><br />`;
+          });
+        }
+        qzSkippedList.innerHTML = skipHtml;
+      } else {
+        qzSkippedBox.style.display = 'none';
+      }
 
       // Failed tracker
-      const failedTracker = job.failed_tracker || sum.failed_tracker || {};
-      const failedKeys = Object.keys(failedTracker);
+      currentFailedTracker = job.failed_tracker || sum.failed_tracker || {};
+      const failedKeys = Object.keys(currentFailedTracker);
       failedBatchesRetryStr = sum.failed_batches_string || failedKeys.join(', ');
 
       if (failedKeys.length > 0) {
         qzSuccessBanner.style.display = 'none';
         qzFailedBox.style.display = 'block';
         let failHtml = '';
-        for (const [batch, tests] of Object.entries(failedTracker)) {
-          failHtml += `<div style="margin-bottom: 0.35rem;"><strong>Batch: ${escapeHtml(batch)}</strong><br />`;
+        for (const [batch, tests] of Object.entries(currentFailedTracker)) {
+          failHtml += `<div style="margin-bottom: 0.35rem;"><strong style="color: #fca5a5;">📁 Batch: ${escapeHtml(batch)}</strong><br />`;
           tests.forEach(t => {
-            failHtml += `&nbsp;&nbsp;❌ ${escapeHtml(t)}<br />`;
+            failHtml += `&nbsp;&nbsp;❌ <span style="color: var(--text);">${escapeHtml(t)}</span><br />`;
           });
           failHtml += '</div>';
         }
@@ -1591,5 +2044,53 @@ Before outputting, verify:
       }
     }
   </script>
+
+  <!-- Skipped Tests Interactive Modal -->
+  <div id="qz-skipped-modal" class="qz-modal-backdrop">
+    <div class="qz-modal-card">
+      <div class="qz-modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="font-size: 1.4rem;">⏭️</span>
+          <div>
+            <h3 style="color: var(--text); font-size: 1.15rem; font-weight: 700; margin: 0;">
+              Skipped Tests
+            </h3>
+            <span id="qz-modal-count-badge" class="hero-badge" style="margin-bottom: 0; padding: 0.15rem 0.55rem; font-size: 0.72rem; background: rgba(96, 165, 250, 0.15); color: #93c5fd; border-color: rgba(96, 165, 250, 0.3);">
+              0 Tests Skipped
+            </span>
+          </div>
+        </div>
+        <button type="button" id="qz-modal-close" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0.2rem 0.5rem; border-radius: 0.4rem;">
+          &times;
+        </button>
+      </div>
+
+      <!-- Info Banner & Search Filter -->
+      <div style="padding: 1rem 1.5rem 0.5rem 1.5rem; background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid var(--border);">
+        <div style="background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.2); border-radius: 0.6rem; padding: 0.65rem 0.85rem; margin-bottom: 0.75rem; font-size: 0.8rem; color: #cbd5e1;">
+          💡 <strong>Why are tests skipped?</strong> These test JSON files were already found on disk in your output directory from a previous extraction. They were skipped to prevent duplicate work.
+        </div>
+        <div style="position: relative;">
+          <input type="text" id="qz-modal-search" class="form-input" placeholder="🔍 Search skipped tests or batch names..." style="padding-left: 2.2rem; font-size: 0.88rem; padding-top: 0.6rem; padding-bottom: 0.6rem;">
+          <span style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; font-size: 0.9rem;">🔎</span>
+        </div>
+      </div>
+
+      <!-- Modal Body (Grouped Tests) -->
+      <div class="qz-modal-body" id="qz-modal-body">
+        <div style="text-align: center; color: var(--text-muted); padding: 2rem;">No skipped tests to display.</div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="qz-modal-footer">
+        <button type="button" id="qz-modal-copy-all" class="btn" style="background: rgba(96, 165, 250, 0.15); color: #93c5fd; border: 1px solid rgba(96, 165, 250, 0.3); font-size: 0.82rem; padding: 0.45rem 0.85rem;">
+          📋 Copy All Skipped Tests
+        </button>
+        <button type="button" id="qz-modal-done-btn" class="btn btn-primary" style="font-size: 0.82rem; padding: 0.45rem 1.25rem;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

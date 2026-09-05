@@ -266,6 +266,8 @@ class QuizardJob:
 
         self.logs: List[Dict[str, str]] = []
         self.failed_tracker: Dict[str, List[str]] = {}
+        self.skipped_tracker: Dict[str, List[str]] = {}
+        self.skipped_list: List[Dict[str, Any]] = []
         self.zip_files: List[Dict[str, Any]] = []
         self.json_files: List[Dict[str, Any]] = []
         self.summary: Dict[str, Any] = {}
@@ -462,6 +464,17 @@ class QuizardJob:
                             if json_path.exists():
                                 self.log(f"   ⏭️ Skipping: {raw_test_name} (File already exists) ({i + 1}/{test_count})", level="info")
                                 total_skipped_count += 1
+                                if current_batch not in self.skipped_tracker:
+                                    self.skipped_tracker[current_batch] = []
+                                self.skipped_tracker[current_batch].append(raw_test_name)
+                                self.skipped_list.append({
+                                    "batch": current_batch,
+                                    "test": raw_test_name,
+                                    "filename": file_name,
+                                    "rel_path": f"{safe_batch_name}/{file_name}",
+                                    "size_bytes": json_path.stat().st_size,
+                                    "reason": "File already exists in output directory"
+                                })
                                 self.json_files.append({
                                     "batch": current_batch,
                                     "test": raw_test_name,
@@ -612,6 +625,8 @@ class QuizardJob:
                 "total_saved": total_saved_count,
                 "total_skipped": total_skipped_count,
                 "total_failed": total_failed_tests,
+                "skipped_tracker": self.skipped_tracker,
+                "skipped_list": self.skipped_list,
                 "failed_tracker": self.failed_tracker,
                 "failed_batches_string": failed_batches_str,
                 "elapsed_seconds": elapsed_sec,

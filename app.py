@@ -273,6 +273,8 @@ class Handler(BaseHTTPRequestHandler):
                     "zip_files": active_quizard_job.zip_files,
                     "json_files": active_quizard_job.json_files,
                     "failed_tracker": active_quizard_job.failed_tracker,
+                    "skipped_tracker": getattr(active_quizard_job, "skipped_tracker", {}),
+                    "skipped_list": getattr(active_quizard_job, "skipped_list", []),
                 }
                 self.send_json(res)
         elif path == "/api/quizard/download":
