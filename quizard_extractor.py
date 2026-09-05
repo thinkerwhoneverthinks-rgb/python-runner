@@ -268,6 +268,8 @@ class QuizardJob:
         self.failed_tracker: Dict[str, List[str]] = {}
         self.skipped_tracker: Dict[str, List[str]] = {}
         self.skipped_list: List[Dict[str, Any]] = []
+        self.duplicate_tracker: Dict[str, List[Dict[str, Any]]] = {}
+        self.duplicate_list: List[Dict[str, Any]] = []
         self.zip_files: List[Dict[str, Any]] = []
         self.json_files: List[Dict[str, Any]] = []
         self.summary: Dict[str, Any] = {}
@@ -305,6 +307,7 @@ class QuizardJob:
 
         total_saved_count = 0
         total_skipped_count = 0
+        total_duplicates_count = 0
         total_tests_processed = 0
 
         try:
@@ -447,6 +450,8 @@ class QuizardJob:
                         test_count = start_buttons.count()
                         self.log(f"📋 Found {test_count} tests in batch '{current_batch}'.")
 
+                        batch_seen_titles: Dict[str, int] = {}
+
                         for i in range(test_count):
                             if self.stop_requested:
                                 break
@@ -458,31 +463,51 @@ class QuizardJob:
                             self.active_test = raw_test_name
                             total_tests_processed += 1
 
-                            file_name = f"{sanitize_filename(raw_test_name)}.json"
+                            base_clean_name = sanitize_filename(raw_test_name)
+                            is_duplicate = False
+                            dup_index = 1
+
+                            # Handle tests with same name: DO NOT skip! Extract both!
+                            if raw_test_name in batch_seen_titles:
+                                batch_seen_titles[raw_test_name] += 1
+                                dup_index = batch_seen_titles[raw_test_name]
+                                file_name = f"{base_clean_name}_{dup_index}.json"
+                                while (batch_dir / file_name).exists():
+                                    dup_index += 1
+                                    file_name = f"{base_clean_name}_{dup_index}.json"
+                                is_duplicate = True
+                            elif (batch_dir / f"{base_clean_name}.json").exists():
+                                batch_seen_titles[raw_test_name] = 2
+                                dup_index = 2
+                                file_name = f"{base_clean_name}_{dup_index}.json"
+                                while (batch_dir / file_name).exists():
+                                    dup_index += 1
+                                    file_name = f"{base_clean_name}_{dup_index}.json"
+                                is_duplicate = True
+                            else:
+                                batch_seen_titles[raw_test_name] = 1
+                                file_name = f"{base_clean_name}.json"
+
                             json_path = batch_dir / file_name
 
-                            if json_path.exists():
-                                self.log(f"   ⏭️ Skipping: {raw_test_name} (File already exists) ({i + 1}/{test_count})", level="info")
-                                total_skipped_count += 1
-                                if current_batch not in self.skipped_tracker:
-                                    self.skipped_tracker[current_batch] = []
-                                self.skipped_tracker[current_batch].append(raw_test_name)
-                                self.skipped_list.append({
+                            if is_duplicate:
+                                total_duplicates_count += 1
+                                self.log(f"   📑 Duplicate test name: '{raw_test_name}' in batch '{current_batch}'. Extracting BOTH -> saving as '{file_name}' ({i + 1}/{test_count})", level="warning")
+                                if current_batch not in self.duplicate_tracker:
+                                    self.duplicate_tracker[current_batch] = []
+                                self.duplicate_tracker[current_batch].append({
+                                    "test": raw_test_name,
+                                    "saved_as": file_name,
+                                    "copy_index": dup_index
+                                })
+                                self.duplicate_list.append({
                                     "batch": current_batch,
                                     "test": raw_test_name,
+                                    "saved_as": file_name,
                                     "filename": file_name,
                                     "rel_path": f"{safe_batch_name}/{file_name}",
-                                    "size_bytes": json_path.stat().st_size,
-                                    "reason": "File already exists in output directory"
+                                    "reason": f"Duplicate test name in same batch (saved as {file_name})"
                                 })
-                                self.json_files.append({
-                                    "batch": current_batch,
-                                    "test": raw_test_name,
-                                    "filename": file_name,
-                                    "rel_path": f"{safe_batch_name}/{file_name}",
-                                    "size_bytes": json_path.stat().st_size
-                                })
-                                continue
 
                             max_attempts = 3
                             json_saved = False
@@ -493,11 +518,11 @@ class QuizardJob:
                                     break
                                 attempt += 1
                                 try:
-                                    self.log(f"   ⚙️ Processing Test: {raw_test_name} ({i + 1}/{test_count})")
+                                    self.log(f"   ⚙️ Processing Test: {raw_test_name} ({i + 1}/{test_count})" + (f" [Duplicate Copy #{dup_index}]" if is_duplicate else ""))
                                     self.progress(
                                         b_idx - 1,
                                         batch_total,
-                                        f"[{b_idx}/{batch_total}] Test {i + 1}/{test_count}: {raw_test_name}",
+                                        f"[{b_idx}/{batch_total}] Test {i + 1}/{test_count}: {raw_test_name}" + (f" (#{dup_index})" if is_duplicate else ""),
                                         active_batch=current_batch,
                                         active_test=raw_test_name
                                     )
@@ -509,7 +534,8 @@ class QuizardJob:
                                         else:
                                             syllabus_text = "Syllabus not available (No IDs found on page)"
 
-                                    test_id = generate_id_slug(current_id_prefix, raw_test_name)
+                                    test_slug_name = f"{raw_test_name}_{dup_index}" if is_duplicate else raw_test_name
+                                    test_id = generate_id_slug(current_id_prefix, test_slug_name)
                                     duration = 60 if "short" in raw_test_name.lower() else 180
 
                                     buttons = page.locator('button:has-text("Start Test")')
@@ -556,9 +582,10 @@ class QuizardJob:
                                     json_saved = True
                                     total_saved_count += 1
                                     self.log(f"      ✅ Saved JSON: {file_name}", level="success")
+                                    display_test_name = f"{raw_test_name} (Copy {dup_index})" if is_duplicate else raw_test_name
                                     self.json_files.append({
                                         "batch": current_batch,
-                                        "test": raw_test_name,
+                                        "test": display_test_name,
                                         "filename": file_name,
                                         "rel_path": f"{safe_batch_name}/{file_name}",
                                         "size_bytes": json_path.stat().st_size
@@ -623,8 +650,11 @@ class QuizardJob:
             self.summary = {
                 "batches_processed": len(batches_to_process),
                 "total_saved": total_saved_count,
+                "total_duplicates": total_duplicates_count,
                 "total_skipped": total_skipped_count,
                 "total_failed": total_failed_tests,
+                "duplicate_tracker": self.duplicate_tracker,
+                "duplicate_list": self.duplicate_list,
                 "skipped_tracker": self.skipped_tracker,
                 "skipped_list": self.skipped_list,
                 "failed_tracker": self.failed_tracker,
@@ -638,7 +668,7 @@ class QuizardJob:
             self.progress(batch_total, batch_total, "Extraction completed successfully!")
             self.log("=======================================================", level="batch")
             self.log(f"🏁 EXECUTION FINISHED in {elapsed_sec}s!", level="success")
-            self.log(f"✅ Saved: {total_saved_count} | ⏭️ Skipped: {total_skipped_count} | ❌ Failed: {total_failed_tests}")
+            self.log(f"✅ Saved: {total_saved_count} | 📑 Duplicates Saved: {total_duplicates_count} | ⏭️ Skipped: {total_skipped_count} | ❌ Failed: {total_failed_tests}")
             if self.failed_tracker:
                 self.log(f"⚠️ Failed batches retry list: {failed_batches_str}", level="warning")
             self.log("=======================================================", level="batch")

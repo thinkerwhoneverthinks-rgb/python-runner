@@ -905,8 +905,8 @@ Before outputting, verify:
             <div class="qz-stat-label">Tests Saved</div>
             <div class="qz-stat-value" id="qz-sum-saved" style="color: #34d399;">0</div>
           </div>
-          <div class="qz-stat-card clickable" id="qz-card-skipped" title="Click to view skipped tests with batch names" role="button" tabindex="0">
-            <div class="qz-stat-label">Skipped</div>
+          <div class="qz-stat-card clickable" id="qz-card-skipped" title="Click to view duplicate tests with batch names" role="button" tabindex="0">
+            <div class="qz-stat-label" id="qz-stat-3-label">Duplicates</div>
             <div class="qz-stat-value" id="qz-sum-skipped" style="color: #60a5fa;">0</div>
             <span class="qz-stat-hint">👆 Click to view</span>
           </div>
@@ -922,11 +922,11 @@ Before outputting, verify:
           🎉 All tests completed successfully! No errors found.
         </div>
 
-        <!-- Skipped Tests Callout / Drawer (Expandable) -->
+        <!-- Duplicates & Skipped Tests Callout / Drawer (Expandable) -->
         <div id="qz-skipped-box" style="display: none; background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.25rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
             <div style="color: #60a5fa; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">
-              <span>⏭️ Skipped Tests (Already on Disk)</span>
+              <span>📑 Duplicate Tests Handled (Both Copies Extracted &amp; Saved)</span>
               <span id="qz-skipped-inline-count" class="chip-badge" style="background: rgba(96, 165, 250, 0.2); color: #93c5fd;">0 tests</span>
             </div>
             <div style="display: flex; gap: 0.5rem;">
@@ -934,12 +934,12 @@ Before outputting, verify:
                 🔍 Detailed View
               </button>
               <button type="button" id="qz-btn-copy-skipped" class="pill-btn" style="padding: 0.35rem 0.75rem; background: #3b82f6; color: white; border: none; border-radius: 0.4rem; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
-                📋 Copy Skipped List
+                📋 Copy Duplicates List
               </button>
             </div>
           </div>
           <p style="color: var(--text-muted); font-size: 0.78rem; margin-bottom: 0.6rem;">
-            These tests already exist on disk from previous downloads and were safely skipped without re-crawling.
+            These tests shared identical names within the same batch. Neither test was skipped—both were fully extracted and saved with distinct filenames (e.g. <code>_2.json</code>).
           </p>
           <div id="qz-skipped-list" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #bfdbfe; max-height: 180px; overflow-y: auto;">
           </div>
@@ -1628,8 +1628,9 @@ Before outputting, verify:
       }
     }
 
-    // Skipped & Failed Interactive Controls
+    // Skipped & Duplicate Interactive Controls
     const qzCardSkipped = document.getElementById('qz-card-skipped');
+    const qzStat3Label = document.getElementById('qz-stat-3-label');
     const qzCardFailed = document.getElementById('qz-card-failed');
     const qzSkippedBox = document.getElementById('qz-skipped-box');
     const qzSkippedList = document.getElementById('qz-skipped-list');
@@ -1645,6 +1646,8 @@ Before outputting, verify:
     const qzModalCopyAll = document.getElementById('qz-modal-copy-all');
     const qzModalCountBadge = document.getElementById('qz-modal-count-badge');
 
+    let currentDuplicateTracker = {};
+    let currentDuplicateList = [];
     let currentSkippedTracker = {};
     let currentSkippedList = [];
     let currentFailedTracker = {};
@@ -1712,16 +1715,31 @@ Before outputting, verify:
       });
     }
 
-    function generateSkippedText() {
-      let text = '=== SKIPPED TESTS SUMMARY ===\n';
-      const batches = Object.keys(currentSkippedTracker);
-      if (batches.length === 0 && currentSkippedList.length > 0) {
-        currentSkippedList.forEach(item => {
-          text += `Batch: ${item.batch} | Test: ${item.test}\n`;
+    function generateDuplicateText() {
+      let text = '=== DUPLICATE & SKIPPED TESTS SUMMARY ===\n';
+      const dupBatches = Object.keys(currentDuplicateTracker);
+      if (dupBatches.length > 0) {
+        text += '\n[DUPLICATE TESTS (BOTH COPIES EXTRACTED & SAVED)]\n';
+        dupBatches.forEach(b => {
+          text += `\nBatch: ${b}\n`;
+          (currentDuplicateTracker[b] || []).forEach(item => {
+            const testName = typeof item === 'string' ? item : (item.test || item.name);
+            const savedAs = item.saved_as ? ` -> Saved as: ${item.saved_as}` : '';
+            text += `  - ${testName}${savedAs}\n`;
+          });
         });
-      } else {
-        batches.forEach(b => {
-          text += `\n[Batch: ${b}]\n`;
+      } else if (currentDuplicateList.length > 0) {
+        text += '\n[DUPLICATE TESTS]\n';
+        currentDuplicateList.forEach(item => {
+          text += `Batch: ${item.batch} | Test: ${item.test} -> Saved as: ${item.saved_as || item.filename}\n`;
+        });
+      }
+
+      const skipBatches = Object.keys(currentSkippedTracker);
+      if (skipBatches.length > 0) {
+        text += '\n[SKIPPED TESTS]\n';
+        skipBatches.forEach(b => {
+          text += `\nBatch: ${b}\n`;
           (currentSkippedTracker[b] || []).forEach(t => {
             text += `  - ${t}\n`;
           });
@@ -1732,7 +1750,7 @@ Before outputting, verify:
 
     if (qzBtnCopySkipped) {
       qzBtnCopySkipped.addEventListener('click', () => {
-        const text = generateSkippedText();
+        const text = generateDuplicateText();
         if (!text) return;
         navigator.clipboard.writeText(text).then(() => {
           const orig = qzBtnCopySkipped.textContent;
@@ -1744,7 +1762,7 @@ Before outputting, verify:
 
     if (qzModalCopyAll) {
       qzModalCopyAll.addEventListener('click', () => {
-        const text = generateSkippedText();
+        const text = generateDuplicateText();
         if (!text) return;
         navigator.clipboard.writeText(text).then(() => {
           const orig = qzModalCopyAll.textContent;
@@ -1756,46 +1774,72 @@ Before outputting, verify:
 
     function renderSkippedModalBody(filterQuery = '') {
       if (!qzModalBody) return;
-      const batches = Object.keys(currentSkippedTracker);
+
+      const dupBatches = Object.keys(currentDuplicateTracker);
+      const skipBatches = Object.keys(currentSkippedTracker);
+
+      if (dupBatches.length === 0 && currentDuplicateList.length === 0 && skipBatches.length === 0 && currentSkippedList.length === 0) {
+        qzModalBody.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 2.5rem 1rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎉</div>
+            <div style="font-weight: 600; color: var(--text);">No duplicate tests encountered!</div>
+            <div style="font-size: 0.85rem; margin-top: 0.25rem;">All tests in this run had unique names and were extracted successfully.</div>
+          </div>
+        `;
+        if (qzModalCountBadge) qzModalCountBadge.textContent = '0 Duplicates';
+        return;
+      }
 
       let totalVisible = 0;
       let html = '';
 
-      if (batches.length === 0 && currentSkippedList.length === 0) {
-        qzModalBody.innerHTML = `
-          <div style="text-align: center; color: var(--text-muted); padding: 2.5rem 1rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎉</div>
-            <div style="font-weight: 600; color: var(--text);">No skipped tests in this run!</div>
-            <div style="font-size: 0.85rem; margin-top: 0.25rem;">Every test was extracted fresh or queue is empty.</div>
-          </div>
-        `;
-        if (qzModalCountBadge) qzModalCountBadge.textContent = '0 Tests Skipped';
-        return;
+      // Build unified grouped map: batch -> items
+      const grouped = {};
+
+      // 1. Process duplicates
+      if (dupBatches.length > 0) {
+        dupBatches.forEach(b => {
+          if (!grouped[b]) grouped[b] = [];
+          (currentDuplicateTracker[b] || []).forEach(item => {
+            if (typeof item === 'string') {
+              grouped[b].push({ test: item, saved_as: `${item}_2.json`, type: 'duplicate' });
+            } else {
+              grouped[b].push({ ...item, type: 'duplicate' });
+            }
+          });
+        });
+      } else {
+        currentDuplicateList.forEach(item => {
+          if (!grouped[item.batch]) grouped[item.batch] = [];
+          grouped[item.batch].push({ ...item, type: 'duplicate' });
+        });
       }
 
-      // Group by batch
-      const grouped = {};
-      if (batches.length > 0) {
-        batches.forEach(b => {
-          grouped[b] = currentSkippedTracker[b] || [];
+      // 2. Process any skipped
+      if (skipBatches.length > 0) {
+        skipBatches.forEach(b => {
+          if (!grouped[b]) grouped[b] = [];
+          (currentSkippedTracker[b] || []).forEach(t => {
+            grouped[b].push({ test: t, type: 'skipped' });
+          });
         });
       } else {
         currentSkippedList.forEach(item => {
           if (!grouped[item.batch]) grouped[item.batch] = [];
-          grouped[item.batch].push(item.test);
+          grouped[item.batch].push({ ...item, type: 'skipped' });
         });
       }
 
-      for (const [batchName, tests] of Object.entries(grouped)) {
-        const matchedTests = tests.filter(t => {
+      for (const [batchName, items] of Object.entries(grouped)) {
+        const matchedItems = items.filter(it => {
           if (!filterQuery) return true;
-          return batchName.toLowerCase().includes(filterQuery) || t.toLowerCase().includes(filterQuery);
+          const tName = it.test || it.filename || '';
+          return batchName.toLowerCase().includes(filterQuery) || tName.toLowerCase().includes(filterQuery);
         });
 
-        if (matchedTests.length === 0) continue;
+        if (matchedItems.length === 0) continue;
 
-        totalVisible += matchedTests.length;
-
+        totalVisible += matchedItems.length;
         const safeBatch = batchName.replace(/[^a-zA-Z0-9_-]/g, '_');
 
         html += `
@@ -1806,20 +1850,28 @@ Before outputting, verify:
                 <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(batchName)}</span>
               </div>
               <span class="chip-badge" style="background: rgba(96, 165, 250, 0.2); color: #93c5fd; font-size: 0.75rem; flex-shrink: 0;">
-                ${matchedTests.length} skipped
+                ${matchedItems.length} duplicate${matchedItems.length > 1 ? 's' : ''}
               </span>
             </div>
             <div>
-              ${matchedTests.map(testName => {
-                const safeTest = testName.replace(/[^a-zA-Z0-9_-]/g, '_');
-                const relPath = `${safeBatch}/${safeTest}.json`;
+              ${matchedItems.map(item => {
+                const testName = item.test || 'Test';
+                const savedFile = item.saved_as || item.filename || `${testName}_2.json`;
+                const safeSaved = savedFile.replace(/\.json$/i, '');
+                const relPath = `${safeBatch}/${savedFile}`;
+                const isDup = item.type !== 'skipped';
+
                 return `
                   <div class="qz-skipped-item">
                     <div style="display: flex; align-items: center; gap: 0.6rem; min-width: 0; flex: 1; padding-right: 0.5rem;">
-                      <span style="color: #60a5fa; font-size: 0.95rem;">⏭️</span>
+                      <span style="color: ${isDup ? '#38bdf8' : '#60a5fa'}; font-size: 0.95rem;">${isDup ? '📑' : '⏭️'}</span>
                       <div style="min-width: 0;">
                         <div style="color: var(--text); font-weight: 500; font-size: 0.88rem; word-break: break-word;">${escapeHtml(testName)}</div>
-                        <div style="color: var(--text-muted); font-size: 0.74rem;">Status: <span style="color: #93c5fd;">Already saved on disk</span></div>
+                        <div style="color: var(--text-muted); font-size: 0.74rem;">
+                          ${isDup 
+                            ? `<span style="color: #34d399; font-weight: 500;">✅ Both Saved</span> &bull; Output: <code style="color: #93c5fd;">${escapeHtml(savedFile)}</code>`
+                            : `<span style="color: #60a5fa;">Skipped (already on disk)</span>`}
+                        </div>
                       </div>
                     </div>
                     <div style="display: flex; gap: 0.35rem; flex-shrink: 0;">
@@ -1829,7 +1881,7 @@ Before outputting, verify:
                       <button type="button" class="chip-badge qz-btn-studio-load" data-rel="${escapeHtml(relPath)}" title="Open in Studio" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">
                         🔍 Studio
                       </button>
-                      <a href="/api/quizard/download?file=${encodeURIComponent(relPath)}" download="${escapeHtml(safeTest)}.json" class="chip-badge" title="Download JSON" style="background: rgba(16, 185, 129, 0.2); color: #34d399; text-decoration: none;">
+                      <a href="/api/quizard/download?file=${encodeURIComponent(relPath)}" download="${escapeHtml(savedFile)}" class="chip-badge" title="Download JSON" style="background: rgba(16, 185, 129, 0.2); color: #34d399; text-decoration: none;">
                         ⬇️ JSON
                       </a>
                     </div>
@@ -1844,7 +1896,7 @@ Before outputting, verify:
       if (totalVisible === 0) {
         qzModalBody.innerHTML = `
           <div style="text-align: center; color: var(--text-muted); padding: 2rem 1rem;">
-            🔍 No skipped tests match "<strong>${escapeHtml(filterQuery)}</strong>"
+            🔍 No duplicate tests match "<strong>${escapeHtml(filterQuery)}</strong>"
           </div>
         `;
       } else {
@@ -1896,57 +1948,71 @@ Before outputting, verify:
 
       const batchesProcessed = sum.batches_processed || (job.zip_files ? job.zip_files.length : 0);
       const totalSaved = sum.total_saved || 0;
+      const totalDuplicates = sum.total_duplicates || 0;
       const totalSkipped = sum.total_skipped || 0;
       const totalFailed = sum.total_failed || 0;
 
       qzSumBatches.textContent = batchesProcessed;
       qzSumSaved.textContent = totalSaved;
-      qzSumSkipped.textContent = totalSkipped;
       qzSumFailed.textContent = totalFailed;
 
-      // Extract and cache skipped tracker
+      // Extract duplicate & skipped trackers
+      currentDuplicateTracker = job.duplicate_tracker || sum.duplicate_tracker || {};
+      currentDuplicateList = job.duplicate_list || sum.duplicate_list || [];
       currentSkippedTracker = job.skipped_tracker || sum.skipped_tracker || {};
       currentSkippedList = job.skipped_list || sum.skipped_list || [];
 
-      // Fallback: If total_skipped > 0 but tracker empty, parse from job logs
-      if (totalSkipped > 0 && Object.keys(currentSkippedTracker).length === 0 && currentSkippedList.length === 0 && job.logs) {
-        let activeBatchFallback = 'General Batch';
-        job.logs.forEach(l => {
-          const bMatch = l.msg.match(/STARTING BATCH \[\d+\/\d+\]: '([^']+)'/i);
-          if (bMatch) activeBatchFallback = bMatch[1];
-          const skipMatch = l.msg.match(/Skipping:\s+(.+?)\s+\(File already exists\)/i);
-          if (skipMatch) {
-            const testTitle = skipMatch[1].trim();
-            if (!currentSkippedTracker[activeBatchFallback]) currentSkippedTracker[activeBatchFallback] = [];
-            if (!currentSkippedTracker[activeBatchFallback].includes(testTitle)) {
-              currentSkippedTracker[activeBatchFallback].push(testTitle);
-            }
-          }
-        });
+      // Calculate total duplicates
+      const dupCount = totalDuplicates || Object.values(currentDuplicateTracker).reduce((acc, l) => acc + l.length, 0) || currentDuplicateList.length;
+      const skipCount = totalSkipped || Object.values(currentSkippedTracker).reduce((acc, l) => acc + l.length, 0) || currentSkippedList.length;
+
+      if (dupCount > 0) {
+        if (qzStat3Label) qzStat3Label.textContent = 'Duplicates';
+        qzSumSkipped.textContent = dupCount;
+        qzSumSkipped.style.color = '#38bdf8';
+      } else if (skipCount > 0) {
+        if (qzStat3Label) qzStat3Label.textContent = 'Skipped';
+        qzSumSkipped.textContent = skipCount;
+        qzSumSkipped.style.color = '#60a5fa';
+      } else {
+        if (qzStat3Label) qzStat3Label.textContent = 'Duplicates';
+        qzSumSkipped.textContent = 0;
+        qzSumSkipped.style.color = '#60a5fa';
       }
 
-      // Render Inline Skipped Box
-      const skippedBatches = Object.keys(currentSkippedTracker);
-      const totalSkippedCount = skippedBatches.reduce((acc, b) => acc + currentSkippedTracker[b].length, 0) || currentSkippedList.length || totalSkipped;
+      // Render Inline Duplicates / Skipped Box
+      const dupBatches = Object.keys(currentDuplicateTracker);
+      const skipBatches = Object.keys(currentSkippedTracker);
 
-      if (totalSkippedCount > 0 && (skippedBatches.length > 0 || currentSkippedList.length > 0)) {
+      if (dupCount > 0 || skipCount > 0) {
         qzSkippedBox.style.display = 'block';
-        qzSkippedInlineCount.textContent = `${totalSkippedCount} tests`;
-        let skipHtml = '';
-        if (skippedBatches.length > 0) {
-          for (const [batch, tests] of Object.entries(currentSkippedTracker)) {
-            skipHtml += `<div style="margin-bottom: 0.5rem;"><strong style="color: #93c5fd;">📁 Batch: ${escapeHtml(batch)}</strong> (${tests.length} tests)<br />`;
-            tests.forEach(t => {
-              skipHtml += `&nbsp;&nbsp;⏭️ <span style="color: var(--text);">${escapeHtml(t)}</span><br />`;
+        qzSkippedInlineCount.textContent = `${dupCount || skipCount} tests`;
+        let boxHtml = '';
+
+        if (dupBatches.length > 0) {
+          for (const [batch, items] of Object.entries(currentDuplicateTracker)) {
+            boxHtml += `<div style="margin-bottom: 0.5rem;"><strong style="color: #93c5fd;">📁 Batch: ${escapeHtml(batch)}</strong> (${items.length} duplicate${items.length > 1 ? 's' : ''})<br />`;
+            items.forEach(it => {
+              const tName = typeof it === 'string' ? it : it.test;
+              const sFile = typeof it === 'string' ? `${tName}_2.json` : (it.saved_as || it.filename || `${tName}_2.json`);
+              boxHtml += `&nbsp;&nbsp;📑 <span style="color: var(--text);">${escapeHtml(tName)}</span> <span style="color: #34d399; font-size: 0.76rem;">(Both Saved -> <code style="color: #93c5fd;">${escapeHtml(sFile)}</code>)</span><br />`;
             });
-            skipHtml += '</div>';
+            boxHtml += '</div>';
           }
-        } else {
-          currentSkippedList.forEach(item => {
-            skipHtml += `&nbsp;&nbsp;⏭️ <strong style="color: #93c5fd;">${escapeHtml(item.batch)}:</strong> <span style="color: var(--text);">${escapeHtml(item.test)}</span><br />`;
+        } else if (currentDuplicateList.length > 0) {
+          currentDuplicateList.forEach(item => {
+            boxHtml += `&nbsp;&nbsp;📑 <strong style="color: #93c5fd;">${escapeHtml(item.batch)}:</strong> <span style="color: var(--text);">${escapeHtml(item.test)}</span> <span style="color: #34d399; font-size: 0.76rem;">(Saved as ${escapeHtml(item.saved_as || item.filename)})</span><br />`;
           });
+        } else if (skipBatches.length > 0) {
+          for (const [batch, tests] of Object.entries(currentSkippedTracker)) {
+            boxHtml += `<div style="margin-bottom: 0.5rem;"><strong style="color: #93c5fd;">📁 Batch: ${escapeHtml(batch)}</strong> (${tests.length} tests)<br />`;
+            tests.forEach(t => {
+              boxHtml += `&nbsp;&nbsp;⏭️ <span style="color: var(--text);">${escapeHtml(t)}</span><br />`;
+            });
+            boxHtml += '</div>';
+          }
         }
-        qzSkippedList.innerHTML = skipHtml;
+        qzSkippedList.innerHTML = boxHtml;
       } else {
         qzSkippedBox.style.display = 'none';
       }
@@ -2045,18 +2111,18 @@ Before outputting, verify:
     }
   </script>
 
-  <!-- Skipped Tests Interactive Modal -->
+  <!-- Duplicates & Skipped Tests Interactive Modal -->
   <div id="qz-skipped-modal" class="qz-modal-backdrop">
     <div class="qz-modal-card">
       <div class="qz-modal-header">
         <div style="display: flex; align-items: center; gap: 0.6rem;">
-          <span style="font-size: 1.4rem;">⏭️</span>
+          <span style="font-size: 1.4rem;">📑</span>
           <div>
             <h3 style="color: var(--text); font-size: 1.15rem; font-weight: 700; margin: 0;">
-              Skipped Tests
+              Duplicate Tests (Both Extracted &amp; Saved)
             </h3>
-            <span id="qz-modal-count-badge" class="hero-badge" style="margin-bottom: 0; padding: 0.15rem 0.55rem; font-size: 0.72rem; background: rgba(96, 165, 250, 0.15); color: #93c5fd; border-color: rgba(96, 165, 250, 0.3);">
-              0 Tests Skipped
+            <span id="qz-modal-count-badge" class="hero-badge" style="margin-bottom: 0; padding: 0.15rem 0.55rem; font-size: 0.72rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
+              0 Duplicates Handled
             </span>
           </div>
         </div>
@@ -2067,24 +2133,24 @@ Before outputting, verify:
 
       <!-- Info Banner & Search Filter -->
       <div style="padding: 1rem 1.5rem 0.5rem 1.5rem; background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid var(--border);">
-        <div style="background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.2); border-radius: 0.6rem; padding: 0.65rem 0.85rem; margin-bottom: 0.75rem; font-size: 0.8rem; color: #cbd5e1;">
-          💡 <strong>Why are tests skipped?</strong> These test JSON files were already found on disk in your output directory from a previous extraction. They were skipped to prevent duplicate work.
+        <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 0.6rem; padding: 0.65rem 0.85rem; margin-bottom: 0.75rem; font-size: 0.8rem; color: #cbd5e1;">
+          💡 <strong>Duplicate Name Policy:</strong> When multiple tests in the same batch share the same name, <strong>neither is skipped</strong>. Both tests are fully extracted and saved with numbered suffixes (e.g. <code>_2.json</code>) so no questions or tests are lost.
         </div>
         <div style="position: relative;">
-          <input type="text" id="qz-modal-search" class="form-input" placeholder="🔍 Search skipped tests or batch names..." style="padding-left: 2.2rem; font-size: 0.88rem; padding-top: 0.6rem; padding-bottom: 0.6rem;">
+          <input type="text" id="qz-modal-search" class="form-input" placeholder="🔍 Search duplicate tests or batch names..." style="padding-left: 2.2rem; font-size: 0.88rem; padding-top: 0.6rem; padding-bottom: 0.6rem;">
           <span style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; font-size: 0.9rem;">🔎</span>
         </div>
       </div>
 
       <!-- Modal Body (Grouped Tests) -->
       <div class="qz-modal-body" id="qz-modal-body">
-        <div style="text-align: center; color: var(--text-muted); padding: 2rem;">No skipped tests to display.</div>
+        <div style="text-align: center; color: var(--text-muted); padding: 2rem;">No duplicate tests to display.</div>
       </div>
 
       <!-- Modal Footer -->
       <div class="qz-modal-footer">
-        <button type="button" id="qz-modal-copy-all" class="btn" style="background: rgba(96, 165, 250, 0.15); color: #93c5fd; border: 1px solid rgba(96, 165, 250, 0.3); font-size: 0.82rem; padding: 0.45rem 0.85rem;">
-          📋 Copy All Skipped Tests
+        <button type="button" id="qz-modal-copy-all" class="btn" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.82rem; padding: 0.45rem 0.85rem;">
+          📋 Copy All Duplicates List
         </button>
         <button type="button" id="qz-modal-done-btn" class="btn btn-primary" style="font-size: 0.82rem; padding: 0.45rem 1.25rem;">
           Close
