@@ -1,4 +1,4 @@
-name: Launch PDF Extractor UI
+name: Launch Extraction Runner UI
 
 on:
   workflow_dispatch:
@@ -10,11 +10,8 @@ on:
         type: choice
         options:
           - app.py
-          - app_final_strict_json.py
-          - deepseek.py
-          - perplexity.py
-          - qwen.py
-          - grok.py
+          - quizard_extractor.py
+          - ray-book-extract.py
 
 jobs:
   run-app:
@@ -65,7 +62,6 @@ jobs:
 
       - name: Start Virtual Display, App Server, and Cloudflare Tunnel
         run: |
-          # 1. Start D-Bus and Xvfb virtual display for Playwright browser automation
           eval $(dbus-launch --sh-syntax)
           export DBUS_SESSION_BUS_ADDRESS
           Xvfb :99 -screen 0 1366x850x24 -ac +extension GLX +render -noreset &
@@ -74,13 +70,9 @@ jobs:
           TARGET_SCRIPT="${{ inputs.script_to_run }}"
           PORT=8080
 
-          # 2. Start the chosen server based on script type
           if [ "$TARGET_SCRIPT" = "app.py" ]; then
             PORT=8080
             python app.py --port 8080 &
-          elif grep -qi "streamlit" "$TARGET_SCRIPT" 2>/dev/null; then
-            PORT=8501
-            streamlit run "$TARGET_SCRIPT" --server.port 8501 --server.headless true &
           else
             PORT=8080
             python "$TARGET_SCRIPT" &
@@ -89,7 +81,6 @@ jobs:
           echo "Waiting for app to start on port $PORT..."
           sleep 6
 
-          # 3. Open temporary public tunnel using Cloudflare
           echo "=========================================================="
           echo "🚀 Look for your public trycloudflare.com link below:"
           echo "=========================================================="

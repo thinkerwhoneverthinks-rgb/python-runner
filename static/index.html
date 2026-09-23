@@ -3,29 +3,173 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Allen Hybrid AI Parser - PDF Upload</title>
+  <title>Extraction Runner Studio — Quizard &amp; Ray Book Extractor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/studio.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    .hero-container {
-      max-width: 800px;
-      margin: 3rem auto;
-      padding: 2.5rem;
-      background: var(--surface);
+    :root {
+      --bg: #090d16;
+      --surface: #0f172a;
+      --surface-card: rgba(15, 23, 42, 0.7);
+      --surface-border: #1e293b;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #818cf8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border: rgba(148, 163, 184, 0.15);
+      --glow: rgba(99, 102, 241, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient background glow */
+    .bg-glow {
+      position: fixed;
+      top: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1000px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.08) 50%, transparent 75%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Navigation Bar */
+    .app-top-nav {
+      max-width: 1080px;
+      margin: 1.5rem auto 0 auto;
+      padding: 0.75rem 1.5rem;
+      background: rgba(15, 23, 42, 0.82);
       border: 1px solid var(--border);
       border-radius: 1.25rem;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      position: relative;
+      z-index: 10;
     }
+
+    .nav-brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .nav-logo-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    }
+
+    .nav-brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .nav-brand-name {
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .nav-brand-sub {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .nav-view-switcher {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(10, 15, 30, 0.65);
+      padding: 0.35rem;
+      border-radius: 0.85rem;
+      border: 1px solid var(--border);
+    }
+
+    .view-switch-btn {
+      padding: 0.6rem 1.25rem;
+      border-radius: 0.65rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .view-switch-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .view-switch-btn.active {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1080px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 1.5rem;
+      padding: 2.25rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      margin-bottom: 2rem;
+    }
+
     .hero-header {
       text-align: center;
       margin-bottom: 2rem;
     }
+
     .hero-badge {
       display: inline-block;
-      padding: 0.35rem 0.85rem;
+      padding: 0.35rem 0.95rem;
       background: rgba(99, 102, 241, 0.15);
       color: #818cf8;
       border: 1px solid rgba(99, 102, 241, 0.3);
@@ -33,10 +177,11 @@
       font-size: 0.8rem;
       font-weight: 600;
       letter-spacing: 0.05em;
-      margin-bottom: 1rem;
+      margin-bottom: 0.85rem;
     }
+
     .hero-title {
-      font-size: 2.2rem;
+      font-size: 2.25rem;
       font-weight: 700;
       color: var(--text);
       margin-bottom: 0.5rem;
@@ -44,13 +189,20 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+
     .hero-desc {
       color: var(--text-muted);
-      font-size: 1rem;
+      font-size: 1.02rem;
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.5;
     }
+
+    /* Form & Inputs */
     .form-group {
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.35rem;
     }
+
     .form-label {
       display: block;
       font-weight: 600;
@@ -58,2105 +210,1066 @@
       color: var(--text-secondary);
       margin-bottom: 0.5rem;
     }
-    .form-input, .form-select {
+
+    .form-input, .form-select, .form-textarea {
       width: 100%;
-      padding: 0.85rem 1rem;
-      background: rgba(15, 23, 42, 0.6);
+      padding: 0.85rem 1.1rem;
+      background: rgba(15, 23, 42, 0.65);
       border: 1px solid var(--border);
       border-radius: 0.75rem;
       color: var(--text);
       font-size: 0.95rem;
       outline: none;
       transition: all 0.2s ease;
+      font-family: inherit;
     }
-    .form-input:focus, .form-select:focus {
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
+      background: rgba(15, 23, 42, 0.85);
     }
+
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1.25rem;
     }
-    .dropzone {
-      border: 2px dashed rgba(99, 102, 241, 0.4);
-      border-radius: 1rem;
-      padding: 3rem 1.5rem;
-      text-align: center;
-      cursor: pointer;
-      background: rgba(99, 102, 241, 0.03);
-      transition: all 0.2s ease;
-      margin-bottom: 1.75rem;
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
     }
-    .dropzone:hover, .dropzone.dragover {
-      border-color: var(--primary);
-      background: rgba(99, 102, 241, 0.08);
-    }
-    .dropzone-icon {
-      font-size: 3rem;
-      margin-bottom: 0.75rem;
-    }
-    .btn-submit {
-      width: 100%;
-      padding: 1rem;
-      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-      color: white;
-      border: none;
+
+    /* Buttons */
+    .btn {
+      padding: 0.85rem 1.5rem;
       border-radius: 0.75rem;
-      font-size: 1.05rem;
+      font-size: 0.96rem;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
       transition: all 0.2s ease;
+      border: none;
+      text-decoration: none;
     }
-    .btn-submit:hover:not(:disabled) {
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 15px 25px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 12px 25px rgba(99, 102, 241, 0.4);
     }
-    .btn-submit:disabled {
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.25);
+      color: #fee2e2;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+    }
+
+    .btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+      transform: none !important;
     }
-    .progress-panel {
-      display: none;
-      margin-top: 1.5rem;
-      padding: 1.25rem;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid var(--border);
-      border-radius: 0.75rem;
-    }
-    .progress-bar-bg {
-      height: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
+
+    /* Terminal Console */
+    .terminal-container {
+      margin-top: 1.75rem;
+      background: #080c16;
+      border: 1px solid #1e293b;
+      border-radius: 1rem;
       overflow: hidden;
-      margin-bottom: 0.75rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
     }
+
+    .terminal-header {
+      padding: 0.75rem 1.25rem;
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .terminal-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .terminal-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .terminal-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .terminal-action-btn {
+      padding: 0.3rem 0.65rem;
+      font-size: 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.4rem;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .terminal-action-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .terminal-body {
+      height: 270px;
+      overflow-y: auto;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      line-height: 1.55;
+    }
+
+    .terminal-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    .terminal-body::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.25);
+      border-radius: 3px;
+    }
+
+    .log-line {
+      padding: 0.12rem 0;
+      display: flex;
+      gap: 0.65rem;
+    }
+
+    .log-time {
+      color: #475569;
+      user-select: none;
+    }
+
+    .log-msg {
+      flex: 1;
+      word-break: break-word;
+    }
+
+    .log-info { color: #cbd5e1; }
+    .log-success { color: #34d399; }
+    .log-warning { color: #fbbf24; }
+    .log-error { color: #f87171; }
+
+    /* Progress bar */
+    .progress-bar-container {
+      background: rgba(255, 255, 255, 0.06);
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 1rem;
+      position: relative;
+    }
+
     .progress-bar-fill {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #6366f1, #34d399);
+      background: linear-gradient(90deg, #6366f1, #10b981);
       transition: width 0.3s ease;
     }
-    .progress-status {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-    }
 
-    /* Top Navigation Bar */
-    .app-top-nav {
-      max-width: 860px;
-      margin: 1.5rem auto 0 auto;
-      padding: 0.65rem 1.25rem;
-      background: rgba(15, 23, 42, 0.75);
+    /* Ray Book Dynamic Table */
+    .book-rows-container {
+      margin-top: 1.5rem;
+      background: rgba(10, 15, 30, 0.5);
       border: 1px solid var(--border);
       border-radius: 1rem;
-      backdrop-filter: blur(14px);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      padding: 1rem;
+      max-height: 480px;
+      overflow-y: auto;
     }
-    .nav-brand-group {
-      display: flex;
-      align-items: center;
+
+    .book-row {
+      display: grid;
+      grid-template-columns: 36px 1fr 1fr 38px;
       gap: 0.75rem;
-    }
-    .nav-logo-badge {
-      width: 38px;
-      height: 38px;
-      border-radius: 0.65rem;
-      background: linear-gradient(135deg, #6366f1, #a855f7);
-      display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.15s ease;
     }
-    .nav-brand-text {
-      display: flex;
-      flex-direction: column;
+
+    .book-row:last-child {
+      border-bottom: none;
     }
-    .nav-brand-name {
+
+    .row-index {
       font-weight: 700;
-      font-size: 1.05rem;
-      color: var(--text);
-      letter-spacing: -0.01em;
+      font-size: 0.85rem;
+      color: #818cf8;
+      text-align: center;
     }
-    .nav-brand-sub {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-    .nav-view-switcher {
-      display: flex;
-      gap: 0.5rem;
-      background: rgba(10, 15, 30, 0.6);
-      padding: 0.35rem;
-      border-radius: 0.75rem;
-      border: 1px solid var(--border);
-    }
-    .view-switch-btn {
-      padding: 0.55rem 1.15rem;
-      border-radius: 0.55rem;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      font-weight: 600;
-      font-size: 0.88rem;
+
+    .row-remove-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      background: rgba(239, 68, 68, 0.1);
+      color: #fca5a5;
+      font-size: 1rem;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.45rem;
-      transition: all 0.2s ease;
-    }
-    .view-switch-btn:hover {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .view-switch-btn.active {
-      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-      color: white;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      justify-content: center;
+      transition: all 0.15s ease;
     }
 
-    /* Quizard UI Elements */
+    .row-remove-btn:hover {
+      background: rgba(239, 68, 68, 0.25);
+      color: white;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
     .chip-badge {
       display: inline-block;
       padding: 0.25rem 0.65rem;
       background: rgba(99, 102, 241, 0.12);
       border: 1px solid rgba(99, 102, 241, 0.25);
       border-radius: 9999px;
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       color: #818cf8;
       cursor: pointer;
       user-select: none;
       transition: all 0.15s ease;
     }
+
     .chip-badge:hover {
       background: rgba(99, 102, 241, 0.25);
       border-color: #818cf8;
       color: white;
-      transform: translateY(-1px);
     }
-    .qz-terminal {
-      background: #080c14;
-      border: 1px solid #1e293b;
-      border-radius: 0.75rem;
-      padding: 0.85rem 1rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.82rem;
-      height: 250px;
-      overflow-y: auto;
-      color: #94a3b8;
-      line-height: 1.5;
-    }
-    .qz-terminal::-webkit-scrollbar {
-      width: 6px;
-    }
-    .qz-terminal::-webkit-scrollbar-thumb {
-      background: rgba(99, 102, 241, 0.25);
-      border-radius: 3px;
-    }
-    .qz-log-line {
-      padding: 0.12rem 0;
-      display: flex;
-      gap: 0.5rem;
-    }
-    .qz-stat-card {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid var(--border);
-      border-radius: 0.75rem;
-      padding: 1rem;
-      text-align: center;
-      transition: all 0.2s ease;
-      position: relative;
-    }
-    .qz-stat-card:hover {
-      border-color: rgba(99, 102, 241, 0.4);
-      transform: translateY(-2px);
-    }
-    .qz-stat-card.clickable {
-      cursor: pointer;
-      user-select: none;
-    }
-    .qz-stat-card.clickable:hover {
-      border-color: #60a5fa;
-      background: rgba(30, 58, 138, 0.25);
-      box-shadow: 0 8px 25px rgba(96, 165, 250, 0.2);
-      transform: translateY(-3px);
-    }
-    .qz-stat-card.clickable:active {
-      transform: translateY(-1px);
-    }
-    .qz-stat-hint {
-      font-size: 0.7rem;
-      color: #60a5fa;
-      margin-top: 0.25rem;
-      display: inline-block;
-      font-weight: 500;
-      opacity: 0.9;
-    }
-    .qz-stat-value {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--text);
-      line-height: 1.1;
-      margin-top: 0.25rem;
-    }
-    .qz-stat-label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .qz-download-card {
+
+    .download-card {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(15, 23, 42, 0.75);
       border: 1px solid var(--border);
-      border-radius: 0.75rem;
-      padding: 0.85rem 1rem;
-      margin-bottom: 0.6rem;
+      border-radius: 0.85rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
       transition: all 0.2s ease;
     }
-    .qz-download-card:hover {
+
+    .download-card:hover {
       border-color: rgba(99, 102, 241, 0.4);
-      background: rgba(15, 23, 42, 0.8);
+      background: rgba(15, 23, 42, 0.95);
+      transform: translateY(-1px);
     }
 
-    /* Skipped Modal */
-    .qz-modal-backdrop {
+    /* Modal */
+    .modal-backdrop {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(3, 7, 18, 0.82);
       backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 99999;
+      z-index: 9999;
       padding: 1.5rem;
-      animation: modalFadeIn 0.2s ease-out;
     }
-    @keyframes modalFadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes modalScaleIn {
-      from { opacity: 0; transform: scale(0.95) translateY(10px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    .qz-modal-card {
+
+    .modal-card {
       background: #0f172a;
-      border: 1px solid rgba(96, 165, 250, 0.3);
+      border: 1px solid rgba(99, 102, 241, 0.3);
       border-radius: 1.25rem;
       width: 100%;
-      max-width: 760px;
-      max-height: 85vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(96, 165, 250, 0.15);
-      animation: modalScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      overflow: hidden;
-    }
-    .qz-modal-header {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(15, 23, 42, 0.95);
-    }
-    .qz-modal-body {
-      padding: 1.25rem 1.5rem;
-      overflow-y: auto;
-      flex: 1;
-    }
-    .qz-modal-footer {
-      padding: 1rem 1.5rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(15, 23, 42, 0.95);
-    }
-    .qz-batch-group {
-      background: rgba(15, 23, 42, 0.5);
-      border: 1px solid var(--border);
-      border-radius: 0.85rem;
-      margin-bottom: 1rem;
-      overflow: hidden;
-    }
-    .qz-batch-group-header {
-      padding: 0.75rem 1rem;
-      background: rgba(96, 165, 250, 0.08);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      color: #93c5fd;
-      font-size: 0.92rem;
-    }
-    .qz-skipped-item {
-      padding: 0.65rem 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      transition: background 0.15s ease;
-    }
-    .qz-skipped-item:last-child {
-      border-bottom: none;
-    }
-    .qz-skipped-item:hover {
-      background: rgba(255, 255, 255, 0.03);
+      max-width: 680px;
+      padding: 1.75rem;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
     }
   </style>
 </head>
 <body>
   <div class="bg-glow"></div>
 
-  <!-- Unified Top Navigation Bar -->
+  <!-- Top Navigation Bar -->
   <header class="app-top-nav">
     <div class="nav-brand-group">
       <div class="nav-logo-badge">⚡</div>
       <div class="nav-brand-text">
-        <span class="nav-brand-name">QUIZ RUNNER STUDIO</span>
-        <span class="nav-brand-sub">Unified Extraction &amp; Scraping Suite</span>
+        <span class="nav-brand-name">EXTRACTION RUNNER STUDIO</span>
+        <span class="nav-brand-sub">Quizard Extractor &amp; Ray Book Suite</span>
       </div>
     </div>
     <div class="nav-view-switcher">
-      <button type="button" id="nav-btn-allen" class="view-switch-btn active">
-        📑 Allen Hybrid Parser
-      </button>
-      <button type="button" id="nav-btn-quizard" class="view-switch-btn">
+      <button type="button" id="nav-btn-quizard" class="view-switch-btn active">
         ⚡ Quizard Extractor
+      </button>
+      <button type="button" id="nav-btn-ray-book" class="view-switch-btn">
+        📚 Ray Book Extractor
       </button>
     </div>
   </header>
 
-  <!-- View 1: Allen Hybrid Parser -->
-  <div id="view-allen">
-  <div class="hero-container">
-    <div class="hero-header">
-      <span class="hero-badge">ALLEN HYBRID QUIZ PLATFORM</span>
-      <h1 class="hero-title">Allen Hybrid Quiz Parser</h1>
-      <p class="hero-desc">Extracts chemistry LaTeX formulas (\ce{...}), SMILES notation, and diagram crops.</p>
-    </div>
+  <div class="container">
 
-    <!-- Mode Switcher Tabs -->
-    <div style="display: flex; gap: 0.75rem; margin-bottom: 2rem; background: rgba(15, 23, 42, 0.6); padding: 0.5rem; border-radius: 0.85rem; border: 1px solid var(--border);">
-      <button type="button" id="mode-btn-pdf" class="btn" style="flex: 1; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 0.6rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-        📑 Parse PDF (AI Web Scraper)
-      </button>
-      <button type="button" id="mode-btn-json" class="btn" style="flex: 1; padding: 0.75rem; background: transparent; color: var(--text-muted); border: none; border-radius: 0.6rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-        📋 Direct JSON Import (File / Paste)
-      </button>
-    </div>
-
-    <!-- Mode 1: PDF Upload Form -->
-    <form id="upload-form">
-      <!-- AI Engine Execution & Fallback Order -->
-      <div class="form-group">
-        <label class="form-label">AI Engine Execution Order &amp; Fallback Chain</label>
-        <div style="display: flex; gap: 1rem; align-items: center; background: rgba(15, 23, 42, 0.6); padding: 0.85rem 1rem; border: 1px solid var(--border); border-radius: 0.75rem;">
-          <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text);">
-            <input type="checkbox" id="ai-deepseek" value="deepseek" checked> 🐋 DeepSeek
-          </label>
-          <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text);">
-            <input type="checkbox" id="ai-qwen" value="qwen" checked> 🤖 Qwen AI
-          </label>
-          <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text);">
-            <input type="checkbox" id="ai-perplexity" value="perplexity" checked> 🔍 Perplexity
-          </label>
-          <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text);">
-            <input type="checkbox" id="ai-grok" value="grok" checked> ⚡ Grok
-          </label>
-        </div>
-        <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.35rem; display: block;">
-          Max 2 consecutive chunks per AI engine. If an AI fails, execution automatically falls back to the next engine.
-        </small>
-      </div>
-
-      <!-- Multi-part Prompts (Prompt 1 to 10) -->
-      <div class="form-group">
-        <label class="form-label">Multi-Part Prompts (10 Blocks — Prevents Web Chat Upload Limits)</label>
-        <div style="display: flex; gap: 0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-          <button type="button" class="prompt-tab-btn active" data-tab="p1" style="padding: 0.35rem 0.65rem; background: var(--primary); color: white; border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P1: Contract</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p2" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P2: Numbering</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p3" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P3: Exercise ("exnm")</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p4" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P4: Topic ("top")</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p5" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P5: Formatting</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p6" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P6: Keys &amp; Answers</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p7" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P7: Checklist</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p8" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P8: Custom</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p9" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P9: Custom</button>
-          <button type="button" class="prompt-tab-btn" data-tab="p10" style="padding: 0.35rem 0.65rem; background: rgba(255,255,255,0.1); color: var(--text); border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.8rem;">P10: Custom</button>
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: QUIZARD EXTRACTOR -->
+    <!-- ========================================================================= -->
+    <div id="view-quizard">
+      <div class="hero-card">
+        <div class="hero-header">
+          <span class="hero-badge">QUIZARD AUTOMATION</span>
+          <h1 class="hero-title">Quizard Batch Test Extractor</h1>
+          <p class="hero-desc">Discovers tests, parses questions &amp; answer keys, cleans syllabuses, and formats Quizzy packages.</p>
         </div>
 
-        <div id="p1-pane" class="prompt-pane">
-          <textarea id="prompt-1" class="form-input" rows="7" placeholder="Prompt Block 1">You are an expert exam-paper and multiple-choice-question parser.
-
-Extract ALL multiple-choice questions that actually exist in the provided PDF page(s).
-
-## ABSOLUTE OUTPUT CONTRACT — FOLLOW THIS EXACTLY
-1. Your entire response MUST contain exactly ONE Markdown fenced code block.
-2. The code-block opening MUST be exactly: ```json
-3. The code-block closing MUST be exactly: ```
-4. Put the complete JSON array between those two lines.
-5. Output NOTHING before the opening fence and NOTHING after the closing fence.
-6. Do not write explanations, reasoning, notes, headings, comments, apologies, or status messages.
-7. The JSON must be complete, valid, and parseable by Python `json.loads()`. Never output truncated JSON.
-8. Use double quotes for every JSON key and every JSON string. Never use single quotes.
-9. Escape every backslash inside JSON strings.
-10. Do not render formulas as visual math. Keep formulas as plain text inside JSON strings.
-11. Do not invent, solve, correct, or infer information that is not supported by the PDF.</textarea>
-        </div>
-
-        <div id="p2-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-2" class="form-input" rows="7" placeholder="Prompt Block 2">## QUESTION EXTRACTION RULES
-1. Extract ONLY questions that actually exist in the PDF. Never invent or infer missing questions.
-2. Preserve the question numbering exactly as printed in the PDF:
-   - Do NOT renumber questions based on extraction order.
-   - If numbering starts again from `1` in another exercise, preserve that new numbering exactly.
-   - Use the visible printed question number in "n", not internal IDs such as `CMC001`, `CMC002`, etc.
-3. Extract the question text and all options faithfully from the PDF.
-4. For linked, paragraph-based, or statement-based questions, prepend the common paragraph/statements to the "q" field of every question belonging to that group.
-5. Use `<br />` inside string values to represent meaningful line breaks in multi-part questions, statements, options, or other structured content.
-   - Preserve important structural line breaks from the PDF where they improve readability.
-   - Do NOT insert `<br />` randomly in the middle of normal sentences.
-6. Do not include PDF page numbers, website URLs, watermarks, social-media handles, repeated headers, or footer text as question content.</textarea>
-        </div>
-
-        <div id="p3-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-3" class="form-input" rows="7" placeholder="Prompt Block 3">## EXERCISE RULES — VERY IMPORTANT
-The PDF itself is the ONLY source of truth for exercise names and topics.
-
-### "exnm" — Exercise Name
-1. Identify the exercise from the actual exercise heading printed in the PDF.
-2. Put the exercise name/type from the PDF in "exnm".
-3. Do NOT invent or classify an exercise based on the question content.
-4. Once an exercise heading appears, it applies to the following questions until another exercise heading appears.
-5. If question numbering restarts under a new exercise, preserve the new printed numbering.
-6. Examples of exercise information:
-   - "Exercise - I (Conceptual Questions)"
-   - "Exercise – III (Analytical Questions)"
-7. Store the meaningful exercise name/type in "exnm" according to the PDF. Do not use internal codes or unrelated header text.</textarea>
-        </div>
-
-        <div id="p4-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-4" class="form-input" rows="7" placeholder="Prompt Block 4">### "top" — Topic
-1. Assign "top" ONLY from an explicit topic heading actually written in the PDF.
-2. Do NOT determine the topic yourself from the subject matter of the questions.
-3. For example, if the PDF explicitly contains: "QUESTIONS BASED ON MOLES", then use that PDF heading as the "top" value for the questions under it.
-4. Keep that topic for all following questions until another genuine topic heading appears.
-5. Do NOT create a new topic for individual questions based on what they appear to be testing.
-6. Do NOT rename, simplify, reinterpret, or replace the topic with your own terminology. Use the wording of the PDF.
-7. Headers like "Master Your Understanding", "Build Up Your Understanding", chapter names, or running headers are NOT topics unless the PDF clearly presents them as an actual topic heading.
-8. If an exercise has no explicit topic heading, use "top": "general".
-   Example: "Exercise – III (Analytical Questions)" with no subheadings -> "exnm": "Analytical Questions", "top": "general".
-9. Never assign "top" using your own understanding. The PDF's explicit heading is the only authority.</textarea>
-        </div>
-
-        <div id="p5-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-5" class="form-input" rows="7" placeholder="Prompt Block 5">## FORMATTING RULES
-1. For Chemistry formulas, reactions, ionic equations, and chemical names, use LaTeX/mhchem syntax where appropriate:
-   \\ce{H2O}, \\ce{KMnO4 + HCl -> KCl + MnCl2 + H2O + Cl2}, \\ce{Fe^{2+}}
-2. For Physics and Mathematics, use standard LaTeX where appropriate: $\\frac{1}{2}$, $6.02 \\times 10^{23}$.
-3. Keep mathematical and chemical information faithful to the PDF. Do not silently correct apparent OCR errors. Extract what the PDF actually says.
-4. If a question contains a 2D organic molecular structure, place its SMILES string in the "s" field when it can be reliably determined (otherwise "s": null).
-5. Set "d": true when a question contains a diagram or figure that needs cropping; otherwise set "d": false.
-6. MATCH-THE-COLUMN QUESTIONS ("m"):
-For match questions, use structured object in "m":
-{
-  "listI": {
-    "title": "List-I",
-    "items": [
-      { "label": "A", "text": "..." },
-      { "label": "B", "text": "..." },
-      { "label": "C", "text": "..." },
-      { "label": "D", "text": "..." }
-    ]
-  },
-  "listII": {
-    "title": "List-II",
-    "items": [
-      { "label": "P", "text": "..." },
-      { "label": "Q", "text": "..." },
-      { "label": "R", "text": "..." },
-      { "label": "S", "text": "..." }
-    ]
-  }
-}
-For non-match questions, set "m": null.
-The "o" array contains the 4 combination choices like: ["(A) -> (P), (B) -> (Q), (C) -> (R), (D) -> (S)", ...].</textarea>
-        </div>
-
-        <div id="p6-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-6" class="form-input" rows="7" placeholder="Prompt Block 6">## JSON KEYS AND HIERARCHY RULES
-1. Use only these JSON keys where applicable:
-   "n", "q", "o", "a", "d", "s", "m", "sub", "top", "exnm"
-2. Do NOT use "subtop".
-3. Do NOT use an "e" or explanation field. The PDF does not contain explanations.
-4. "sub" = "CHEMISTRY" (or relevant subject).
-5. If a value is unknown, use an appropriate empty value ("", [], {}, or false).
-6. Answer Key: If an answer key is present in the PDF, extract zero-based index into "a" (0 for option 1, 1 for option 2, 2 for option 3, 3 for option 4). Match answers using printed question numbers. If no answer key, set "a": null.
-7. The core hierarchy is: Exercise heading ("exnm") -> Topic heading ("top") -> Questions ("n", "q", "o", "a").</textarea>
-        </div>
-
-        <div id="p7-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-7" class="form-input" rows="7" placeholder="Prompt Block 7">## FINAL SELF-CHECK BEFORE RESPONDING
-Before outputting, verify:
-- Starts with ```json and ends with ```.
-- Exactly ONE fenced code block with valid JSON array.
-- All JSON strings use double quotes and properly escaped backslashes.
-- Question numbers match printed PDF numbers without renumbering.
-- Exercise names in "exnm" and topics in "top" come strictly from PDF headings.
-- "top": "general" is used when no explicit topic heading exists.
-- NO "subtop" field and NO "e" explanation field exist.
-- No questions invented, none omitted, no answers guessed without key.
-- Output ONLY the JSON code block.</textarea>
-        </div>
-
-        <div id="p8-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-8" class="form-input" rows="7" placeholder="Prompt Block 8 (Custom User Prompt - Optional)"></textarea>
-        </div>
-
-        <div id="p9-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-9" class="form-input" rows="7" placeholder="Prompt Block 9 (Custom User Prompt - Optional)"></textarea>
-        </div>
-
-        <div id="p10-pane" class="prompt-pane" style="display: none;">
-          <textarea id="prompt-10" class="form-input" rows="7" placeholder="Prompt Block 10 (Custom User Prompt - Optional)"></textarea>
-        </div>
-
-        <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.35rem; display: block;">
-          Blocks 1–7 are pre-filled with your strict extraction system. Blocks 8–10 are open for your custom rules. Prompts are pasted sequentially into the browser before hitting Send.
-        </small>
-      </div>
-
-      <!-- Processing Mode & Chunk Size -->
-      <div class="grid-2">
-        <div class="form-group">
-          <label class="form-label" for="chunk-mode">Processing Mode</label>
-          <select id="chunk-mode" class="form-select">
-            <option value="chunk" selected>⚡ Smart Chunking (Anti-Hallucination)</option>
-            <option value="single">📄 Single Full PDF (All at Once)</option>
-          </select>
-        </div>
-
-        <div class="form-group" id="chunk-size-container">
-          <label class="form-label" for="chunk-size">Pages per AI Chunk</label>
-          <select id="chunk-size" class="form-select">
-            <option value="5">5 Pages / Chunk</option>
-            <option value="10" selected>10 Pages / Chunk (Recommended)</option>
-            <option value="12">12 Pages / Chunk</option>
-            <option value="14">14 Pages / Chunk</option>
-            <option value="15">15 Pages / Chunk</option>
-            <option value="20">20 Pages / Chunk</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Dedicated Answer Key Extraction -->
-      <div class="form-group" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 0.85rem; border-radius: 0.5rem;">
-        <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
-          <span>🎯 Dedicated Answer Key Extraction</span>
-          <span style="font-size: 0.75rem; color: var(--primary); font-weight: 500;">100% Accurate Python Merger</span>
-        </label>
-        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-top: 0.4rem;">
-          <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.85rem; color: var(--text);">
-            <input type="radio" name="answer-key-mode" value="last" checked> 📌 Last Page (Auto)
-          </label>
-          <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.85rem; color: var(--text);">
-            <input type="radio" name="answer-key-mode" value="custom"> 🔢 Custom Range:
-          </label>
-          <input type="text" id="answer-key-pages" class="form-input" placeholder="e.g. 21-22 or 18" style="width: 140px; padding: 0.25rem 0.5rem; font-size: 0.8rem; display: inline-block;">
-          <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.85rem; color: var(--text-muted);">
-            <input type="radio" name="answer-key-mode" value="none"> 🚫 Skip / No Key
-          </label>
-        </div>
-        <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.35rem; display: block;">
-          Question chunks are parsed independently without guessing. The answer key page is extracted separately and merged by Exercise & Question Number in Python.
-        </small>
-      </div>
-
-      <!-- Optional Gemini API Key Fallback -->
-      <div class="form-group">
-        <label class="form-label" for="api-key">Gemini API Key (Optional Fallback)</label>
-        <input type="password" id="api-key" class="form-input" placeholder="AIzaSy... (optional backup if web scrapers fail)" autocomplete="off">
-      </div>
-
-      <!-- File Dropzone -->
-      <div class="dropzone" id="dropzone">
-        <div class="dropzone-icon">📑</div>
-        <h3 id="dropzone-title" style="margin-bottom: 0.25rem; font-weight: 600; color: var(--text);">Click or Drag & Drop PDF</h3>
-        <p id="dropzone-sub" style="color: var(--text-muted); font-size: 0.85rem;">Supports Allen module PDFs, NEET papers, and Question Banks</p>
-        <input type="file" id="pdf-file-input" accept=".pdf" style="display: none;" required>
-      </div>
-
-      <button type="submit" id="btn-submit" class="btn-submit" disabled>
-        🚀 Start Parsing PDF via AI Scraper
-      </button>
-
-      <!-- Live Progress Panel -->
-      <div class="progress-panel" id="progress-panel">
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="progress-fill"></div>
-        </div>
-        <div class="progress-status">
-          <span id="progress-msg">Initializing AI scraper...</span>
-          <span id="progress-pct">0%</span>
-        </div>
-      </div>
-    </form>
-
-    <!-- Mode 2: Manual JSON Import Form -->
-    <form id="manual-json-form" style="display: none;">
-      <div class="form-group">
-        <label class="form-label" for="manual-json-title">Dataset / Chapter Title</label>
-        <input type="text" id="manual-json-title" class="form-input" placeholder="e.g. Some Basic Concepts of Chemistry" />
-      </div>
-
-      <!-- JSON File Dropzone -->
-      <div class="dropzone" id="json-dropzone">
-        <div class="dropzone-icon">📄</div>
-        <h3 id="json-dropzone-title" style="margin-bottom: 0.25rem; font-weight: 600; color: var(--text);">Click or Drag &amp; Drop JSON File</h3>
-        <p id="json-dropzone-sub" style="color: var(--text-muted); font-size: 0.85rem;">Upload .json file containing questions array</p>
-        <input type="file" id="json-file-input" accept=".json,application/json" style="display: none;">
-      </div>
-
-      <div style="text-align: center; margin: 1rem 0; color: var(--text-muted); font-weight: 600; font-size: 0.85rem;">
-        ── OR PASTE JSON TEXT BELOW ──
-      </div>
-
-      <!-- Raw JSON Textarea -->
-      <div class="form-group">
-        <label class="form-label" for="manual-json-text">Paste Raw JSON Array / Object</label>
-        <textarea id="manual-json-text" class="form-input" rows="8" placeholder='[&#10;  {&#10;    "n": 1,&#10;    "q": "Question prompt text...",&#10;    "o": ["Opt 1", "Opt 2", "Opt 3", "Opt 4"],&#10;    "a": 0,&#10;    "e": "Solution / Code",&#10;    "d": false&#10;  }&#10;]' style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;"></textarea>
-      </div>
-
-      <button type="submit" id="btn-import-json" class="btn-submit">
-        📥 Load JSON into Review Studio
-      </button>
-
-      <div id="import-status" style="display: none; margin-top: 1rem; padding: 0.85rem; border-radius: 0.6rem; text-align: center; font-weight: 500;"></div>
-    </form>
-  </div>
-  </div> <!-- /#view-allen -->
-
-  <!-- View 2: Quizard Batch Extractor -->
-  <div id="view-quizard" style="display: none;">
-    <div class="hero-container" style="margin-top: 1.5rem;">
-      <div class="hero-header">
-        <span class="hero-badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border-color: rgba(168, 85, 247, 0.3);">
-          ⚡ AUTOMATED QUIZ SCRAPER
-        </span>
-        <h1 class="hero-title" style="background: linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-          Quizard Batch Extractor
-        </h1>
-        <p class="hero-desc">Directly crawl tests, syllabus, question images &amp; answers from Quizard formatted for Quizzy.</p>
-      </div>
-
-      <!-- Quizard Form -->
-      <form id="quizard-form">
-        <!-- Base URL -->
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <label class="form-label" for="qz-base-url" style="margin-bottom: 0;">Quizard Server URL</label>
-            <button type="button" id="qz-btn-reset-url" style="background: transparent; border: none; color: #818cf8; font-size: 0.78rem; cursor: pointer; text-decoration: underline;">
-              Reset Default
-            </button>
-          </div>
-          <input type="url" id="qz-base-url" class="form-input" value="https://quizard-v3-new-4fb72be6e76b.herokuapp.com/" required />
-        </div>
-
-        <!-- Category Name -->
-        <div class="form-group">
-          <label class="form-label" for="qz-category">Category Name</label>
-          <input type="text" id="qz-category" class="form-input" value="DROPPER Tests" placeholder="e.g. DROPPER Tests" required />
-          <div style="display: flex; gap: 0.4rem; margin-top: 0.5rem; flex-wrap: wrap; align-items: center;">
-            <span style="font-size: 0.78rem; color: var(--text-muted);">Quick picks:</span>
-            <span class="chip-badge qz-cat-chip" data-cat="DROPPER Tests">DROPPER Tests</span>
-            <span class="chip-badge qz-cat-chip" data-cat="11th Tests">11th Tests</span>
-            <span class="chip-badge qz-cat-chip" data-cat="12th Tests">12th Tests</span>
-            <span class="chip-badge qz-cat-chip" data-cat="NEET Tests">NEET Tests</span>
-            <span class="chip-badge qz-cat-chip" data-cat="JEE Tests">JEE Tests</span>
-          </div>
-        </div>
-
-        <!-- Batch Names -->
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <label class="form-label" for="qz-batches" style="margin-bottom: 0;">Batch Name(s) or 'all'</label>
-            <button type="button" id="qz-btn-set-all" class="chip-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">
-              ⚡ Set to 'all'
-            </button>
-          </div>
-          <input type="text" id="qz-batches" class="form-input" value="all" placeholder="e.g. all or Yakeen NEET 2025, Lakshya NEET" required />
-          <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.35rem; display: block;">
-            Type <code>all</code> to automatically discover every batch in this category, or specify comma-separated batch names.
-          </small>
-        </div>
-
-        <!-- Execution Options -->
-        <div class="grid-2">
-          <div class="form-group" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 0.85rem 1rem; border-radius: 0.75rem;">
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text); font-size: 0.9rem; font-weight: 500;">
-              <input type="checkbox" id="qz-use-syllabus" checked style="accent-color: #6366f1; width: 16px; height: 16px;">
-              <span>📜 Rich Syllabus API Extraction</span>
-            </label>
-            <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem; display: block;">
-              Queries background API for exact subject instructions &amp; formats for Quizzy.
-            </small>
-          </div>
-
-          <div class="form-group" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 0.85rem 1rem; border-radius: 0.75rem;">
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text); font-size: 0.9rem; font-weight: 500;">
-              <input type="checkbox" id="qz-headless" checked style="accent-color: #6366f1; width: 16px; height: 16px;">
-              <span>🖥️ Headless Mode (Quiet)</span>
-            </label>
-            <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem; display: block;">
-              Keep checked for background operation, or uncheck to watch the browser live.
-            </small>
-          </div>
-        </div>
-
-        <!-- Buttons -->
-        <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
-          <button type="submit" id="qz-btn-start" class="btn-submit" style="flex: 2; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);">
-            🚀 Start Quizard Extraction
-          </button>
-          <button type="button" id="qz-btn-stop" class="btn-submit" disabled style="flex: 1; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; box-shadow: none;">
-            ⏹️ Abort / Stop
-          </button>
-        </div>
-
-        <!-- Live Progress Panel -->
-        <div class="progress-panel" id="qz-progress-panel" style="display: none; margin-top: 1.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span id="qz-state-badge" class="hero-badge" style="margin-bottom: 0; padding: 0.2rem 0.6rem; font-size: 0.75rem;">
-                RUNNING
-              </span>
-              <span id="qz-status-msg" style="font-size: 0.88rem; color: var(--text); font-weight: 500;">Processing...</span>
+        <form id="quizard-form">
+          <div class="form-group">
+            <label class="form-label" for="qz-category">Category Name</label>
+            <input type="text" id="qz-category" class="form-input" placeholder="e.g. Yakeen NEET 2.0 2026, Aarambh, etc." required>
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem;">
+              <span class="chip-badge" onclick="document.getElementById('qz-category').value='Yakeen NEET 2.0 2026'">Yakeen NEET 2.0 2026</span>
+              <span class="chip-badge" onclick="document.getElementById('qz-category').value='Aarambh 2026'">Aarambh 2026</span>
+              <span class="chip-badge" onclick="document.getElementById('qz-category').value='Prayas JEE 2026'">Prayas JEE 2026</span>
             </div>
-            <span id="qz-status-pct" style="font-weight: 700; color: #818cf8; font-size: 0.95rem;">0%</span>
           </div>
 
-          <div class="progress-bar-bg" style="margin-bottom: 0.75rem;">
-            <div class="progress-bar-fill" id="qz-progress-fill" style="background: linear-gradient(90deg, #a855f7, #6366f1, #34d399);"></div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="qz-batches">Batches to Extract</label>
+              <input type="text" id="qz-batches" class="form-input" value="all" placeholder="'all' or comma/range (e.g. 1-3, 5)">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="qz-base-url">Quizard Base URL</label>
+              <input type="text" id="qz-base-url" class="form-input" value="https://quizard-v3-new-4fb72be6e76b.herokuapp.com/">
+            </div>
           </div>
 
-          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
-            <div>Active Batch: <strong id="qz-active-batch" style="color: var(--text);">-</strong></div>
-            <div>Active Test: <strong id="qz-active-test" style="color: var(--text);">-</strong></div>
-          </div>
-        </div>
-      </form>
-
-      <!-- Live Terminal Viewer -->
-      <div style="margin-top: 1.75rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-          <label class="form-label" style="margin-bottom: 0; display: flex; align-items: center; gap: 0.5rem;">
-            <span>💻 Live Extraction Log Console</span>
-            <span id="qz-log-counter" style="font-size: 0.75rem; color: var(--text-muted);">(0 lines)</span>
-          </label>
-          <div style="display: flex; gap: 0.6rem; align-items: center;">
-            <label style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
-              <input type="checkbox" id="qz-chk-autoscroll" checked style="accent-color: #6366f1;"> Auto-scroll
+          <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center;">
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">
+              <input type="checkbox" id="qz-syllabus" checked> 📋 Extract Syllabus via API
             </label>
-            <button type="button" id="qz-btn-clear-logs" class="chip-badge" style="background: transparent; color: var(--text-muted);">
-              Clear
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">
+              <input type="checkbox" id="qz-headless" checked> 🕶 Headless Browser Mode
+            </label>
+          </div>
+
+          <div style="display: flex; gap: 1rem;">
+            <button type="submit" id="qz-btn-start" class="btn btn-primary" style="flex: 1;">
+              🚀 Start Quizard Extraction
+            </button>
+            <button type="button" id="qz-btn-stop" class="btn btn-danger" style="display: none;">
+              🛑 Stop
+            </button>
+            <button type="button" id="qz-btn-folder" class="btn btn-secondary" onclick="openFolder('quizard')">
+              📂 Open Folder
             </button>
           </div>
+        </form>
+
+        <!-- Live Terminal for Quizard -->
+        <div class="terminal-container">
+          <div class="terminal-header">
+            <div class="terminal-title">
+              <div class="terminal-indicator" id="qz-term-indicator"></div>
+              <span>QUIZARD LOGS</span>
+            </div>
+            <div class="terminal-actions">
+              <button class="terminal-action-btn" onclick="clearTerminal('qz-terminal-body')">Clear</button>
+              <button class="terminal-action-btn" onclick="copyLogs('qz-terminal-body')">Copy</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="qz-terminal-body">
+            <div class="log-line"><span class="log-time">[Ready]</span> <span class="log-msg">Quizard Extractor standing by...</span></div>
+          </div>
         </div>
-        <div id="qz-terminal" class="qz-terminal">
-          <div style="color: #64748b; font-style: italic;">Quizard log console ready. Click "Start Quizard Extraction" to begin.</div>
+
+        <!-- Quizard Downloads -->
+        <div id="qz-downloads-section" style="margin-top: 1.75rem;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--text);">📦 Generated Quizzy Packages</h3>
+          <div id="qz-downloads-list">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">No packages extracted yet in this session.</p>
+          </div>
         </div>
       </div>
+    </div>
 
-      <!-- Execution Summary & Downloads (Visible when finished or has files) -->
-      <div id="qz-summary-section" style="display: none; margin-top: 2rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <h3 style="color: var(--text); font-size: 1.25rem; font-weight: 700; margin: 0;">
-            📊 Execution Summary &amp; Output Files
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: RAY BOOK EXTRACTOR -->
+    <!-- ========================================================================= -->
+    <div id="view-ray-book" style="display: none;">
+      <div class="hero-card">
+        <div class="hero-header">
+          <span class="hero-badge">PW &amp; STREAMFILES BOOK DECRYPTOR</span>
+          <h1 class="hero-title">Ray Book Batch Extractor</h1>
+          <p class="hero-desc">Batch download up to 30 encrypted books, reverse XOR ciphers, and synthesize nanmedian templates to eliminate repeating watermarks.</p>
+        </div>
+
+        <form id="ray-form">
+          <!-- Global Configuration -->
+          <div class="card">
+            <h3 style="font-size: 1.05rem; margin-bottom: 1rem; color: #818cf8; display: flex; align-items: center; gap: 0.5rem;">
+              ⚙️ Global Settings
+            </h3>
+            <div class="form-group">
+              <label class="form-label" for="ray-token" style="display: flex; justify-content: space-between;">
+                <span>Authorization Bearer Token</span>
+                <span style="font-size: 0.75rem; color: #818cf8; cursor: pointer;" onclick="clearSavedToken()">Reset Token</span>
+              </label>
+              <input type="password" id="ray-token" class="form-input" placeholder="Bearer eyJ0eXAiOiJKV1QiLC..." required>
+              <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.35rem; display: block;">
+                Token is auto-saved in your browser localStorage. Paste from browser viewer network headers.
+              </small>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="ray-zip-name">Master Consolidated ZIP Name</label>
+                <input type="text" id="ray-zip-name" class="form-input" value="Extracted_Books.zip" placeholder="Extracted_Books.zip">
+              </div>
+
+              <div class="form-group" style="display: flex; align-items: center; padding-top: 1.6rem;">
+                <label style="display: flex; align-items: center; gap: 0.55rem; cursor: pointer; color: var(--text); font-weight: 500;">
+                  <input type="checkbox" id="ray-watermark-toggle" checked style="width: 18px; height: 18px;">
+                  ✨ Auto-Remove Watermarks (Template Synthesis)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Book Items Form (Up to 30) -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div>
+                <h3 style="font-size: 1.05rem; color: var(--text); font-weight: 600;">
+                  📚 Target Book URLs &amp; Custom Names (<span id="ray-book-count">1</span>/30)
+                </h3>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Fill Target URL (or asset_ref) and your desired custom file name.</span>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <button type="button" class="btn btn-secondary" style="padding: 0.45rem 0.85rem; font-size: 0.82rem;" onclick="openBulkPasteModal()">
+                  📋 Bulk Paste
+                </button>
+                <button type="button" class="btn btn-secondary" style="padding: 0.45rem 0.85rem; font-size: 0.82rem;" onclick="clearAllBookRows()">
+                  Clear All
+                </button>
+              </div>
+            </div>
+
+            <!-- Book Rows Grid -->
+            <div class="book-rows-container" id="ray-book-rows">
+              <!-- Dynamically populated rows -->
+            </div>
+
+            <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+              <button type="button" id="ray-add-row-btn" class="btn btn-secondary" onclick="addBookRow()">
+                ➕ Add Another Book URL
+              </button>
+              <span id="ray-limit-msg" style="color: var(--text-muted); font-size: 0.82rem;">Maximum 30 books per batch</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" id="ray-btn-start" class="btn btn-primary" style="flex: 1; padding: 1rem;">
+              🚀 Start Batch Extraction
+            </button>
+            <button type="button" id="ray-btn-stop" class="btn btn-danger" style="display: none; padding: 1rem;">
+              🛑 Stop Extraction
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="openFolder('ray-book')">
+              📂 Open Outputs Folder
+            </button>
+          </div>
+        </form>
+
+        <!-- Live Progress Bar -->
+        <div id="ray-progress-panel" style="display: none; margin-top: 1.75rem; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span id="ray-status-text" style="font-weight: 600; font-size: 0.95rem; color: var(--text);">Processing...</span>
+            <span id="ray-progress-pct" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent);">0%</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="ray-progress-fill"></div>
+          </div>
+        </div>
+
+        <!-- Live Terminal for Ray Book -->
+        <div class="terminal-container">
+          <div class="terminal-header">
+            <div class="terminal-title">
+              <div class="terminal-indicator" id="ray-term-indicator"></div>
+              <span>RAY BOOK EXTRACTOR LOGS</span>
+            </div>
+            <div class="terminal-actions">
+              <button class="terminal-action-btn" onclick="clearTerminal('ray-terminal-body')">Clear</button>
+              <button class="terminal-action-btn" onclick="copyLogs('ray-terminal-body')">Copy</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="ray-terminal-body">
+            <div class="log-line"><span class="log-time">[Ready]</span> <span class="log-msg">Ray Book Extractor standing by... Add URLs and click Start.</span></div>
+          </div>
+        </div>
+
+        <!-- Download Section for Ray Book -->
+        <div id="ray-downloads-section" style="margin-top: 2rem;">
+          <h3 style="font-size: 1.15rem; margin-bottom: 1rem; color: var(--text);">
+            📥 Download Extracted Books
           </h3>
-          <button type="button" id="qz-btn-open-folder" class="btn" style="padding: 0.4rem 0.85rem; background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 0.5rem; font-size: 0.82rem; cursor: pointer;">
-            📂 Open Output Folder
-          </button>
-        </div>
 
-        <!-- 4-Stat Grid -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.85rem; margin-bottom: 1.25rem;">
-          <div class="qz-stat-card">
-            <div class="qz-stat-label">Batches</div>
-            <div class="qz-stat-value" id="qz-sum-batches" style="color: #a78bfa;">0</div>
-          </div>
-          <div class="qz-stat-card">
-            <div class="qz-stat-label">Tests Saved</div>
-            <div class="qz-stat-value" id="qz-sum-saved" style="color: #34d399;">0</div>
-          </div>
-          <div class="qz-stat-card clickable" id="qz-card-skipped" title="Click to view duplicate tests with batch names" role="button" tabindex="0">
-            <div class="qz-stat-label" id="qz-stat-3-label">Duplicates</div>
-            <div class="qz-stat-value" id="qz-sum-skipped" style="color: #60a5fa;">0</div>
-            <span class="qz-stat-hint">👆 Click to view</span>
-          </div>
-          <div class="qz-stat-card clickable" id="qz-card-failed" title="Click to view failed tests" role="button" tabindex="0">
-            <div class="qz-stat-label">Failed</div>
-            <div class="qz-stat-value" id="qz-sum-failed" style="color: #f87171;">0</div>
-            <span class="qz-stat-hint" style="color: #f87171;">👆 Click to view</span>
-          </div>
-        </div>
-
-        <!-- Success Banner -->
-        <div id="qz-success-banner" style="display: none; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.25rem; text-align: center; color: #34d399; font-weight: 600;">
-          🎉 All tests completed successfully! No errors found.
-        </div>
-
-        <!-- Duplicates & Skipped Tests Callout / Drawer (Expandable) -->
-        <div id="qz-skipped-box" style="display: none; background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div style="color: #60a5fa; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">
-              <span>📑 Duplicate Tests Handled (Both Copies Extracted &amp; Saved)</span>
-              <span id="qz-skipped-inline-count" class="chip-badge" style="background: rgba(96, 165, 250, 0.2); color: #93c5fd;">0 tests</span>
+          <!-- Consolidated Master ZIP Card -->
+          <div id="ray-master-zip-card" style="display: none; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 1rem; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <span style="display: inline-block; padding: 0.2rem 0.5rem; background: #10b981; color: black; font-weight: 700; font-size: 0.72rem; border-radius: 0.35rem; margin-bottom: 0.4rem;">CONSOLIDATED ARCHIVE</span>
+              <h4 id="ray-zip-card-name" style="font-size: 1.1rem; color: white;">Extracted_Books.zip</h4>
+              <span id="ray-zip-card-meta" style="font-size: 0.82rem; color: var(--text-muted);">All books inside with custom names</span>
             </div>
-            <div style="display: flex; gap: 0.5rem;">
-              <button type="button" id="qz-btn-open-skipped-modal" class="pill-btn" style="padding: 0.35rem 0.75rem; background: rgba(96, 165, 250, 0.2); color: #93c5fd; border: 1px solid rgba(96, 165, 250, 0.4); border-radius: 0.4rem; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
-                🔍 Detailed View
-              </button>
-              <button type="button" id="qz-btn-copy-skipped" class="pill-btn" style="padding: 0.35rem 0.75rem; background: #3b82f6; color: white; border: none; border-radius: 0.4rem; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
-                📋 Copy Duplicates List
-              </button>
-            </div>
+            <a id="ray-zip-download-btn" href="#" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+              📦 Download Full ZIP
+            </a>
           </div>
-          <p style="color: var(--text-muted); font-size: 0.78rem; margin-bottom: 0.6rem;">
-            These tests shared identical names within the same batch. Neither test was skipped—both were fully extracted and saved with distinct filenames (e.g. <code>_2.json</code>).
-          </p>
-          <div id="qz-skipped-list" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #bfdbfe; max-height: 180px; overflow-y: auto;">
+
+          <!-- Individual Files List -->
+          <div id="ray-individual-downloads">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">No extracted book files yet in this session.</p>
           </div>
         </div>
 
-        <!-- Failed Tests Callout -->
-        <div id="qz-failed-box" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-            <div style="color: #f87171; font-weight: 600; font-size: 0.95rem;">
-              ⚠️ Some Tests Failed to Generate
-            </div>
-            <button type="button" id="qz-btn-copy-failed" class="pill-btn" style="padding: 0.35rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 0.4rem; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
-              📋 Copy Failed Batches to Retry
-            </button>
-          </div>
-          <div id="qz-failed-list" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #fca5a5; max-height: 120px; overflow-y: auto;">
-          </div>
-        </div>
-
-        <!-- Generated ZIP Packages -->
-        <div style="margin-bottom: 1rem;">
-          <label class="form-label">📦 Generated ZIP Packages (Ready for Quizzy)</label>
-          <div id="qz-zip-list">
-            <div style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No ZIP packages generated yet.</div>
-          </div>
-        </div>
-
-        <!-- Generated Test JSON Files -->
-        <div>
-          <label class="form-label">📄 Extracted Test JSON Files</label>
-          <div id="qz-json-list" style="max-height: 220px; overflow-y: auto;">
-            <div style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No JSON files generated yet.</div>
-          </div>
-        </div>
       </div>
     </div>
-  </div> <!-- /#view-quizard -->
+
+  </div>
+
+  <!-- Bulk Paste Modal -->
+  <div class="modal-backdrop" id="bulk-paste-modal">
+    <div class="modal-card">
+      <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: white;">📋 Bulk Paste Target URLs</h3>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+        Paste one entry per line (up to 30). Formats supported:<br>
+        1. <code>https://books.streamfiles... | Custom Book Name</code><br>
+        2. <code>https://books.streamfiles...</code> (auto-named Book 1, Book 2, etc.)
+      </p>
+      <textarea id="bulk-paste-textarea" class="form-textarea" rows="10" placeholder="https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 1 Electrostatics
+https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"></textarea>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeBulkPasteModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="applyBulkPaste()">Import Rows</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    // Mode Switcher Elements
-    const modeBtnPdf = document.getElementById('mode-btn-pdf');
-    const modeBtnJson = document.getElementById('mode-btn-json');
-    const uploadForm = document.getElementById('upload-form');
-    const manualJsonForm = document.getElementById('manual-json-form');
+    // ==========================================
+    //            TAB VIEW SWITCHING
+    // ==========================================
+    const navBtnQuizard = document.getElementById('nav-btn-quizard');
+    const navBtnRayBook = document.getElementById('nav-btn-ray-book');
+    const viewQuizard = document.getElementById('view-quizard');
+    const viewRayBook = document.getElementById('view-ray-book');
 
-    // PDF Upload Form Elements
-    const apiKeyInput = document.getElementById('api-key');
-    const chunkModeSelect = document.getElementById('chunk-mode');
-    const chunkSizeSelect = document.getElementById('chunk-size');
-    const chunkSizeContainer = document.getElementById('chunk-size-container');
-    const dropzone = document.getElementById('dropzone');
-    const fileInput = document.getElementById('pdf-file-input');
-    const dropzoneTitle = document.getElementById('dropzone-title');
-    const dropzoneSub = document.getElementById('dropzone-sub');
-    const btnSubmit = document.getElementById('btn-submit');
-    const progressPanel = document.getElementById('progress-panel');
-    const progressFill = document.getElementById('progress-fill');
-    const progressMsg = document.getElementById('progress-msg');
-    const progressPct = document.getElementById('progress-pct');
-
-    const promptTabs = document.querySelectorAll('.prompt-tab-btn');
-    const promptPanes = document.querySelectorAll('.prompt-pane');
-
-    // Manual JSON Import Form Elements
-    const jsonDropzone = document.getElementById('json-dropzone');
-    const jsonFileInput = document.getElementById('json-file-input');
-    const jsonDropzoneTitle = document.getElementById('json-dropzone-title');
-    const jsonDropzoneSub = document.getElementById('json-dropzone-sub');
-    const manualJsonText = document.getElementById('manual-json-text');
-    const manualJsonTitle = document.getElementById('manual-json-title');
-    const btnImportJson = document.getElementById('btn-import-json');
-    const importStatus = document.getElementById('import-status');
-
-    let selectedFile = null;
-    let selectedJsonFile = null;
-
-    // Mode Switcher Handlers
-    if (modeBtnPdf && modeBtnJson) {
-      modeBtnPdf.addEventListener('click', () => {
-        modeBtnPdf.style.background = 'var(--primary)';
-        modeBtnPdf.style.color = 'white';
-        modeBtnJson.style.background = 'transparent';
-        modeBtnJson.style.color = 'var(--text-muted)';
-        uploadForm.style.display = 'block';
-        manualJsonForm.style.display = 'none';
-      });
-
-      modeBtnJson.addEventListener('click', () => {
-        modeBtnJson.style.background = 'var(--primary)';
-        modeBtnJson.style.color = 'white';
-        modeBtnPdf.style.background = 'transparent';
-        modeBtnPdf.style.color = 'var(--text-muted)';
-        uploadForm.style.display = 'none';
-        manualJsonForm.style.display = 'block';
-      });
+    function switchView(viewName) {
+      if (viewName === 'quizard') {
+        navBtnQuizard.classList.add('active');
+        navBtnRayBook.classList.remove('active');
+        viewQuizard.style.display = 'block';
+        viewRayBook.style.display = 'none';
+        localStorage.setItem('active_view', 'quizard');
+      } else {
+        navBtnRayBook.classList.add('active');
+        navBtnQuizard.classList.remove('active');
+        viewRayBook.style.display = 'block';
+        viewQuizard.style.display = 'none';
+        localStorage.setItem('active_view', 'ray-book');
+      }
     }
 
-    // Prompt Tabs Switching
-    promptTabs.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const targetTab = btn.getAttribute('data-tab');
-        promptTabs.forEach(b => {
-          b.classList.remove('active');
-          b.style.background = 'rgba(255,255,255,0.1)';
-          b.style.color = 'var(--text)';
-        });
-        btn.classList.add('active');
-        btn.style.background = 'var(--primary)';
-        btn.style.color = 'white';
+    navBtnQuizard.addEventListener('click', () => switchView('quizard'));
+    navBtnRayBook.addEventListener('click', () => switchView('ray-book'));
 
-        promptPanes.forEach(pane => pane.style.display = 'none');
-        const activePane = document.getElementById(`${targetTab}-pane`);
-        if (activePane) activePane.style.display = 'block';
-      });
+    // Restore tab
+    const savedView = localStorage.getItem('active_view');
+    if (savedView === 'ray-book') {
+      switchView('ray-book');
+    }
+
+    // ==========================================
+    //        HELPER: TERMINAL FUNCTIONS
+    // ==========================================
+    function appendLog(termId, timeStr, msgStr, levelStr) {
+      const term = document.getElementById(termId);
+      if (!term) return;
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      line.innerHTML = `<span class="log-time">[${timeStr}]</span> <span class="log-msg log-${levelStr}">${escapeHtml(msgStr)}</span>`;
+      term.appendChild(line);
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function clearTerminal(termId) {
+      const term = document.getElementById(termId);
+      if (term) term.innerHTML = '';
+    }
+
+    function copyLogs(termId) {
+      const term = document.getElementById(termId);
+      if (!term) return;
+      const text = Array.from(term.querySelectorAll('.log-line')).map(l => l.innerText).join('\n');
+      navigator.clipboard.writeText(text);
+      alert('Logs copied to clipboard!');
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function openFolder(target) {
+      const ep = target === 'ray-book' ? '/api/ray-book/open-folder' : '/api/quizard/open-folder';
+      fetch(ep, { method: 'POST' })
+        .then(r => r.json())
+        .then(d => {
+          if (d.success) console.log('Folder opened:', d.path);
+        })
+        .catch(err => console.error(err));
+    }
+
+    // ==========================================
+    //       QUIZARD EXTRACTOR LOGIC
+    // ==========================================
+    let qzPolling = null;
+    let qzLastLogIdx = 0;
+
+    const qzForm = document.getElementById('quizard-form');
+    const qzBtnStart = document.getElementById('qz-btn-start');
+    const qzBtnStop = document.getElementById('qz-btn-stop');
+
+    qzForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        category: document.getElementById('qz-category').value.trim(),
+        batches: document.getElementById('qz-batches').value.trim(),
+        base_url: document.getElementById('qz-base-url').value.trim(),
+        use_api_syllabus: document.getElementById('qz-syllabus').checked,
+        headless: document.getElementById('qz-headless').checked
+      };
+
+      qzBtnStart.disabled = true;
+      qzBtnStop.style.display = 'inline-flex';
+      qzLastLogIdx = 0;
+      clearTerminal('qz-terminal-body');
+
+      try {
+        const res = await fetch('/api/quizard/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await res.json();
+        if (d.error) {
+          alert('Error starting Quizard job: ' + d.error);
+          qzBtnStart.disabled = false;
+          qzBtnStop.style.display = 'none';
+          return;
+        }
+        startQuizardPolling();
+      } catch (err) {
+        alert('Failed to contact server: ' + err);
+        qzBtnStart.disabled = false;
+        qzBtnStop.style.display = 'none';
+      }
     });
 
-    if (chunkModeSelect) {
-      chunkModeSelect.addEventListener('change', () => {
-        if (chunkModeSelect.value === 'single') {
-          chunkSizeContainer.style.display = 'none';
-        } else {
-          chunkSizeContainer.style.display = 'block';
-        }
-      });
-    }
+    qzBtnStop.addEventListener('click', async () => {
+      await fetch('/api/quizard/stop', { method: 'POST' });
+    });
 
-    // PDF Dropzone Events
-    if (dropzone && fileInput) {
-      dropzone.addEventListener('click', () => fileInput.click());
-      fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-          setFile(e.target.files[0]);
-        }
-      });
-
-      dropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropzone.classList.add('dragover');
-      });
-
-      dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-
-      dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-        if (e.dataTransfer.files.length > 0) {
-          setFile(e.dataTransfer.files[0]);
-        }
-      });
-    }
-
-    function setFile(file) {
-      if (!file.name.toLowerCase().endsWith('.pdf')) {
-        alert('Please upload a valid PDF file.');
-        return;
-      }
-      selectedFile = file;
-      dropzoneTitle.textContent = `Selected: ${file.name}`;
-      dropzoneSub.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
-      validateForm();
-    }
-
-    function validateForm() {
-      if (btnSubmit) {
-        btnSubmit.disabled = !selectedFile;
-      }
-    }
-
-    // PDF Upload Form Submission
-    if (uploadForm) {
-      uploadForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!selectedFile) return;
-
-        // INSTANT VISUAL FEEDBACK & BUTTON LOCK
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '⏳ Uploading & Launching AI Pipeline...';
-        btnSubmit.style.opacity = '0.7';
-        btnSubmit.style.cursor = 'not-allowed';
-
-        if (progressPanel) {
-          progressPanel.style.display = 'block';
-          progressFill.style.width = '8%';
-          progressPct.textContent = '8%';
-          progressMsg.textContent = 'Uploading PDF and starting AI scraper browser session...';
-        }
-
-        const apiKey = (apiKeyInput ? apiKeyInput.value.trim() : '');
-        const chunkSize = chunkModeSelect.value === 'single' ? 0 : parseInt(chunkSizeSelect.value, 10);
-
-        // Collect AI Order from checkboxes
-        const aiOrder = [];
-        const dsCheck = document.getElementById('ai-deepseek');
-        const qwCheck = document.getElementById('ai-qwen');
-        const pxCheck = document.getElementById('ai-perplexity');
-        const gkCheck = document.getElementById('ai-grok');
-        if (dsCheck && dsCheck.checked) aiOrder.push('deepseek');
-        if (qwCheck && qwCheck.checked) aiOrder.push('qwen');
-        if (pxCheck && pxCheck.checked) aiOrder.push('perplexity');
-        if (gkCheck && gkCheck.checked) aiOrder.push('grok');
-        if (aiOrder.length === 0) aiOrder.push('deepseek');
-
-        const akModeRadio = document.querySelector('input[name="answer-key-mode"]:checked');
-        const akMode = akModeRadio ? akModeRadio.value : 'last';
-        const akPagesInput = document.getElementById('answer-key-pages');
-        const akPages = akPagesInput ? akPagesInput.value.trim() : '';
-
-        const formData = new FormData();
-        formData.append('pdf', selectedFile);
-        formData.append('apiKey', apiKey);
-        formData.append('chunkSize', chunkSize.toString());
-        formData.append('aiOrder', JSON.stringify(aiOrder));
-        formData.append('answerKeyMode', akMode);
-        formData.append('answerKeyPages', akPages);
-
-        for (let pIdx = 1; pIdx <= 10; pIdx++) {
-          const el = document.getElementById(`prompt-${pIdx}`);
-          const pVal = el ? el.value.trim() : '';
-          formData.append(`prompt${pIdx}`, pVal);
-        }
-
+    function startQuizardPolling() {
+      if (qzPolling) clearInterval(qzPolling);
+      qzPolling = setInterval(async () => {
         try {
-          const res = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData
-          });
-          const data = await res.json();
-          if (data.error) throw new Error(data.error);
+          const res = await fetch(`/api/quizard/status?since=${qzLastLogIdx}`);
+          const d = await res.json();
 
-          // Start polling status
-          pollJobStatus();
-        } catch (err) {
-          alert('Upload failed: ' + err.message);
-          btnSubmit.disabled = false;
-          btnSubmit.innerHTML = '🚀 Start Parsing PDF via AI Scraper';
-          btnSubmit.style.opacity = '1';
-          btnSubmit.style.cursor = 'pointer';
-          progressPanel.style.display = 'none';
-        }
-      });
-    }
+          if (d.logs && d.logs.length > 0) {
+            d.logs.forEach(l => appendLog('qz-terminal-body', l.time, l.msg, l.level));
+            qzLastLogIdx += d.logs.length;
+          }
 
-    function pollJobStatus() {
-      const interval = setInterval(async () => {
-        try {
-          const res = await fetch('/api/status');
-          const job = await res.json();
+          if (d.zip_files && d.zip_files.length > 0) {
+            renderQuizardDownloads(d.zip_files);
+          }
 
-          if (job.state === 'running') {
-            const pct = Math.max(15, Math.min(95, Math.round((job.done / job.total) * 100)));
-            progressFill.style.width = `${pct}%`;
-            progressPct.textContent = `${pct}%`;
-            progressMsg.textContent = job.message || 'Processing...';
-          } else if (job.state === 'finished') {
-            clearInterval(interval);
-            progressFill.style.width = '100%';
-            progressPct.textContent = '100%';
-            progressMsg.textContent = 'Done! Opening Review Studio...';
-            setTimeout(() => {
-              window.location.href = '/studio';
-            }, 800);
-          } else if (job.state === 'error') {
-            clearInterval(interval);
-            alert('Error: ' + job.message);
-            btnSubmit.disabled = false;
-            progressPanel.style.display = 'none';
+          if (d.state === 'finished' || d.state === 'stopped' || d.state === 'error' || d.state === 'idle') {
+            clearInterval(qzPolling);
+            qzBtnStart.disabled = false;
+            qzBtnStop.style.display = 'none';
           }
         } catch (e) {
-          console.error(e);
+          console.error('Polling error', e);
         }
       }, 1500);
     }
 
-    // Manual JSON Dropzone & File Handling
-    if (jsonDropzone && jsonFileInput) {
-      jsonDropzone.addEventListener('click', () => jsonFileInput.click());
-      jsonFileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-          handleJsonFile(e.target.files[0]);
-        }
-      });
-
-      jsonDropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        jsonDropzone.classList.add('dragover');
-      });
-
-      jsonDropzone.addEventListener('dragleave', () => jsonDropzone.classList.remove('dragover'));
-
-      jsonDropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        jsonDropzone.classList.remove('dragover');
-        if (e.dataTransfer.files.length > 0) {
-          handleJsonFile(e.dataTransfer.files[0]);
-        }
-      });
-    }
-
-    function handleJsonFile(file) {
-      if (!file.name.toLowerCase().endsWith('.json')) {
-        alert('Please select a valid .json file.');
-        return;
-      }
-      selectedJsonFile = file;
-      jsonDropzoneTitle.textContent = `Selected: ${file.name}`;
-      jsonDropzoneSub.textContent = `${(file.size / 1024).toFixed(1)} KB`;
-      if (!manualJsonTitle.value) {
-        manualJsonTitle.value = file.name.replace(/\.json$/i, '');
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        manualJsonText.value = event.target.result;
-      };
-      reader.readAsText(file);
-    }
-
-    if (manualJsonForm) {
-      manualJsonForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const rawText = manualJsonText.value.trim();
-        const title = manualJsonTitle.value.trim() || 'Manual Import';
-
-        if (!rawText) {
-          alert('Please paste JSON text or select a .json file.');
-          return;
-        }
-
-        // Quick validate JSON client-side
-        try {
-          let clean = rawText;
-          if (clean.startsWith('```')) {
-            clean = clean.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
-          }
-          JSON.parse(clean);
-        } catch (err) {
-          alert('Invalid JSON syntax: ' + err.message);
-          return;
-        }
-
-        btnImportJson.disabled = true;
-        btnImportJson.textContent = '⏳ Loading questions into Studio...';
-        importStatus.style.display = 'block';
-        importStatus.style.background = 'rgba(99, 102, 241, 0.15)';
-        importStatus.style.color = '#818cf8';
-        importStatus.textContent = 'Formatting dataset and redirecting to Studio...';
-
-        try {
-          const res = await fetch('/api/import-json', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              json_text: rawText,
-              title: title
-            })
-          });
-
-          const resData = await res.json();
-          if (resData.error) throw new Error(resData.error);
-
-          importStatus.style.background = 'rgba(16, 185, 129, 0.15)';
-          importStatus.style.color = '#34d399';
-          importStatus.textContent = `Success! Loaded ${resData.count} questions. Opening Studio...`;
-
-          setTimeout(() => {
-            window.location.href = '/studio';
-          }, 600);
-        } catch (err) {
-          btnImportJson.disabled = false;
-          btnImportJson.textContent = '📥 Load JSON into Review Studio';
-          importStatus.style.background = 'rgba(239, 68, 68, 0.15)';
-          importStatus.style.color = '#f87171';
-          importStatus.textContent = 'Error: ' + err.message;
-        }
-      });
-    }
-
-    // ==========================================
-    // SPA Top-Level Navigation Switcher (No Reload)
-    // ==========================================
-    const navBtnAllen = document.getElementById('nav-btn-allen');
-    const navBtnQuizard = document.getElementById('nav-btn-quizard');
-    const viewAllen = document.getElementById('view-allen');
-    const viewQuizard = document.getElementById('view-quizard');
-
-    function switchView(viewName) {
-      if (viewName === 'quizard') {
-        viewAllen.style.display = 'none';
-        viewQuizard.style.display = 'block';
-        navBtnQuizard.classList.add('active');
-        navBtnAllen.classList.remove('active');
-        window.location.hash = '#quizard';
-        checkQuizardRunningStatus();
-      } else {
-        viewQuizard.style.display = 'none';
-        viewAllen.style.display = 'block';
-        navBtnAllen.classList.add('active');
-        navBtnQuizard.classList.remove('active');
-        window.location.hash = '#allen';
-      }
-    }
-
-    if (navBtnAllen && navBtnQuizard) {
-      navBtnAllen.addEventListener('click', () => switchView('allen'));
-      navBtnQuizard.addEventListener('click', () => switchView('quizard'));
-    }
-
-    // Check hash on load
-    if (window.location.hash === '#quizard') {
-      switchView('quizard');
-    }
-
-    // ==========================================
-    // Quizard Extractor Client Controller
-    // ==========================================
-    const qzForm = document.getElementById('quizard-form');
-    const qzBaseUrlInput = document.getElementById('qz-base-url');
-    const qzBtnResetUrl = document.getElementById('qz-btn-reset-url');
-    const qzCategoryInput = document.getElementById('qz-category');
-    const qzBatchesInput = document.getElementById('qz-batches');
-    const qzBtnSetAll = document.getElementById('qz-btn-set-all');
-    const qzUseSyllabusChk = document.getElementById('qz-use-syllabus');
-    const qzHeadlessChk = document.getElementById('qz-headless');
-    const qzBtnStart = document.getElementById('qz-btn-start');
-    const qzBtnStop = document.getElementById('qz-btn-stop');
-
-    const qzProgressPanel = document.getElementById('qz-progress-panel');
-    const qzStateBadge = document.getElementById('qz-state-badge');
-    const qzStatusMsg = document.getElementById('qz-status-msg');
-    const qzStatusPct = document.getElementById('qz-status-pct');
-    const qzProgressFill = document.getElementById('qz-progress-fill');
-    const qzActiveBatch = document.getElementById('qz-active-batch');
-    const qzActiveTest = document.getElementById('qz-active-test');
-
-    const qzTerminal = document.getElementById('qz-terminal');
-    const qzLogCounter = document.getElementById('qz-log-counter');
-    const qzChkAutoscroll = document.getElementById('qz-chk-autoscroll');
-    const qzBtnClearLogs = document.getElementById('qz-btn-clear-logs');
-
-    const qzSummarySection = document.getElementById('qz-summary-section');
-    const qzSumBatches = document.getElementById('qz-sum-batches');
-    const qzSumSaved = document.getElementById('qz-sum-saved');
-    const qzSumSkipped = document.getElementById('qz-sum-skipped');
-    const qzSumFailed = document.getElementById('qz-sum-failed');
-    const qzSuccessBanner = document.getElementById('qz-success-banner');
-    const qzFailedBox = document.getElementById('qz-failed-box');
-    const qzFailedList = document.getElementById('qz-failed-list');
-    const qzBtnCopyFailed = document.getElementById('qz-btn-copy-failed');
-    const qzZipList = document.getElementById('qz-zip-list');
-    const qzJsonList = document.getElementById('qz-json-list');
-    const qzBtnOpenFolder = document.getElementById('qz-btn-open-folder');
-
-    let qzPollInterval = null;
-    let qzLastLogIdx = 0;
-    let failedBatchesRetryStr = '';
-
-    // Quick pick category chips
-    document.querySelectorAll('.qz-cat-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        qzCategoryInput.value = chip.getAttribute('data-cat');
-        qzCategoryInput.focus();
-      });
-    });
-
-    if (qzBtnSetAll) {
-      qzBtnSetAll.addEventListener('click', () => {
-        qzBatchesInput.value = 'all';
-        qzBatchesInput.focus();
-      });
-    }
-
-    if (qzBtnResetUrl) {
-      qzBtnResetUrl.addEventListener('click', () => {
-        qzBaseUrlInput.value = 'https://quizard-v3-new-4fb72be6e76b.herokuapp.com/';
-      });
-    }
-
-    if (qzBtnClearLogs) {
-      qzBtnClearLogs.addEventListener('click', () => {
-        qzTerminal.innerHTML = '<div style="color: #64748b; font-style: italic;">Log cleared.</div>';
-        qzLogCounter.textContent = '(0 lines)';
-      });
-    }
-
-    if (qzBtnOpenFolder) {
-      qzBtnOpenFolder.addEventListener('click', async () => {
-        try {
-          await fetch('/api/quizard/open-folder', { method: 'POST' });
-        } catch (e) {
-          console.error('Error opening folder:', e);
-        }
-      });
-    }
-
-    if (qzBtnCopyFailed) {
-      qzBtnCopyFailed.addEventListener('click', () => {
-        if (!failedBatchesRetryStr) return;
-        navigator.clipboard.writeText(failedBatchesRetryStr).then(() => {
-          qzBatchesInput.value = failedBatchesRetryStr;
-          const origText = qzBtnCopyFailed.textContent;
-          qzBtnCopyFailed.textContent = '✅ Copied & Pasted to Input!';
-          setTimeout(() => { qzBtnCopyFailed.textContent = origText; }, 2000);
-        });
-      });
-    }
-
-    // Submit / Start Job
-    if (qzForm) {
-      qzForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const category = qzCategoryInput.value.trim();
-        const batches = qzBatchesInput.value.trim() || 'all';
-        const baseUrl = qzBaseUrlInput.value.trim();
-        const useSyllabus = qzUseSyllabusChk.checked;
-        const headless = qzHeadlessChk.checked;
-
-        if (!category) {
-          alert('Please specify a category name.');
-          return;
-        }
-
-        qzBtnStart.disabled = true;
-        qzBtnStart.textContent = '⏳ Launching Quizard Extraction...';
-        qzBtnStop.disabled = false;
-
-        qzProgressPanel.style.display = 'block';
-        qzStateBadge.textContent = 'STARTING';
-        qzStateBadge.style.background = 'rgba(99, 102, 241, 0.2)';
-        qzStateBadge.style.color = '#818cf8';
-        qzStatusMsg.textContent = 'Initializing Playwright runner...';
-        qzProgressFill.style.width = '5%';
-        qzStatusPct.textContent = '5%';
-
-        qzTerminal.innerHTML = '';
-        qzLastLogIdx = 0;
-
-        try {
-          const res = await fetch('/api/quizard/start', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              category: category,
-              batches: batches,
-              base_url: baseUrl,
-              use_api_syllabus: useSyllabus,
-              headless: headless
-            })
-          });
-
-          const data = await res.json();
-          if (data.error) throw new Error(data.error);
-
-          qzBtnStart.textContent = '⚡ Extraction In Progress...';
-          startQuizardPolling();
-        } catch (err) {
-          alert('Failed to start Quizard extraction: ' + err.message);
-          qzBtnStart.disabled = false;
-          qzBtnStart.textContent = '🚀 Start Quizard Extraction';
-          qzBtnStop.disabled = true;
-          qzProgressPanel.style.display = 'none';
-        }
-      });
-    }
-
-    // Stop Job
-    if (qzBtnStop) {
-      qzBtnStop.addEventListener('click', async () => {
-        qzBtnStop.disabled = true;
-        qzBtnStop.textContent = '⏳ Stopping...';
-        try {
-          await fetch('/api/quizard/stop', { method: 'POST' });
-        } catch (e) {
-          console.error(e);
-        }
-      });
-    }
-
-    function appendLogs(logs) {
-      if (!logs || logs.length === 0) return;
-      const frag = document.createDocumentFragment();
-      logs.forEach(item => {
-        const row = document.createElement('div');
-        row.className = 'qz-log-line';
-
-        let colorStyle = 'color: #cbd5e1;';
-        if (item.level === 'success') colorStyle = 'color: #34d399; font-weight: 500;';
-        else if (item.level === 'warning') colorStyle = 'color: #fbbf24;';
-        else if (item.level === 'error') colorStyle = 'color: #f87171; font-weight: 600;';
-        else if (item.level === 'batch') colorStyle = 'color: #c084fc; font-weight: 700;';
-
-        row.innerHTML = `<span style="color: #64748b; font-size: 0.78rem;">[${item.time}]</span> <span style="${colorStyle}">${escapeHtml(item.msg)}</span>`;
-        frag.appendChild(row);
-      });
-      qzTerminal.appendChild(frag);
-
-      if (qzChkAutoscroll.checked) {
-        qzTerminal.scrollTop = qzTerminal.scrollHeight;
-      }
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    function startQuizardPolling() {
-      if (qzPollInterval) clearInterval(qzPollInterval);
-      qzPollInterval = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/quizard/status?since=${qzLastLogIdx}`);
-          const job = await res.json();
-
-          if (job.state === 'idle') return;
-
-          // Logs
-          if (job.logs && job.logs.length > 0) {
-            appendLogs(job.logs);
-            qzLastLogIdx = job.log_total || (qzLastLogIdx + job.logs.length);
-            qzLogCounter.textContent = `(${qzLastLogIdx} lines)`;
-          }
-
-          // Active info
-          qzActiveBatch.textContent = job.active_batch || '-';
-          qzActiveTest.textContent = job.active_test || '-';
-
-          if (job.state === 'running') {
-            qzStateBadge.textContent = 'RUNNING';
-            qzStateBadge.style.background = 'rgba(99, 102, 241, 0.2)';
-            qzStateBadge.style.color = '#818cf8';
-            const pct = Math.max(8, Math.min(95, Math.round((job.done / job.total) * 100)));
-            qzProgressFill.style.width = `${pct}%`;
-            qzStatusPct.textContent = `${pct}%`;
-            qzStatusMsg.textContent = job.message || 'Extracting tests...';
-            qzBtnStop.disabled = false;
-          } else if (job.state === 'finished' || job.state === 'stopped' || job.state === 'error') {
-            clearInterval(qzPollInterval);
-            qzBtnStart.disabled = false;
-            qzBtnStart.textContent = '🚀 Start Quizard Extraction';
-            qzBtnStop.disabled = true;
-            qzBtnStop.textContent = '⏹️ Abort / Stop';
-
-            if (job.state === 'finished') {
-              qzStateBadge.textContent = 'FINISHED';
-              qzStateBadge.style.background = 'rgba(16, 185, 129, 0.2)';
-              qzStateBadge.style.color = '#34d399';
-              qzProgressFill.style.width = '100%';
-              qzStatusPct.textContent = '100%';
-              qzStatusMsg.textContent = 'All batches completed!';
-            } else if (job.state === 'stopped') {
-              qzStateBadge.textContent = 'STOPPED';
-              qzStateBadge.style.background = 'rgba(245, 158, 11, 0.2)';
-              qzStateBadge.style.color = '#fbbf24';
-              qzStatusMsg.textContent = 'Extraction stopped by user.';
-            } else {
-              qzStateBadge.textContent = 'ERROR';
-              qzStateBadge.style.background = 'rgba(239, 68, 68, 0.2)';
-              qzStateBadge.style.color = '#f87171';
-              qzStatusMsg.textContent = job.message || 'Error occurred';
-            }
-
-            renderQuizardSummary(job);
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }, 1000);
-    }
-
-    async function checkQuizardRunningStatus() {
-      try {
-        const res = await fetch('/api/quizard/status');
-        const job = await res.json();
-        if (job.state === 'running') {
-          qzProgressPanel.style.display = 'block';
-          qzBtnStart.disabled = true;
-          qzBtnStart.textContent = '⚡ Extraction In Progress...';
-          qzBtnStop.disabled = false;
-          startQuizardPolling();
-        } else if (job.state === 'finished' || job.state === 'stopped') {
-          if (job.summary && Object.keys(job.summary).length > 0) {
-            renderQuizardSummary(job);
-          }
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    // Skipped & Duplicate Interactive Controls
-    const qzCardSkipped = document.getElementById('qz-card-skipped');
-    const qzStat3Label = document.getElementById('qz-stat-3-label');
-    const qzCardFailed = document.getElementById('qz-card-failed');
-    const qzSkippedBox = document.getElementById('qz-skipped-box');
-    const qzSkippedList = document.getElementById('qz-skipped-list');
-    const qzSkippedInlineCount = document.getElementById('qz-skipped-inline-count');
-    const qzBtnOpenSkippedModal = document.getElementById('qz-btn-open-skipped-modal');
-    const qzBtnCopySkipped = document.getElementById('qz-btn-copy-skipped');
-
-    const qzSkippedModal = document.getElementById('qz-skipped-modal');
-    const qzModalClose = document.getElementById('qz-modal-close');
-    const qzModalDoneBtn = document.getElementById('qz-modal-done-btn');
-    const qzModalSearch = document.getElementById('qz-modal-search');
-    const qzModalBody = document.getElementById('qz-modal-body');
-    const qzModalCopyAll = document.getElementById('qz-modal-copy-all');
-    const qzModalCountBadge = document.getElementById('qz-modal-count-badge');
-
-    let currentDuplicateTracker = {};
-    let currentDuplicateList = [];
-    let currentSkippedTracker = {};
-    let currentSkippedList = [];
-    let currentFailedTracker = {};
-
-    function openSkippedModal() {
-      if (!qzSkippedModal) return;
-      qzSkippedModal.style.display = 'flex';
-      if (qzModalSearch) {
-        qzModalSearch.value = '';
-        qzModalSearch.focus();
-      }
-      renderSkippedModalBody('');
-    }
-
-    function closeSkippedModal() {
-      if (qzSkippedModal) {
-        qzSkippedModal.style.display = 'none';
-      }
-    }
-
-    if (qzCardSkipped) {
-      qzCardSkipped.addEventListener('click', () => {
-        openSkippedModal();
-      });
-      qzCardSkipped.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openSkippedModal();
-        }
-      });
-    }
-
-    if (qzCardFailed) {
-      qzCardFailed.addEventListener('click', () => {
-        if (qzFailedBox && qzFailedBox.style.display !== 'none') {
-          qzFailedBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          qzFailedBox.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.4)';
-          setTimeout(() => { qzFailedBox.style.boxShadow = 'none'; }, 1500);
-        }
-      });
-    }
-
-    if (qzBtnOpenSkippedModal) {
-      qzBtnOpenSkippedModal.addEventListener('click', openSkippedModal);
-    }
-
-    if (qzModalClose) qzModalClose.addEventListener('click', closeSkippedModal);
-    if (qzModalDoneBtn) qzModalDoneBtn.addEventListener('click', closeSkippedModal);
-
-    if (qzSkippedModal) {
-      qzSkippedModal.addEventListener('click', (e) => {
-        if (e.target === qzSkippedModal) closeSkippedModal();
-      });
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && qzSkippedModal && qzSkippedModal.style.display === 'flex') {
-        closeSkippedModal();
-      }
-    });
-
-    if (qzModalSearch) {
-      qzModalSearch.addEventListener('input', (e) => {
-        renderSkippedModalBody(e.target.value.trim().toLowerCase());
-      });
-    }
-
-    function generateDuplicateText() {
-      let text = '=== DUPLICATE & SKIPPED TESTS SUMMARY ===\n';
-      const dupBatches = Object.keys(currentDuplicateTracker);
-      if (dupBatches.length > 0) {
-        text += '\n[DUPLICATE TESTS (BOTH COPIES EXTRACTED & SAVED)]\n';
-        dupBatches.forEach(b => {
-          text += `\nBatch: ${b}\n`;
-          (currentDuplicateTracker[b] || []).forEach(item => {
-            const testName = typeof item === 'string' ? item : (item.test || item.name);
-            const savedAs = item.saved_as ? ` -> Saved as: ${item.saved_as}` : '';
-            text += `  - ${testName}${savedAs}\n`;
-          });
-        });
-      } else if (currentDuplicateList.length > 0) {
-        text += '\n[DUPLICATE TESTS]\n';
-        currentDuplicateList.forEach(item => {
-          text += `Batch: ${item.batch} | Test: ${item.test} -> Saved as: ${item.saved_as || item.filename}\n`;
-        });
-      }
-
-      const skipBatches = Object.keys(currentSkippedTracker);
-      if (skipBatches.length > 0) {
-        text += '\n[SKIPPED TESTS]\n';
-        skipBatches.forEach(b => {
-          text += `\nBatch: ${b}\n`;
-          (currentSkippedTracker[b] || []).forEach(t => {
-            text += `  - ${t}\n`;
-          });
-        });
-      }
-      return text.trim();
-    }
-
-    if (qzBtnCopySkipped) {
-      qzBtnCopySkipped.addEventListener('click', () => {
-        const text = generateDuplicateText();
-        if (!text) return;
-        navigator.clipboard.writeText(text).then(() => {
-          const orig = qzBtnCopySkipped.textContent;
-          qzBtnCopySkipped.textContent = '✅ Copied!';
-          setTimeout(() => { qzBtnCopySkipped.textContent = orig; }, 1800);
-        });
-      });
-    }
-
-    if (qzModalCopyAll) {
-      qzModalCopyAll.addEventListener('click', () => {
-        const text = generateDuplicateText();
-        if (!text) return;
-        navigator.clipboard.writeText(text).then(() => {
-          const orig = qzModalCopyAll.textContent;
-          qzModalCopyAll.textContent = '✅ Copied to Clipboard!';
-          setTimeout(() => { qzModalCopyAll.textContent = orig; }, 1800);
-        });
-      });
-    }
-
-    function renderSkippedModalBody(filterQuery = '') {
-      if (!qzModalBody) return;
-
-      const dupBatches = Object.keys(currentDuplicateTracker);
-      const skipBatches = Object.keys(currentSkippedTracker);
-
-      if (dupBatches.length === 0 && currentDuplicateList.length === 0 && skipBatches.length === 0 && currentSkippedList.length === 0) {
-        qzModalBody.innerHTML = `
-          <div style="text-align: center; color: var(--text-muted); padding: 2.5rem 1rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎉</div>
-            <div style="font-weight: 600; color: var(--text);">No duplicate tests encountered!</div>
-            <div style="font-size: 0.85rem; margin-top: 0.25rem;">All tests in this run had unique names and were extracted successfully.</div>
-          </div>
-        `;
-        if (qzModalCountBadge) qzModalCountBadge.textContent = '0 Duplicates';
-        return;
-      }
-
-      let totalVisible = 0;
-      let html = '';
-
-      // Build unified grouped map: batch -> items
-      const grouped = {};
-
-      // 1. Process duplicates
-      if (dupBatches.length > 0) {
-        dupBatches.forEach(b => {
-          if (!grouped[b]) grouped[b] = [];
-          (currentDuplicateTracker[b] || []).forEach(item => {
-            if (typeof item === 'string') {
-              grouped[b].push({ test: item, saved_as: `${item}_2.json`, type: 'duplicate' });
-            } else {
-              grouped[b].push({ ...item, type: 'duplicate' });
-            }
-          });
-        });
-      } else {
-        currentDuplicateList.forEach(item => {
-          if (!grouped[item.batch]) grouped[item.batch] = [];
-          grouped[item.batch].push({ ...item, type: 'duplicate' });
-        });
-      }
-
-      // 2. Process any skipped
-      if (skipBatches.length > 0) {
-        skipBatches.forEach(b => {
-          if (!grouped[b]) grouped[b] = [];
-          (currentSkippedTracker[b] || []).forEach(t => {
-            grouped[b].push({ test: t, type: 'skipped' });
-          });
-        });
-      } else {
-        currentSkippedList.forEach(item => {
-          if (!grouped[item.batch]) grouped[item.batch] = [];
-          grouped[item.batch].push({ ...item, type: 'skipped' });
-        });
-      }
-
-      for (const [batchName, items] of Object.entries(grouped)) {
-        const matchedItems = items.filter(it => {
-          if (!filterQuery) return true;
-          const tName = it.test || it.filename || '';
-          return batchName.toLowerCase().includes(filterQuery) || tName.toLowerCase().includes(filterQuery);
-        });
-
-        if (matchedItems.length === 0) continue;
-
-        totalVisible += matchedItems.length;
-        const safeBatch = batchName.replace(/[^a-zA-Z0-9_-]/g, '_');
-
-        html += `
-          <div class="qz-batch-group">
-            <div class="qz-batch-group-header">
-              <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden; text-overflow: ellipsis;">
-                <span>📁</span>
-                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(batchName)}</span>
-              </div>
-              <span class="chip-badge" style="background: rgba(96, 165, 250, 0.2); color: #93c5fd; font-size: 0.75rem; flex-shrink: 0;">
-                ${matchedItems.length} duplicate${matchedItems.length > 1 ? 's' : ''}
-              </span>
-            </div>
-            <div>
-              ${matchedItems.map(item => {
-                const testName = item.test || 'Test';
-                const savedFile = item.saved_as || item.filename || `${testName}_2.json`;
-                const safeSaved = savedFile.replace(/\.json$/i, '');
-                const relPath = `${safeBatch}/${savedFile}`;
-                const isDup = item.type !== 'skipped';
-
-                return `
-                  <div class="qz-skipped-item">
-                    <div style="display: flex; align-items: center; gap: 0.6rem; min-width: 0; flex: 1; padding-right: 0.5rem;">
-                      <span style="color: ${isDup ? '#38bdf8' : '#60a5fa'}; font-size: 0.95rem;">${isDup ? '📑' : '⏭️'}</span>
-                      <div style="min-width: 0;">
-                        <div style="color: var(--text); font-weight: 500; font-size: 0.88rem; word-break: break-word;">${escapeHtml(testName)}</div>
-                        <div style="color: var(--text-muted); font-size: 0.74rem;">
-                          ${isDup 
-                            ? `<span style="color: #34d399; font-weight: 500;">✅ Both Saved</span> &bull; Output: <code style="color: #93c5fd;">${escapeHtml(savedFile)}</code>`
-                            : `<span style="color: #60a5fa;">Skipped (already on disk)</span>`}
-                        </div>
-                      </div>
-                    </div>
-                    <div style="display: flex; gap: 0.35rem; flex-shrink: 0;">
-                      <button type="button" class="chip-badge qz-btn-copy-single" data-name="${escapeHtml(testName)}" title="Copy test name" style="background: rgba(255, 255, 255, 0.08); color: var(--text-secondary);">
-                        📋 Copy
-                      </button>
-                      <button type="button" class="chip-badge qz-btn-studio-load" data-rel="${escapeHtml(relPath)}" title="Open in Studio" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">
-                        🔍 Studio
-                      </button>
-                      <a href="/api/quizard/download?file=${encodeURIComponent(relPath)}" download="${escapeHtml(savedFile)}" class="chip-badge" title="Download JSON" style="background: rgba(16, 185, 129, 0.2); color: #34d399; text-decoration: none;">
-                        ⬇️ JSON
-                      </a>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `;
-      }
-
-      if (totalVisible === 0) {
-        qzModalBody.innerHTML = `
-          <div style="text-align: center; color: var(--text-muted); padding: 2rem 1rem;">
-            🔍 No duplicate tests match "<strong>${escapeHtml(filterQuery)}</strong>"
-          </div>
-        `;
-      } else {
-        qzModalBody.innerHTML = html;
-      }
-
-      if (qzModalCountBadge) {
-        qzModalCountBadge.textContent = `${totalVisible} Tests Displayed`;
-      }
-
-      // Wire copy single button
-      qzModalBody.querySelectorAll('.qz-btn-copy-single').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const name = btn.getAttribute('data-name');
-          if (!name) return;
-          navigator.clipboard.writeText(name).then(() => {
-            const orig = btn.textContent;
-            btn.textContent = '✅';
-            setTimeout(() => { btn.textContent = orig; }, 1200);
-          });
-        });
-      });
-
-      // Wire studio load buttons
-      qzModalBody.querySelectorAll('.qz-btn-studio-load').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const relPath = btn.getAttribute('data-rel');
-          btn.textContent = '⏳';
-          try {
-            const r = await fetch('/api/quizard/load-to-studio', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ rel_path: relPath })
-            });
-            const d = await r.json();
-            if (d.error) throw new Error(d.error);
-            window.location.href = '/studio';
-          } catch (err) {
-            alert('Failed to load in studio: ' + err.message);
-            btn.textContent = '🔍 Studio';
-          }
-        });
-      });
-    }
-
-    function renderQuizardSummary(job) {
-      qzSummarySection.style.display = 'block';
-      const sum = job.summary || {};
-
-      const batchesProcessed = sum.batches_processed || (job.zip_files ? job.zip_files.length : 0);
-      const totalSaved = sum.total_saved || 0;
-      const totalDuplicates = sum.total_duplicates || 0;
-      const totalSkipped = sum.total_skipped || 0;
-      const totalFailed = sum.total_failed || 0;
-
-      qzSumBatches.textContent = batchesProcessed;
-      qzSumSaved.textContent = totalSaved;
-      qzSumFailed.textContent = totalFailed;
-
-      // Extract duplicate & skipped trackers
-      currentDuplicateTracker = job.duplicate_tracker || sum.duplicate_tracker || {};
-      currentDuplicateList = job.duplicate_list || sum.duplicate_list || [];
-      currentSkippedTracker = job.skipped_tracker || sum.skipped_tracker || {};
-      currentSkippedList = job.skipped_list || sum.skipped_list || [];
-
-      // Calculate total duplicates
-      const dupCount = totalDuplicates || Object.values(currentDuplicateTracker).reduce((acc, l) => acc + l.length, 0) || currentDuplicateList.length;
-      const skipCount = totalSkipped || Object.values(currentSkippedTracker).reduce((acc, l) => acc + l.length, 0) || currentSkippedList.length;
-
-      if (dupCount > 0) {
-        if (qzStat3Label) qzStat3Label.textContent = 'Duplicates';
-        qzSumSkipped.textContent = dupCount;
-        qzSumSkipped.style.color = '#38bdf8';
-      } else if (skipCount > 0) {
-        if (qzStat3Label) qzStat3Label.textContent = 'Skipped';
-        qzSumSkipped.textContent = skipCount;
-        qzSumSkipped.style.color = '#60a5fa';
-      } else {
-        if (qzStat3Label) qzStat3Label.textContent = 'Duplicates';
-        qzSumSkipped.textContent = 0;
-        qzSumSkipped.style.color = '#60a5fa';
-      }
-
-      // Render Inline Duplicates / Skipped Box
-      const dupBatches = Object.keys(currentDuplicateTracker);
-      const skipBatches = Object.keys(currentSkippedTracker);
-
-      if (dupCount > 0 || skipCount > 0) {
-        qzSkippedBox.style.display = 'block';
-        qzSkippedInlineCount.textContent = `${dupCount || skipCount} tests`;
-        let boxHtml = '';
-
-        if (dupBatches.length > 0) {
-          for (const [batch, items] of Object.entries(currentDuplicateTracker)) {
-            boxHtml += `<div style="margin-bottom: 0.5rem;"><strong style="color: #93c5fd;">📁 Batch: ${escapeHtml(batch)}</strong> (${items.length} duplicate${items.length > 1 ? 's' : ''})<br />`;
-            items.forEach(it => {
-              const tName = typeof it === 'string' ? it : it.test;
-              const sFile = typeof it === 'string' ? `${tName}_2.json` : (it.saved_as || it.filename || `${tName}_2.json`);
-              boxHtml += `&nbsp;&nbsp;📑 <span style="color: var(--text);">${escapeHtml(tName)}</span> <span style="color: #34d399; font-size: 0.76rem;">(Both Saved -> <code style="color: #93c5fd;">${escapeHtml(sFile)}</code>)</span><br />`;
-            });
-            boxHtml += '</div>';
-          }
-        } else if (currentDuplicateList.length > 0) {
-          currentDuplicateList.forEach(item => {
-            boxHtml += `&nbsp;&nbsp;📑 <strong style="color: #93c5fd;">${escapeHtml(item.batch)}:</strong> <span style="color: var(--text);">${escapeHtml(item.test)}</span> <span style="color: #34d399; font-size: 0.76rem;">(Saved as ${escapeHtml(item.saved_as || item.filename)})</span><br />`;
-          });
-        } else if (skipBatches.length > 0) {
-          for (const [batch, tests] of Object.entries(currentSkippedTracker)) {
-            boxHtml += `<div style="margin-bottom: 0.5rem;"><strong style="color: #93c5fd;">📁 Batch: ${escapeHtml(batch)}</strong> (${tests.length} tests)<br />`;
-            tests.forEach(t => {
-              boxHtml += `&nbsp;&nbsp;⏭️ <span style="color: var(--text);">${escapeHtml(t)}</span><br />`;
-            });
-            boxHtml += '</div>';
-          }
-        }
-        qzSkippedList.innerHTML = boxHtml;
-      } else {
-        qzSkippedBox.style.display = 'none';
-      }
-
-      // Failed tracker
-      currentFailedTracker = job.failed_tracker || sum.failed_tracker || {};
-      const failedKeys = Object.keys(currentFailedTracker);
-      failedBatchesRetryStr = sum.failed_batches_string || failedKeys.join(', ');
-
-      if (failedKeys.length > 0) {
-        qzSuccessBanner.style.display = 'none';
-        qzFailedBox.style.display = 'block';
-        let failHtml = '';
-        for (const [batch, tests] of Object.entries(currentFailedTracker)) {
-          failHtml += `<div style="margin-bottom: 0.35rem;"><strong style="color: #fca5a5;">📁 Batch: ${escapeHtml(batch)}</strong><br />`;
-          tests.forEach(t => {
-            failHtml += `&nbsp;&nbsp;❌ <span style="color: var(--text);">${escapeHtml(t)}</span><br />`;
-          });
-          failHtml += '</div>';
-        }
-        qzFailedList.innerHTML = failHtml;
-      } else {
-        qzFailedBox.style.display = 'none';
-        qzSuccessBanner.style.display = 'block';
-      }
-
-      // Render ZIP download list
-      const zipFiles = job.zip_files || sum.zip_files || [];
-      if (zipFiles.length > 0) {
-        qzZipList.innerHTML = zipFiles.map(z => `
-          <div class="qz-download-card">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <span style="font-size: 1.5rem;">📦</span>
-              <div>
-                <div style="color: var(--text); font-weight: 600; font-size: 0.95rem;">${escapeHtml(z.filename)}</div>
-                <div style="color: var(--text-muted); font-size: 0.78rem;">
-                  Batch: <strong>${escapeHtml(z.batch)}</strong> &bull; Size: ${(z.size_bytes / 1024).toFixed(1)} KB ${z.test_count ? '&bull; ' + z.test_count + ' tests' : ''}
-                </div>
-              </div>
-            </div>
-            <a href="/api/quizard/download?file=${encodeURIComponent(z.filename)}" download="${escapeHtml(z.filename)}" class="btn" style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 0.6rem; font-weight: 600; font-size: 0.85rem; text-decoration: none;">
-              ⬇️ Download ZIP
-            </a>
-          </div>
-        `).join('');
-      } else {
-        qzZipList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No ZIP packages generated.</div>';
-      }
-
-      // Render Test JSON list
-      const jsonFiles = job.json_files || [];
-      if (jsonFiles.length > 0) {
-        qzJsonList.innerHTML = jsonFiles.map(j => `
-          <div class="qz-download-card" style="padding: 0.6rem 0.85rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden;">
-              <span style="font-size: 1.2rem;">📄</span>
-              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                <span style="color: var(--text); font-weight: 500; font-size: 0.88rem;">${escapeHtml(j.test || j.filename)}</span>
-                <span style="color: var(--text-muted); font-size: 0.75rem; margin-left: 0.35rem;">(${escapeHtml(j.batch)})</span>
-              </div>
-            </div>
-            <div style="display: flex; gap: 0.4rem; flex-shrink: 0;">
-              <button type="button" class="chip-badge qz-btn-studio-load" data-rel="${escapeHtml(j.rel_path)}" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">
-                🔍 Studio
-              </button>
-              <a href="/api/quizard/download?file=${encodeURIComponent(j.rel_path)}" download="${escapeHtml(j.filename)}" class="chip-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; text-decoration: none;">
-                ⬇️ JSON
-              </a>
-            </div>
-          </div>
-        `).join('');
-
-        // Wire load to studio
-        document.querySelectorAll('.qz-btn-studio-load').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const relPath = btn.getAttribute('data-rel');
-            btn.textContent = '⏳ Loading...';
-            try {
-              const r = await fetch('/api/quizard/load-to-studio', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rel_path: relPath })
-              });
-              const d = await r.json();
-              if (d.error) throw new Error(d.error);
-              window.location.href = '/studio';
-            } catch (err) {
-              alert('Failed to load in studio: ' + err.message);
-              btn.textContent = '🔍 Studio';
-            }
-          });
-        });
-      } else {
-        qzJsonList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No individual test JSON files.</div>';
-      }
-    }
-  </script>
-
-  <!-- Duplicates & Skipped Tests Interactive Modal -->
-  <div id="qz-skipped-modal" class="qz-modal-backdrop">
-    <div class="qz-modal-card">
-      <div class="qz-modal-header">
-        <div style="display: flex; align-items: center; gap: 0.6rem;">
-          <span style="font-size: 1.4rem;">📑</span>
+    function renderQuizardDownloads(zips) {
+      const container = document.getElementById('qz-downloads-list');
+      if (!zips || zips.length === 0) return;
+      container.innerHTML = zips.map(z => `
+        <div class="download-card">
           <div>
-            <h3 style="color: var(--text); font-size: 1.15rem; font-weight: 700; margin: 0;">
-              Duplicate Tests (Both Extracted &amp; Saved)
-            </h3>
-            <span id="qz-modal-count-badge" class="hero-badge" style="margin-bottom: 0; padding: 0.15rem 0.55rem; font-size: 0.72rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
-              0 Duplicates Handled
-            </span>
+            <h4 style="color: white; font-size: 1rem;">📦 ${escapeHtml(z.filename)}</h4>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">${(z.size_bytes / (1024 * 1024)).toFixed(2)} MB</span>
           </div>
+          <a href="/api/quizard/download?file=${encodeURIComponent(z.filename)}" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+            ⬇ Download ZIP
+          </a>
         </div>
-        <button type="button" id="qz-modal-close" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0.2rem 0.5rem; border-radius: 0.4rem;">
-          &times;
-        </button>
-      </div>
+      `).join('');
+    }
 
-      <!-- Info Banner & Search Filter -->
-      <div style="padding: 1rem 1.5rem 0.5rem 1.5rem; background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid var(--border);">
-        <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 0.6rem; padding: 0.65rem 0.85rem; margin-bottom: 0.75rem; font-size: 0.8rem; color: #cbd5e1;">
-          💡 <strong>Duplicate Name Policy:</strong> When multiple tests in the same batch share the same name, <strong>neither is skipped</strong>. Both tests are fully extracted and saved with numbered suffixes (e.g. <code>_2.json</code>) so no questions or tests are lost.
+    // ==========================================
+    //       RAY BOOK EXTRACTOR LOGIC
+    // ==========================================
+    const rayTokenInput = document.getElementById('ray-token');
+    const rayBookRows = document.getElementById('ray-book-rows');
+    const rayBookCount = document.getElementById('ray-book-count');
+    const rayAddRowBtn = document.getElementById('ray-add-row-btn');
+    const rayForm = document.getElementById('ray-form');
+    const rayBtnStart = document.getElementById('ray-btn-start');
+    const rayBtnStop = document.getElementById('ray-btn-stop');
+    const rayProgressPanel = document.getElementById('ray-progress-panel');
+    const rayProgressFill = document.getElementById('ray-progress-fill');
+    const rayProgressPct = document.getElementById('ray-progress-pct');
+    const rayStatusText = document.getElementById('ray-status-text');
+
+    let rayPolling = null;
+    let rayLastLogIdx = 0;
+
+    // Load saved token
+    const savedToken = localStorage.getItem('ray_book_token');
+    if (savedToken) {
+      rayTokenInput.value = savedToken;
+    }
+    rayTokenInput.addEventListener('input', () => {
+      localStorage.setItem('ray_book_token', rayTokenInput.value.trim());
+    });
+
+    function clearSavedToken() {
+      localStorage.removeItem('ray_book_token');
+      rayTokenInput.value = '';
+    }
+
+    // Dynamic Row Creation (up to 30)
+    function createRowElement(index, url = '', name = '') {
+      const row = document.createElement('div');
+      row.className = 'book-row';
+      row.innerHTML = `
+        <div class="row-index">${index}</div>
+        <input type="text" class="form-input ray-item-url" placeholder="https://books.streamfiles.eu.org/viewer.php?asset_ref=..." value="${escapeHtml(url)}" required>
+        <input type="text" class="form-input ray-item-name" placeholder="Custom Book Name (e.g. Physics_Ch1)" value="${escapeHtml(name)}">
+        <button type="button" class="row-remove-btn" title="Remove book" onclick="removeBookRow(this)">✖</button>
+      `;
+      return row;
+    }
+
+    function updateRowIndices() {
+      const rows = rayBookRows.querySelectorAll('.book-row');
+      rows.forEach((r, idx) => {
+        r.querySelector('.row-index').textContent = (idx + 1);
+      });
+      rayBookCount.textContent = rows.length;
+      rayAddRowBtn.disabled = rows.length >= 30;
+      document.getElementById('ray-limit-msg').style.color = rows.length >= 30 ? 'var(--warning)' : 'var(--text-muted)';
+    }
+
+    function addBookRow(url = '', name = '') {
+      const currentCount = rayBookRows.querySelectorAll('.book-row').length;
+      if (currentCount >= 30) {
+        alert('Maximum 30 books can be added per batch.');
+        return;
+      }
+      const newRow = createRowElement(currentCount + 1, url, name);
+      rayBookRows.appendChild(newRow);
+      updateRowIndices();
+    }
+
+    function removeBookRow(btn) {
+      const rows = rayBookRows.querySelectorAll('.book-row');
+      if (rows.length <= 1) {
+        alert('You must keep at least 1 book entry.');
+        return;
+      }
+      btn.closest('.book-row').remove();
+      updateRowIndices();
+    }
+
+    function clearAllBookRows() {
+      rayBookRows.innerHTML = '';
+      addBookRow('', '');
+    }
+
+    // Initialize with 1 empty row
+    addBookRow('', '');
+
+    // Bulk Paste Modal
+    const bulkModal = document.getElementById('bulk-paste-modal');
+    function openBulkPasteModal() {
+      bulkModal.style.display = 'flex';
+      document.getElementById('bulk-paste-textarea').focus();
+    }
+    function closeBulkPasteModal() {
+      bulkModal.style.display = 'none';
+    }
+    function applyBulkPaste() {
+      const text = document.getElementById('bulk-paste-textarea').value.trim();
+      if (!text) {
+        closeBulkPasteModal();
+        return;
+      }
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0).slice(0, 30);
+      if (lines.length === 0) return;
+
+      rayBookRows.innerHTML = '';
+      lines.forEach((line, idx) => {
+        let url = line;
+        let name = '';
+        if (line.includes('|')) {
+          const parts = line.split('|');
+          url = parts[0].trim();
+          name = parts.slice(1).join('|').trim();
+        } else if (line.includes(',')) {
+          const parts = line.split(',');
+          url = parts[0].trim();
+          name = parts.slice(1).join(',').trim();
+        }
+        if (!name) name = `Book_${idx + 1}`;
+        addBookRow(url, name);
+      });
+      closeBulkPasteModal();
+    }
+
+    // Form Submission: Start Ray Book Batch
+    rayForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = rayTokenInput.value.trim();
+      if (!token) {
+        alert('Please enter your Authorization Bearer Token.');
+        rayTokenInput.focus();
+        return;
+      }
+
+      const rows = Array.from(rayBookRows.querySelectorAll('.book-row'));
+      const items = [];
+      for (let i = 0; i < rows.length; i++) {
+        const u = rows[i].querySelector('.ray-item-url').value.trim();
+        let n = rows[i].querySelector('.ray-item-name').value.trim();
+        if (!u) continue;
+        if (!n) n = `Book_${i + 1}`;
+        items.push({ url: u, custom_name: n });
+      }
+
+      if (items.length === 0) {
+        alert('Please enter at least 1 valid book URL.');
+        return;
+      }
+
+      const payload = {
+        token: token,
+        zip_name: document.getElementById('ray-zip-name').value.trim() || 'Extracted_Books.zip',
+        remove_watermarks: document.getElementById('ray-watermark-toggle').checked,
+        items: items
+      };
+
+      rayBtnStart.disabled = true;
+      rayBtnStop.style.display = 'inline-flex';
+      rayProgressPanel.style.display = 'block';
+      rayProgressFill.style.width = '0%';
+      rayProgressPct.textContent = '0%';
+      rayStatusText.textContent = `Starting batch of ${items.length} book(s)...`;
+      rayLastLogIdx = 0;
+      clearTerminal('ray-terminal-body');
+
+      try {
+        const res = await fetch('/api/ray-book/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await res.json();
+        if (d.error) {
+          alert('Error starting Ray Book extraction: ' + d.error);
+          rayBtnStart.disabled = false;
+          rayBtnStop.style.display = 'none';
+          return;
+        }
+        startRayBookPolling();
+      } catch (err) {
+        alert('Server communication error: ' + err);
+        rayBtnStart.disabled = false;
+        rayBtnStop.style.display = 'none';
+      }
+    });
+
+    rayBtnStop.addEventListener('click', async () => {
+      await fetch('/api/ray-book/stop', { method: 'POST' });
+    });
+
+    function startRayBookPolling() {
+      if (rayPolling) clearInterval(rayPolling);
+      rayPolling = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/ray-book/status?since=${rayLastLogIdx}`);
+          const d = await res.json();
+
+          if (d.logs && d.logs.length > 0) {
+            d.logs.forEach(l => appendLog('ray-terminal-body', l.time, l.msg, l.level));
+            rayLastLogIdx += d.logs.length;
+          }
+
+          // Progress update
+          if (d.total > 0) {
+            const pct = Math.min(Math.round((d.done / d.total) * 100), 100);
+            rayProgressFill.style.width = `${pct}%`;
+            rayProgressPct.textContent = `${pct}%`;
+            rayStatusText.textContent = d.message || `Processed ${d.done}/${d.total} books`;
+          }
+
+          // Render finished downloads
+          renderRayDownloads(d.extracted_files, d.zip_file_info);
+
+          if (d.state === 'finished' || d.state === 'stopped' || d.state === 'error' || d.state === 'idle') {
+            clearInterval(rayPolling);
+            rayBtnStart.disabled = false;
+            rayBtnStop.style.display = 'none';
+            if (d.state === 'finished') {
+              rayProgressFill.style.width = '100%';
+              rayProgressPct.textContent = '100%';
+            }
+          }
+        } catch (e) {
+          console.error('Polling error', e);
+        }
+      }, 1500);
+    }
+
+    function renderRayDownloads(files, zipInfo) {
+      // Master ZIP
+      const masterZipCard = document.getElementById('ray-master-zip-card');
+      const zipNameEl = document.getElementById('ray-zip-card-name');
+      const zipMetaEl = document.getElementById('ray-zip-card-meta');
+      const zipDownloadBtn = document.getElementById('ray-zip-download-btn');
+
+      if (zipInfo) {
+        masterZipCard.style.display = 'flex';
+        zipNameEl.textContent = zipInfo.filename;
+        zipMetaEl.textContent = `${zipInfo.file_count} books consolidated • ${zipInfo.size_mb} MB`;
+        zipDownloadBtn.href = `/api/ray-book/download?file=${encodeURIComponent(zipInfo.filename)}`;
+      }
+
+      // Individual Files
+      const container = document.getElementById('ray-individual-downloads');
+      if (!files || files.length === 0) {
+        return;
+      }
+
+      container.innerHTML = files.map(f => `
+        <div class="download-card">
+          <div>
+            <h4 style="color: white; font-size: 1rem;">📄 ${escapeHtml(f.filename)}</h4>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">${f.pages} pages • ${f.size_mb} MB</span>
+          </div>
+          <a href="/api/ray-book/download?file=${encodeURIComponent(f.filename)}" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; color: #818cf8; border-color: rgba(99, 102, 241, 0.4);">
+            ⬇ Download PDF
+          </a>
         </div>
-        <div style="position: relative;">
-          <input type="text" id="qz-modal-search" class="form-input" placeholder="🔍 Search duplicate tests or batch names..." style="padding-left: 2.2rem; font-size: 0.88rem; padding-top: 0.6rem; padding-bottom: 0.6rem;">
-          <span style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; font-size: 0.9rem;">🔎</span>
-        </div>
-      </div>
+      `).join('');
+    }
 
-      <!-- Modal Body (Grouped Tests) -->
-      <div class="qz-modal-body" id="qz-modal-body">
-        <div style="text-align: center; color: var(--text-muted); padding: 2rem;">No duplicate tests to display.</div>
-      </div>
+    // Fetch initial existing files on load
+    async function loadExistingFiles() {
+      try {
+        const res = await fetch('/api/ray-book/files');
+        const d = await res.json();
+        if (d.files && d.files.length > 0) {
+          const nonZipFiles = d.files.filter(f => !f.is_zip);
+          const zipFiles = d.files.filter(f => f.is_zip);
+          if (zipFiles.length > 0) {
+            renderRayDownloads([], {
+              filename: zipFiles[0].filename,
+              size_mb: zipFiles[0].size_mb,
+              file_count: nonZipFiles.length
+            });
+          }
+          if (nonZipFiles.length > 0) {
+            renderRayDownloads(nonZipFiles.map(f => ({
+              filename: f.filename,
+              pages: 'Ready',
+              size_mb: f.size_mb
+            })), zipFiles[0] || null);
+          }
+        }
+      } catch (e) {}
 
-      <!-- Modal Footer -->
-      <div class="qz-modal-footer">
-        <button type="button" id="qz-modal-copy-all" class="btn" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.82rem; padding: 0.45rem 0.85rem;">
-          📋 Copy All Duplicates List
-        </button>
-        <button type="button" id="qz-modal-done-btn" class="btn btn-primary" style="font-size: 0.82rem; padding: 0.45rem 1.25rem;">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
+      try {
+        const qzRes = await fetch('/api/quizard/files');
+        const qzD = await qzRes.json();
+        if (qzD.zips && qzD.zips.length > 0) {
+          renderQuizardDownloads(qzD.zips);
+        }
+      } catch (e) {}
+    }
+
+    window.addEventListener('DOMContentLoaded', loadExistingFiles);
+  </script>
 </body>
 </html>
