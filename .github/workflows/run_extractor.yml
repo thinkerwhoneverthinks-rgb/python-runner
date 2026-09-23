@@ -60,6 +60,13 @@ jobs:
           username: ${{ secrets.OVPN_USERNAME }}
           password: ${{ secrets.OVPN_PASSWORD }}
 
+      - name: 🛡️ Enable Cloudflare WARP (Bypass Datacenter IP 403 Blocks)
+        uses: fscarmen/warp-on-actions@v1.4
+        continue-on-error: true
+        with:
+          stack: dual
+          mode: wireguard
+
       - name: 🚀 Start Virtual Display & App Server
         run: |
           eval $(dbus-launch --sh-syntax)
