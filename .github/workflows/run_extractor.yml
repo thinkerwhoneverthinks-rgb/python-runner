@@ -130,9 +130,19 @@ jobs:
           echo "🚀 Session is active! Access URL: $PUBLIC_URL"
           echo "To stop the server, cancel this workflow from GitHub."
           echo "=========================================================="
-          P_PID=$(pgrep -f "cloudflared tunnel" | head -n 1)
+          P_PID=$(pgrep -f "cloudflared" | head -n 1)
           if [ -n "$P_PID" ]; then
-            wait $P_PID
+            echo "Monitoring tunnel process (PID: $P_PID)..."
+            COUNTER=0
+            while kill -0 "$P_PID" 2>/dev/null; do
+              sleep 60
+              COUNTER=$((COUNTER + 1))
+              if [ $((COUNTER % 5)) -eq 0 ]; then
+                echo "[$(date -u +%T)] Live session active: $PUBLIC_URL"
+              fi
+            done
+            echo "Tunnel process exited."
           else
+            echo "Running fallback keep-alive..."
             sleep 21600
           fi
