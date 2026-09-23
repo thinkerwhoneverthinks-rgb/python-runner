@@ -2,7 +2,7 @@
 
 A lightweight, non-AI extraction suite featuring:
 1. **Quizard Extractor**: Playwright-based test discovery, question extraction, answer key parsing, and syllabus formatting for Quizzy.
-2. **Ray Book Batch Extractor**: Downloads up to 30 encrypted books from PW & Streamfiles, reverses XOR ciphers, and removes semi-transparent watermarks using template-based nanmedian synthesis.
+2. **Ray Book Batch Extractor**: Downloads up to 30 encrypted books from  Streamfiles, reverses XOR ciphers, and removes semi-transparent watermarks using template-based nanmedian synthesis.
 
 ---
 

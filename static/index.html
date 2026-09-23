@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Extraction Runner Studio — Quizard &amp; Ray Book Extractor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,7 +11,7 @@
     :root {
       --bg: #090d16;
       --surface: #0f172a;
-      --surface-card: rgba(15, 23, 42, 0.7);
+      --surface-card: rgba(15, 23, 42, 0.78);
       --surface-border: #1e293b;
       --primary: #6366f1;
       --primary-hover: #4f46e5;
@@ -30,6 +30,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -39,6 +40,8 @@
       min-height: 100vh;
       overflow-x: hidden;
       position: relative;
+      font-size: 15px;
+      line-height: 1.5;
     }
 
     /* Ambient background glow */
@@ -48,6 +51,7 @@
       left: 50%;
       transform: translateX(-50%);
       width: 1000px;
+      max-width: 100vw;
       height: 450px;
       background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.08) 50%, transparent 75%);
       pointer-events: none;
@@ -57,9 +61,9 @@
     /* Top Navigation Bar */
     .app-top-nav {
       max-width: 1080px;
-      margin: 1.5rem auto 0 auto;
-      padding: 0.75rem 1.5rem;
-      background: rgba(15, 23, 42, 0.82);
+      margin: 1.25rem auto 0 auto;
+      padding: 0.75rem 1.25rem;
+      background: rgba(15, 23, 42, 0.88);
       border: 1px solid var(--border);
       border-radius: 1.25rem;
       backdrop-filter: blur(16px);
@@ -75,19 +79,20 @@
     .nav-brand-group {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
+      gap: 0.75rem;
     }
 
     .nav-logo-badge {
-      width: 42px;
-      height: 42px;
-      border-radius: 0.75rem;
+      width: 38px;
+      height: 38px;
+      border-radius: 0.7rem;
       background: linear-gradient(135deg, #6366f1, #a855f7);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.35rem;
-      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+      font-size: 1.25rem;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+      flex-shrink: 0;
     }
 
     .nav-brand-text {
@@ -97,38 +102,39 @@
 
     .nav-brand-name {
       font-weight: 700;
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       color: var(--text);
       letter-spacing: -0.01em;
     }
 
     .nav-brand-sub {
-      font-size: 0.76rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
     }
 
     .nav-view-switcher {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.4rem;
       background: rgba(10, 15, 30, 0.65);
-      padding: 0.35rem;
-      border-radius: 0.85rem;
+      padding: 0.3rem;
+      border-radius: 0.75rem;
       border: 1px solid var(--border);
     }
 
     .view-switch-btn {
-      padding: 0.6rem 1.25rem;
-      border-radius: 0.65rem;
+      padding: 0.55rem 1.15rem;
+      border-radius: 0.55rem;
       border: none;
       background: transparent;
       color: var(--text-muted);
       font-weight: 600;
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.45rem;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
     }
 
     .view-switch-btn:hover {
@@ -139,13 +145,13 @@
     .view-switch-btn.active {
       background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
       color: white;
-      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
     }
 
     /* Container */
     .container {
       max-width: 1080px;
-      margin: 2rem auto;
+      margin: 1.5rem auto 3rem auto;
       padding: 0 1rem;
       position: relative;
       z-index: 1;
@@ -155,7 +161,7 @@
       background: var(--surface-card);
       border: 1px solid var(--border);
       border-radius: 1.5rem;
-      padding: 2.25rem;
+      padding: 2rem;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
@@ -164,61 +170,62 @@
 
     .hero-header {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.75rem;
     }
 
     .hero-badge {
       display: inline-block;
-      padding: 0.35rem 0.95rem;
+      padding: 0.3rem 0.85rem;
       background: rgba(99, 102, 241, 0.15);
       color: #818cf8;
       border: 1px solid rgba(99, 102, 241, 0.3);
       border-radius: 9999px;
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       font-weight: 600;
       letter-spacing: 0.05em;
-      margin-bottom: 0.85rem;
+      margin-bottom: 0.65rem;
     }
 
     .hero-title {
-      font-size: 2.25rem;
+      font-size: 2.1rem;
       font-weight: 700;
       color: var(--text);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
       background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      line-height: 1.25;
     }
 
     .hero-desc {
       color: var(--text-muted);
-      font-size: 1.02rem;
+      font-size: 0.95rem;
       max-width: 720px;
       margin: 0 auto;
       line-height: 1.5;
     }
 
-    /* Form & Inputs */
+    /* Forms & Inputs */
     .form-group {
-      margin-bottom: 1.35rem;
+      margin-bottom: 1.25rem;
     }
 
     .form-label {
       display: block;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: var(--text-secondary);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.45rem;
     }
 
     .form-input, .form-select, .form-textarea {
       width: 100%;
-      padding: 0.85rem 1.1rem;
-      background: rgba(15, 23, 42, 0.65);
+      padding: 0.8rem 1rem;
+      background: rgba(15, 23, 42, 0.7);
       border: 1px solid var(--border);
       border-radius: 0.75rem;
       color: var(--text);
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       outline: none;
       transition: all 0.2s ease;
       font-family: inherit;
@@ -227,7 +234,7 @@
     .form-input:focus, .form-select:focus, .form-textarea:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.9);
     }
 
     .grid-2 {
@@ -236,17 +243,11 @@
       gap: 1.25rem;
     }
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 1rem;
-    }
-
     /* Buttons */
     .btn {
-      padding: 0.85rem 1.5rem;
+      padding: 0.8rem 1.4rem;
       border-radius: 0.75rem;
-      font-size: 0.96rem;
+      font-size: 0.94rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
@@ -256,17 +257,18 @@
       transition: all 0.2s ease;
       border: none;
       text-decoration: none;
+      min-height: 44px;
     }
 
     .btn-primary {
       background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
       color: white;
-      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.3);
     }
 
     .btn-primary:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 12px 25px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 10px 22px rgba(99, 102, 241, 0.4);
     }
 
     .btn-danger {
@@ -297,18 +299,36 @@
       transform: none !important;
     }
 
+    /* Token Action Buttons */
+    .token-action-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 0.4rem;
+      color: var(--accent);
+      padding: 0.25rem 0.55rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .token-action-btn:hover {
+      background: rgba(99, 102, 241, 0.18);
+      color: white;
+    }
+
     /* Terminal Console */
     .terminal-container {
-      margin-top: 1.75rem;
+      margin-top: 1.5rem;
       background: #080c16;
       border: 1px solid #1e293b;
       border-radius: 1rem;
       overflow: hidden;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
     }
 
     .terminal-header {
-      padding: 0.75rem 1.25rem;
+      padding: 0.65rem 1.1rem;
       background: rgba(15, 23, 42, 0.95);
       border-bottom: 1px solid #1e293b;
       display: flex;
@@ -317,7 +337,7 @@
     }
 
     .terminal-title {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
       color: #94a3b8;
       display: flex;
@@ -342,15 +362,15 @@
 
     .terminal-actions {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.4rem;
     }
 
     .terminal-action-btn {
-      padding: 0.3rem 0.65rem;
-      font-size: 0.75rem;
+      padding: 0.25rem 0.55rem;
+      font-size: 0.72rem;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0.4rem;
+      border-radius: 0.35rem;
       color: #94a3b8;
       cursor: pointer;
       transition: all 0.15s ease;
@@ -362,11 +382,11 @@
     }
 
     .terminal-body {
-      height: 270px;
+      height: 250px;
       overflow-y: auto;
-      padding: 1rem;
+      padding: 0.85rem 1rem;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: #94a3b8;
       line-height: 1.55;
     }
@@ -380,14 +400,15 @@
     }
 
     .log-line {
-      padding: 0.12rem 0;
+      padding: 0.1rem 0;
       display: flex;
-      gap: 0.65rem;
+      gap: 0.6rem;
     }
 
     .log-time {
       color: #475569;
       user-select: none;
+      flex-shrink: 0;
     }
 
     .log-msg {
@@ -403,10 +424,10 @@
     /* Progress bar */
     .progress-bar-container {
       background: rgba(255, 255, 255, 0.06);
-      height: 10px;
-      border-radius: 5px;
+      height: 8px;
+      border-radius: 4px;
       overflow: hidden;
-      margin-top: 1rem;
+      margin-top: 0.85rem;
       position: relative;
     }
 
@@ -417,14 +438,23 @@
       transition: width 0.3s ease;
     }
 
-    /* Ray Book Dynamic Table */
+    /* Cards */
+    .card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.35rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Ray Book Rows (Desktop & Mobile Adaptive) */
     .book-rows-container {
-      margin-top: 1.5rem;
+      margin-top: 1.25rem;
       background: rgba(10, 15, 30, 0.5);
       border: 1px solid var(--border);
       border-radius: 1rem;
-      padding: 1rem;
-      max-height: 480px;
+      padding: 0.85rem;
+      max-height: 520px;
       overflow-y: auto;
     }
 
@@ -450,32 +480,24 @@
     }
 
     .row-remove-btn {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 0.5rem;
       border: 1px solid rgba(239, 68, 68, 0.2);
       background: rgba(239, 68, 68, 0.1);
       color: #fca5a5;
-      font-size: 1rem;
+      font-size: 0.95rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.15s ease;
+      flex-shrink: 0;
     }
 
     .row-remove-btn:hover {
       background: rgba(239, 68, 68, 0.25);
       color: white;
-    }
-
-    /* Cards */
-    .card {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid var(--border);
-      border-radius: 1rem;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
     }
 
     .chip-badge {
@@ -504,28 +526,28 @@
       background: rgba(15, 23, 42, 0.75);
       border: 1px solid var(--border);
       border-radius: 0.85rem;
-      padding: 1rem 1.25rem;
-      margin-bottom: 0.75rem;
+      padding: 0.9rem 1.15rem;
+      margin-bottom: 0.65rem;
       transition: all 0.2s ease;
     }
 
     .download-card:hover {
       border-color: rgba(99, 102, 241, 0.4);
       background: rgba(15, 23, 42, 0.95);
-      transform: translateY(-1px);
     }
 
     /* Modal */
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(3, 7, 18, 0.82);
+      background: rgba(3, 7, 18, 0.85);
       backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 9999;
-      padding: 1.5rem;
+      padding: 1rem;
     }
 
     .modal-card {
@@ -533,9 +555,139 @@
       border: 1px solid rgba(99, 102, 241, 0.3);
       border-radius: 1.25rem;
       width: 100%;
-      max-width: 680px;
-      padding: 1.75rem;
+      max-width: 640px;
+      padding: 1.5rem;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+    }
+
+    /* ========================================================================= */
+    /* MOBILE PHONE RESPONSIVE STYLES (SCREEN WIDTH <= 768px & <= 480px)        */
+    /* ========================================================================= */
+    @media (max-width: 768px) {
+      .app-top-nav {
+        flex-direction: column;
+        gap: 0.85rem;
+        padding: 0.85rem 1rem;
+        border-radius: 1rem;
+        margin-top: 0.85rem;
+      }
+
+      .nav-brand-group {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .nav-view-switcher {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .view-switch-btn {
+        flex: 1;
+        justify-content: center;
+        padding: 0.65rem 0.5rem;
+        font-size: 0.84rem;
+      }
+
+      .container {
+        padding: 0 0.65rem;
+        margin-top: 1rem;
+      }
+
+      .hero-card {
+        padding: 1.25rem 1rem;
+        border-radius: 1.15rem;
+      }
+
+      .hero-title {
+        font-size: 1.65rem;
+      }
+
+      .hero-desc {
+        font-size: 0.88rem;
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .card {
+        padding: 1rem;
+      }
+
+      /* Transform each book item to a distinct clean card on phones */
+      .book-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        background: rgba(15, 23, 42, 0.75);
+        border: 1px solid var(--border);
+        border-radius: 0.85rem;
+        padding: 0.85rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .book-row-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+      }
+
+      .row-index {
+        font-size: 0.85rem;
+        color: #818cf8;
+        font-weight: 700;
+        background: rgba(99, 102, 241, 0.15);
+        padding: 0.2rem 0.6rem;
+        border-radius: 0.4rem;
+      }
+
+      .book-row input {
+        width: 100%;
+      }
+
+      /* Stack action buttons vertically on mobile for easy tapping */
+      .action-buttons-group {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+      }
+
+      .action-buttons-group .btn {
+        width: 100%;
+        min-height: 48px;
+      }
+
+      /* Download cards on phone */
+      .download-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 1rem;
+      }
+
+      .download-card .btn {
+        width: 100%;
+        min-height: 44px;
+      }
+
+      #ray-master-zip-card {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.85rem !important;
+        padding: 1rem !important;
+      }
+
+      #ray-master-zip-card .btn {
+        width: 100%;
+        min-height: 48px;
+      }
+
+      .terminal-body {
+        height: 220px;
+        font-size: 0.75rem;
+      }
     }
   </style>
 </head>
@@ -548,7 +700,7 @@
       <div class="nav-logo-badge">⚡</div>
       <div class="nav-brand-text">
         <span class="nav-brand-name">EXTRACTION RUNNER STUDIO</span>
-        <span class="nav-brand-sub">Quizard Extractor &amp; Ray Book Suite</span>
+        <span class="nav-brand-sub">Quizard &amp; Ray Book Suite</span>
       </div>
     </div>
     <div class="nav-view-switcher">
@@ -597,16 +749,16 @@
             </div>
           </div>
 
-          <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center;">
-            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">
-              <input type="checkbox" id="qz-syllabus" checked> 📋 Extract Syllabus via API
+          <div style="display: flex; gap: 1.25rem; margin-bottom: 1.25rem; align-items: center; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer; color: var(--text-secondary); font-size: 0.88rem;">
+              <input type="checkbox" id="qz-syllabus" checked style="width: 17px; height: 17px;"> 📋 Extract Syllabus via API
             </label>
-            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">
-              <input type="checkbox" id="qz-headless" checked> 🕶 Headless Browser Mode
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer; color: var(--text-secondary); font-size: 0.88rem;">
+              <input type="checkbox" id="qz-headless" checked style="width: 17px; height: 17px;"> 🕶 Headless Mode
             </label>
           </div>
 
-          <div style="display: flex; gap: 1rem;">
+          <div class="action-buttons-group" style="display: flex; gap: 0.85rem;">
             <button type="submit" id="qz-btn-start" class="btn btn-primary" style="flex: 1;">
               🚀 Start Quizard Extraction
             </button>
@@ -638,9 +790,9 @@
 
         <!-- Quizard Downloads -->
         <div id="qz-downloads-section" style="margin-top: 1.75rem;">
-          <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--text);">📦 Generated Quizzy Packages</h3>
+          <h3 style="font-size: 1.05rem; margin-bottom: 0.85rem; color: var(--text);">📦 Generated Quizzy Packages</h3>
           <div id="qz-downloads-list">
-            <p style="color: var(--text-muted); font-size: 0.9rem;">No packages extracted yet in this session.</p>
+            <p style="color: var(--text-muted); font-size: 0.88rem;">No packages extracted yet in this session.</p>
           </div>
         </div>
       </div>
@@ -660,17 +812,22 @@
         <form id="ray-form">
           <!-- Global Configuration -->
           <div class="card">
-            <h3 style="font-size: 1.05rem; margin-bottom: 1rem; color: #818cf8; display: flex; align-items: center; gap: 0.5rem;">
+            <h3 style="font-size: 1rem; margin-bottom: 0.85rem; color: #818cf8; display: flex; align-items: center; gap: 0.5rem;">
               ⚙️ Global Settings
             </h3>
             <div class="form-group">
-              <label class="form-label" for="ray-token" style="display: flex; justify-content: space-between;">
-                <span>Authorization Bearer Token</span>
-                <span style="font-size: 0.75rem; color: #818cf8; cursor: pointer;" onclick="clearSavedToken()">Reset Token</span>
-              </label>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+                <label class="form-label" for="ray-token" style="margin-bottom: 0;">
+                  Authorization Bearer Token (Pre-Filled)
+                </label>
+                <div style="display: flex; gap: 0.4rem;">
+                  <button type="button" class="token-action-btn" onclick="toggleTokenVisibility()">👁 View</button>
+                  <button type="button" class="token-action-btn" onclick="resetToDefaultToken()">🔄 Reset</button>
+                </div>
+              </div>
               <input type="password" id="ray-token" class="form-input" placeholder="Bearer eyJ0eXAiOiJKV1QiLC..." required>
-              <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.35rem; display: block;">
-                Token is auto-saved in your browser localStorage. Paste from browser viewer network headers.
+              <small style="color: #34d399; font-size: 0.78rem; margin-top: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
+                ✓ Active token pre-configured and saved. You do not need to enter it manually.
               </small>
             </div>
 
@@ -680,10 +837,10 @@
                 <input type="text" id="ray-zip-name" class="form-input" value="Extracted_Books.zip" placeholder="Extracted_Books.zip">
               </div>
 
-              <div class="form-group" style="display: flex; align-items: center; padding-top: 1.6rem;">
-                <label style="display: flex; align-items: center; gap: 0.55rem; cursor: pointer; color: var(--text); font-weight: 500;">
+              <div class="form-group" style="display: flex; align-items: center; padding-top: 0.85rem;">
+                <label style="display: flex; align-items: center; gap: 0.55rem; cursor: pointer; color: var(--text); font-weight: 500; font-size: 0.9rem;">
                   <input type="checkbox" id="ray-watermark-toggle" checked style="width: 18px; height: 18px;">
-                  ✨ Auto-Remove Watermarks (Template Synthesis)
+                  ✨ Auto-Remove Watermarks (Template Inversion)
                 </label>
               </div>
             </div>
@@ -691,18 +848,18 @@
 
           <!-- Dynamic Book Items Form (Up to 30) -->
           <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
               <div>
                 <h3 style="font-size: 1.05rem; color: var(--text); font-weight: 600;">
                   📚 Target Book URLs &amp; Custom Names (<span id="ray-book-count">1</span>/30)
                 </h3>
-                <span style="font-size: 0.78rem; color: var(--text-muted);">Fill Target URL (or asset_ref) and your desired custom file name.</span>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Fill Target URL (or asset_ref) and your desired custom book name.</span>
               </div>
-              <div style="display: flex; gap: 0.5rem;">
-                <button type="button" class="btn btn-secondary" style="padding: 0.45rem 0.85rem; font-size: 0.82rem;" onclick="openBulkPasteModal()">
+              <div style="display: flex; gap: 0.4rem;">
+                <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: 36px;" onclick="openBulkPasteModal()">
                   📋 Bulk Paste
                 </button>
-                <button type="button" class="btn btn-secondary" style="padding: 0.45rem 0.85rem; font-size: 0.82rem;" onclick="clearAllBookRows()">
+                <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: 36px;" onclick="clearAllBookRows()">
                   Clear All
                 </button>
               </div>
@@ -713,8 +870,8 @@
               <!-- Dynamically populated rows -->
             </div>
 
-            <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
-              <button type="button" id="ray-add-row-btn" class="btn btn-secondary" onclick="addBookRow()">
+            <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+              <button type="button" id="ray-add-row-btn" class="btn btn-secondary" onclick="addBookRow()" style="min-height: 42px;">
                 ➕ Add Another Book URL
               </button>
               <span id="ray-limit-msg" style="color: var(--text-muted); font-size: 0.82rem;">Maximum 30 books per batch</span>
@@ -722,23 +879,23 @@
           </div>
 
           <!-- Action Buttons -->
-          <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-            <button type="submit" id="ray-btn-start" class="btn btn-primary" style="flex: 1; padding: 1rem;">
+          <div class="action-buttons-group" style="display: flex; gap: 0.85rem; margin-top: 1.25rem;">
+            <button type="submit" id="ray-btn-start" class="btn btn-primary" style="flex: 1; padding: 0.95rem;">
               🚀 Start Batch Extraction
             </button>
-            <button type="button" id="ray-btn-stop" class="btn btn-danger" style="display: none; padding: 1rem;">
+            <button type="button" id="ray-btn-stop" class="btn btn-danger" style="display: none; padding: 0.95rem;">
               🛑 Stop Extraction
             </button>
-            <button type="button" class="btn btn-secondary" onclick="openFolder('ray-book')">
-              📂 Open Outputs Folder
+            <button type="button" class="btn btn-secondary" onclick="openFolder('ray-book')" style="padding: 0.95rem;">
+              📂 Open Folder
             </button>
           </div>
         </form>
 
         <!-- Live Progress Bar -->
-        <div id="ray-progress-panel" style="display: none; margin-top: 1.75rem; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <span id="ray-status-text" style="font-weight: 600; font-size: 0.95rem; color: var(--text);">Processing...</span>
+        <div id="ray-progress-panel" style="display: none; margin-top: 1.5rem; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); border-radius: 1rem; padding: 1.15rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+            <span id="ray-status-text" style="font-weight: 600; font-size: 0.92rem; color: var(--text);">Processing...</span>
             <span id="ray-progress-pct" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent);">0%</span>
           </div>
           <div class="progress-bar-container">
@@ -759,31 +916,31 @@
             </div>
           </div>
           <div class="terminal-body" id="ray-terminal-body">
-            <div class="log-line"><span class="log-time">[Ready]</span> <span class="log-msg">Ray Book Extractor standing by... Add URLs and click Start.</span></div>
+            <div class="log-line"><span class="log-time">[Ready]</span> <span class="log-msg">Ray Book Extractor ready. Add URLs and click Start.</span></div>
           </div>
         </div>
 
         <!-- Download Section for Ray Book -->
-        <div id="ray-downloads-section" style="margin-top: 2rem;">
-          <h3 style="font-size: 1.15rem; margin-bottom: 1rem; color: var(--text);">
+        <div id="ray-downloads-section" style="margin-top: 1.75rem;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 0.85rem; color: var(--text);">
             📥 Download Extracted Books
           </h3>
 
           <!-- Consolidated Master ZIP Card -->
-          <div id="ray-master-zip-card" style="display: none; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 1rem; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+          <div id="ray-master-zip-card" style="display: none; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 1rem; padding: 1.15rem 1.35rem; margin-bottom: 1rem; justify-content: space-between; align-items: center;">
             <div>
               <span style="display: inline-block; padding: 0.2rem 0.5rem; background: #10b981; color: black; font-weight: 700; font-size: 0.72rem; border-radius: 0.35rem; margin-bottom: 0.4rem;">CONSOLIDATED ARCHIVE</span>
-              <h4 id="ray-zip-card-name" style="font-size: 1.1rem; color: white;">Extracted_Books.zip</h4>
-              <span id="ray-zip-card-meta" style="font-size: 0.82rem; color: var(--text-muted);">All books inside with custom names</span>
+              <h4 id="ray-zip-card-name" style="font-size: 1.05rem; color: white;">Extracted_Books.zip</h4>
+              <span id="ray-zip-card-meta" style="font-size: 0.8rem; color: var(--text-muted);">All books inside with custom names</span>
             </div>
-            <a id="ray-zip-download-btn" href="#" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+            <a id="ray-zip-download-btn" href="#" class="btn btn-primary" style="padding: 0.7rem 1.4rem;">
               📦 Download Full ZIP
             </a>
           </div>
 
           <!-- Individual Files List -->
           <div id="ray-individual-downloads">
-            <p style="color: var(--text-muted); font-size: 0.9rem;">No extracted book files yet in this session.</p>
+            <p style="color: var(--text-muted); font-size: 0.88rem;">No extracted book files yet in this session.</p>
           </div>
         </div>
 
@@ -795,15 +952,15 @@
   <!-- Bulk Paste Modal -->
   <div class="modal-backdrop" id="bulk-paste-modal">
     <div class="modal-card">
-      <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: white;">📋 Bulk Paste Target URLs</h3>
-      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+      <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem; color: white;">📋 Bulk Paste Target URLs</h3>
+      <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 0.85rem;">
         Paste one entry per line (up to 30). Formats supported:<br>
         1. <code>https://books.streamfiles... | Custom Book Name</code><br>
         2. <code>https://books.streamfiles...</code> (auto-named Book 1, Book 2, etc.)
       </p>
-      <textarea id="bulk-paste-textarea" class="form-textarea" rows="10" placeholder="https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 1 Electrostatics
+      <textarea id="bulk-paste-textarea" class="form-textarea" rows="8" placeholder="https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 1 Electrostatics
 https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"></textarea>
-      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+      <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1rem;">
         <button type="button" class="btn btn-secondary" onclick="closeBulkPasteModal()">Cancel</button>
         <button type="button" class="btn btn-primary" onclick="applyBulkPaste()">Import Rows</button>
       </div>
@@ -811,6 +968,11 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
   </div>
 
   <script>
+    // ==========================================
+    //            GLOBAL CONSTANTS & TOKEN
+    // ==========================================
+    const DEFAULT_RAY_TOKEN = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3ODg4NjM1MTQsImV4cCI6MTc4OTQ2ODMxNC4zNjQsImRhdGEiOnsiX2lkIjoiNjQxNTFiNjM3NmIwODEwMTBjMzk4NWVhIiwidXNlcm5hbWUiOiI4MjI0ODE1Njk3IiwiZmlyc3ROYW1lIjoiQWJoYXkgQW5hbmQiLCJsYXN0TmFtZSI6IkFuYW5kIiwib3JnYW5pemF0aW9uIjp7Il9pZCI6IjVlYjM5M2VlOTVmYWI3NDY4YTc5ZDE4OSIsIndlYnNpdGUiOiJwaHlzaWNzd2FsbGFoLmNvbSIsIm5hbWUiOiJQaHlzaWNzd2FsbGFoIn0sImVtYWlsIjoicnVuaWFuYW5kMDM4QGdtYWlsLmNvbSIsInJvbGVzIjpbIjViMjdiZDk2NTg0MmY5NTBhNzc4YzZlZiJdLCJjb3VudHJ5R3JvdXAiOiJJTiIsInR5cGUiOiJVU0VSIn0sImp0aSI6IllKRUdlVkYxUktXSmNvYXlzNXdMVXdfNjQxNTFiNjM3NmIwODEwMTBjMzk4NWVhIn0.D4XthP4Kx8gOv-goCbeHG-4dUpTObl3p4nzMtDKWOzc";
+
     // ==========================================
     //            TAB VIEW SWITCHING
     // ==========================================
@@ -838,7 +1000,6 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
     navBtnQuizard.addEventListener('click', () => switchView('quizard'));
     navBtnRayBook.addEventListener('click', () => switchView('ray-book'));
 
-    // Restore tab
     const savedView = localStorage.getItem('active_view');
     if (savedView === 'ray-book') {
       switchView('ray-book');
@@ -967,8 +1128,8 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
       container.innerHTML = zips.map(z => `
         <div class="download-card">
           <div>
-            <h4 style="color: white; font-size: 1rem;">📦 ${escapeHtml(z.filename)}</h4>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">${(z.size_bytes / (1024 * 1024)).toFixed(2)} MB</span>
+            <h4 style="color: white; font-size: 0.96rem;">📦 ${escapeHtml(z.filename)}</h4>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">${(z.size_bytes / (1024 * 1024)).toFixed(2)} MB</span>
           </div>
           <a href="/api/quizard/download?file=${encodeURIComponent(z.filename)}" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
             ⬇ Download ZIP
@@ -995,29 +1156,40 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
     let rayPolling = null;
     let rayLastLogIdx = 0;
 
-    // Load saved token
+    // Load or initialize default token
     const savedToken = localStorage.getItem('ray_book_token');
-    if (savedToken) {
-      rayTokenInput.value = savedToken;
+    if (savedToken && savedToken.trim()) {
+      rayTokenInput.value = savedToken.trim();
+    } else {
+      rayTokenInput.value = DEFAULT_RAY_TOKEN;
+      localStorage.setItem('ray_book_token', DEFAULT_RAY_TOKEN);
     }
+
     rayTokenInput.addEventListener('input', () => {
       localStorage.setItem('ray_book_token', rayTokenInput.value.trim());
     });
 
-    function clearSavedToken() {
-      localStorage.removeItem('ray_book_token');
-      rayTokenInput.value = '';
+    function toggleTokenVisibility() {
+      rayTokenInput.type = rayTokenInput.type === 'password' ? 'text' : 'password';
     }
 
-    // Dynamic Row Creation (up to 30)
+    function resetToDefaultToken() {
+      rayTokenInput.value = DEFAULT_RAY_TOKEN;
+      localStorage.setItem('ray_book_token', DEFAULT_RAY_TOKEN);
+      alert('Token reset to default pre-configured key.');
+    }
+
+    // Responsive Book Row Element
     function createRowElement(index, url = '', name = '') {
       const row = document.createElement('div');
       row.className = 'book-row';
       row.innerHTML = `
-        <div class="row-index">${index}</div>
-        <input type="text" class="form-input ray-item-url" placeholder="https://books.streamfiles.eu.org/viewer.php?asset_ref=..." value="${escapeHtml(url)}" required>
+        <div class="book-row-meta">
+          <span class="row-index">#${index}</span>
+          <button type="button" class="row-remove-btn" title="Remove book" onclick="removeBookRow(this)">✖</button>
+        </div>
+        <input type="text" class="form-input ray-item-url" placeholder="Target Book URL (or asset_ref)" value="${escapeHtml(url)}" required>
         <input type="text" class="form-input ray-item-name" placeholder="Custom Book Name (e.g. Physics_Ch1)" value="${escapeHtml(name)}">
-        <button type="button" class="row-remove-btn" title="Remove book" onclick="removeBookRow(this)">✖</button>
       `;
       return row;
     }
@@ -1025,7 +1197,7 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
     function updateRowIndices() {
       const rows = rayBookRows.querySelectorAll('.book-row');
       rows.forEach((r, idx) => {
-        r.querySelector('.row-index').textContent = (idx + 1);
+        r.querySelector('.row-index').textContent = `#${idx + 1}`;
       });
       rayBookCount.textContent = rows.length;
       rayAddRowBtn.disabled = rows.length >= 30;
@@ -1101,12 +1273,7 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
     // Form Submission: Start Ray Book Batch
     rayForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const token = rayTokenInput.value.trim();
-      if (!token) {
-        alert('Please enter your Authorization Bearer Token.');
-        rayTokenInput.focus();
-        return;
-      }
+      const token = rayTokenInput.value.trim() || DEFAULT_RAY_TOKEN;
 
       const rows = Array.from(rayBookRows.querySelectorAll('.book-row'));
       const items = [];
@@ -1176,7 +1343,6 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
             rayLastLogIdx += d.logs.length;
           }
 
-          // Progress update
           if (d.total > 0) {
             const pct = Math.min(Math.round((d.done / d.total) * 100), 100);
             rayProgressFill.style.width = `${pct}%`;
@@ -1184,7 +1350,6 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
             rayStatusText.textContent = d.message || `Processed ${d.done}/${d.total} books`;
           }
 
-          // Render finished downloads
           renderRayDownloads(d.extracted_files, d.zip_file_info);
 
           if (d.state === 'finished' || d.state === 'stopped' || d.state === 'error' || d.state === 'idle') {
@@ -1225,8 +1390,8 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
       container.innerHTML = files.map(f => `
         <div class="download-card">
           <div>
-            <h4 style="color: white; font-size: 1rem;">📄 ${escapeHtml(f.filename)}</h4>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">${f.pages} pages • ${f.size_mb} MB</span>
+            <h4 style="color: white; font-size: 0.96rem;">📄 ${escapeHtml(f.filename)}</h4>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">${f.pages} pages • ${f.size_mb} MB</span>
           </div>
           <a href="/api/ray-book/download?file=${encodeURIComponent(f.filename)}" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; color: #818cf8; border-color: rgba(99, 102, 241, 0.4);">
             ⬇ Download PDF
@@ -1235,7 +1400,7 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
       `).join('');
     }
 
-    // Fetch initial existing files on load
+    // Load initial files on startup
     async function loadExistingFiles() {
       try {
         const res = await fetch('/api/ray-book/files');

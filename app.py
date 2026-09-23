@@ -300,7 +300,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({"error": "Maximum 30 books can be processed in a single batch."}, code=400)
                 return
 
-            default_token = payload.get("token", "").strip()
+            default_token = payload.get("token", "").strip() or RBE.DEFAULT_TOKEN
             zip_name = payload.get("zip_name", "Extracted_Books.zip").strip()
             remove_watermarks = bool(payload.get("remove_watermarks", True))
             period_h = int(payload.get("period_h", 500))

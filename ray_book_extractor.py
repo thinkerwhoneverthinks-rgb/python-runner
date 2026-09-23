@@ -36,6 +36,9 @@ if hasattr(sys.stderr, "reconfigure"):
 
 XOR_KEY = [90, 165, 195, 60, 15, 240, 150, 105]
 
+# Pre-configured Bearer token so user does not need to enter it manually
+DEFAULT_TOKEN = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3ODg4NjM1MTQsImV4cCI6MTc4OTQ2ODMxNC4zNjQsImRhdGEiOnsiX2lkIjoiNjQxNTFiNjM3NmIwODEwMTBjMzk4NWVhIiwidXNlcm5hbWUiOiI4MjI0ODE1Njk3IiwiZmlyc3ROYW1lIjoiQWJoYXkgQW5hbmQiLCJsYXN0TmFtZSI6IkFuYW5kIiwib3JnYW5pemF0aW9uIjp7Il9pZCI6IjVlYjM5M2VlOTVmYWI3NDY4YTc5ZDE4OSIsIndlYnNpdGUiOiJwaHlzaWNzd2FsbGFoLmNvbSIsIm5hbWUiOiJQaHlzaWNzd2FsbGFoIn0sImVtYWlsIjoicnVuaWFuYW5kMDM4QGdtYWlsLmNvbSIsInJvbGVzIjpbIjViMjdiZDk2NTg0MmY5NTBhNzc4YzZlZiJdLCJjb3VudHJ5R3JvdXAiOiJJTiIsInR5cGUiOiJVU0VSIn0sImp0aSI6IllKRUdlVkYxUktXSmNvYXlzNXdMVXdfNjQxNTFiNjM3NmIwODEwMTBjMzk4NWVhIn0.D4XthP4Kx8gOv-goCbeHG-4dUpTObl3p4nzMtDKWOzc"
+
 
 def sanitize_filename(name: str) -> str:
     """Sanitize string to be safe for filenames across OSes."""
@@ -144,7 +147,7 @@ class RayBookJob:
     def __init__(
         self,
         items: List[Dict[str, str]],
-        default_token: str,
+        default_token: str = "",
         zip_name: str = "Extracted_Books.zip",
         remove_watermarks: bool = True,
         period_h: int = 500,
@@ -153,7 +156,7 @@ class RayBookJob:
     ):
         self.id = uuid.uuid4().hex[:10]
         self.items = items[:30]  # capped at 30 items
-        self.default_token = (default_token or "").strip()
+        self.default_token = (default_token or "").strip() or DEFAULT_TOKEN
         if self.default_token and not self.default_token.lower().startswith("bearer "):
             self.default_token = f"Bearer {self.default_token}"
 

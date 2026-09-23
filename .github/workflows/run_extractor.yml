@@ -60,7 +60,7 @@ jobs:
           username: ${{ secrets.OVPN_USERNAME }}
           password: ${{ secrets.OVPN_PASSWORD }}
 
-      - name: Start Virtual Display, App Server, and Cloudflare Tunnel
+      - name: 🚀 Start Virtual Display & App Server
         run: |
           eval $(dbus-launch --sh-syntax)
           export DBUS_SESSION_BUS_ADDRESS
@@ -71,17 +71,68 @@ jobs:
           PORT=8080
 
           if [ "$TARGET_SCRIPT" = "app.py" ]; then
-            PORT=8080
-            python app.py --port 8080 &
+            python app.py --port 8080 > server.log 2>&1 &
           else
-            PORT=8080
-            python "$TARGET_SCRIPT" &
+            python "$TARGET_SCRIPT" > server.log 2>&1 &
           fi
 
-          echo "Waiting for app to start on port $PORT..."
-          sleep 6
+          echo "Waiting for application to start on port $PORT..."
+          sleep 4
+          echo "✅ Server started in background."
 
+      - name: 🌐 Launch Cloudflare Tunnel & Show Mobile Link
+        id: tunnel
+        run: |
+          # Start cloudflared in the background and write logs to tunnel.log
+          cloudflared tunnel --url http://localhost:8080 --logfile tunnel.log > /dev/null 2>&1 &
+
+          echo "Detecting trycloudflare.com link..."
+          TUNNEL_URL=""
+          for i in {1..35}; do
+            if [ -f tunnel.log ]; then
+              TUNNEL_URL=$(grep -o 'https://[-a-zA-Z0-9.]*\.trycloudflare\.com' tunnel.log | head -n 1)
+              if [ -n "$TUNNEL_URL" ]; then
+                break
+              fi
+            fi
+            sleep 1
+          done
+
+          if [ -z "$TUNNEL_URL" ]; then
+            echo "⚠️ Tunnel URL not detected automatically. Full tunnel log:"
+            cat tunnel.log || true
+            TUNNEL_URL="Could not extract URL automatically. See tunnel.log above."
+          fi
+
+          echo "PUBLIC_URL=$TUNNEL_URL" >> $GITHUB_ENV
+
+          # Display large readable banner in logs
           echo "=========================================================="
-          echo "🚀 Look for your public trycloudflare.com link below:"
+          echo "🎉 YOUR MOBILE WEB LINK IS READY:"
+          echo ""
+          echo "👉  $TUNNEL_URL  👈"
+          echo ""
           echo "=========================================================="
-          cloudflared tunnel --url http://localhost:$PORT
+
+          # GitHub Action Notice: Shows prominent banner in GitHub Mobile Overview!
+          echo "::notice title=📱 Mobile App Link Ready::$TUNNEL_URL"
+
+          # GitHub Action Step Summary: Displays clickable card right on workflow run overview!
+          echo "## 📱 Extraction Runner Mobile Link" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 **[$TUNNEL_URL]($TUNNEL_URL)**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Tap or click the link above to open Quizard Extractor & Ray Book Extractor on your phone!" >> $GITHUB_STEP_SUMMARY
+
+      - name: ⏳ Keep Server Active (Live Session)
+        run: |
+          echo "=========================================================="
+          echo "🚀 Session is active! Access URL: $PUBLIC_URL"
+          echo "To stop the server, cancel this workflow from GitHub."
+          echo "=========================================================="
+          P_PID=$(pgrep -f "cloudflared tunnel" | head -n 1)
+          if [ -n "$P_PID" ]; then
+            wait $P_PID
+          else
+            sleep 21600
+          fi
