@@ -26,105 +26,202 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from playwright.sync_api import sync_playwright
 
-DEFAULT_BASE_URL = "https://quizard-v3-new-4fb72be6e76b.herokuapp.com/"
+DEFAULT_BASE_URL = "https://quizard-v3-m-d396d1ad4209.herokuapp.com/"
 
 EXTRACTION_JS = """
 (args) => {
     const { testName, testId, batchPrefix, duration } = args;
     
+    // Quizzy 2026 File-Level Schema
     const data = {
         id: testId,
         name: testName,
-        description: `${batchPrefix} - ${testName}`,
+        displayName: `${batchPrefix} - ${testName}`,
         duration: duration,
         marking: { correct: 4, incorrect: -1 },
+        exam_name: batchPrefix,
         sections: [],
         syllabus: "" 
     };
 
-    let currentSectionObj = null;
-    let currentSecKey = "";
-    let qNum = 1;
-    const optMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+    // Helper: Replaces <math> tags with clean $LaTeX$ strings
+    function cleanHtmlMath(htmlString) {
+        if (!htmlString) return "";
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlString;
+        
+        const mathNodes = tempDiv.querySelectorAll('math');
+        mathNodes.forEach(mathEl => {
+            const annotation = mathEl.querySelector('annotation[encoding="LaTeX"]');
+            if (annotation && annotation.textContent) {
+                const latex = `$${annotation.textContent.trim()}$`;
+                mathEl.parentNode.replaceChild(document.createTextNode(latex), mathEl);
+            } else {
+                mathEl.parentNode.replaceChild(document.createTextNode(mathEl.textContent || ""), mathEl);
+            }
+        });
+        
+        return tempDiv.innerHTML.trim();
+    }
 
-    const elements = document.querySelectorAll("h3, table tr");
-    
-    elements.forEach(el => {
-        if (el.tagName === "H3" && el.innerText.toUpperCase().includes("SECTION")) {
-            let text = el.innerText.toUpperCase();
+    // Helper: Strip all HTML tags for pure text comparison
+    function getRawText(html) {
+        if (!html) return "";
+        let d = document.createElement('div');
+        d.innerHTML = html;
+        return d.innerText.replace(/\\s+/g, '').trim();
+    }
+
+    // 1. Scrape correct answers from the Results Table
+    const tableAnswers = [];
+    document.querySelectorAll('#result table tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 3 && !cells[0].innerText.includes('Total')) {
+            const ansDivs = Array.from(cells[2].querySelectorAll('div'));
+            const correctDiv = ansDivs.find(d => d.innerText.includes('Correct Answer'));
             
-            // Clean up name (e.g., "Section : PHYSICS" -> "Physics")
-            let secName = text.replace(/SECTION\\s*:?/i, '').trim();
-            secName = secName.charAt(0).toUpperCase() + secName.slice(1).toLowerCase();
-            
-            currentSectionObj = { name: secName, questions: [] };
-            currentSecKey = secName.substring(0, 3).toLowerCase();
-            qNum = 1;
-            
-            data.sections.push(currentSectionObj);
-        } 
-        else if (el.tagName === "TR" && currentSectionObj) {
-            const tds = el.querySelectorAll("td");
-            if (tds.length >= 3) {
-                const qNumberStr = tds[0].innerText.trim();
-                const img = tds[1].querySelector("img");
-                const imageUrl = img ? (img.src || img.getAttribute('src')) : null;
-                
-                if (imageUrl && !isNaN(parseInt(qNumberStr))) {
-                    let correctAns = 0; 
-                    let qType = "MCQ"; 
-                    
-                    const divs = tds[2].querySelectorAll("div");
-                    let answerText = "";
-                    divs.forEach(div => {
-                        if (div.innerText.includes("Correct Answer")) {
-                            answerText = div.innerText;
-                        }
-                    });
-
-                    if (answerText) {
-                        const match = answerText.match(/Correct Answers?\\s*:\\s*(.*)/i);
-                        if (match) {
-                            let rawAns = match[1].trim().toUpperCase();
-                            
-                            // 1. Detect MULTI-MCQ
-                            if (answerText.toLowerCase().includes("answers") || rawAns.includes(',')) {
-                                qType = "MULTI_MCQ";
-                                let parts = rawAns.match(/[A-D]/g) || [];
-                                correctAns = parts.map(s => optMap[s]);
-                            } 
-                            // 2. Detect INTEGER
-                            else if (/^-?\\d+(\\.\\d+)?$/.test(rawAns)) {
-                                qType = "INTEGER";
-                                correctAns = parseFloat(rawAns);
-                            } 
-                            // 3. Detect Standard MCQ
-                            else {
-                                qType = "MCQ";
-                                correctAns = optMap[rawAns] !== undefined ? optMap[rawAns] : rawAns;
-                            }
-                        }
-                    }
-
-                    let questionData = {
-                        id: `${testId}_${currentSecKey}_q${qNum}`,
-                        image_url: imageUrl,
-                        type: qType,
-                        correct: correctAns
-                    };
-
-                    if (qType !== "INTEGER") {
-                        questionData.options = ["A", "B", "C", "D"];
-                    }
-
-                    currentSectionObj.questions.push(questionData);
-                    qNum++;
-                }
+            if (correctDiv) {
+                let clone = correctDiv.cloneNode(true);
+                let innerHTML = clone.innerHTML;
+                innerHTML = innerHTML.replace(/Correct Answers?:\\s*/i, '').trim();
+                tableAnswers.push(cleanHtmlMath(innerHTML));
+            } else {
+                tableAnswers.push("");
             }
         }
     });
 
-    // Fallback: Extract Syllabus from Instructions modal 
+    // 2. Build questions utilizing the global 'window.questions' array (New Format)
+    if (window.questions && window.questions.length > 0) {
+        let currentSection = null;
+        let currentSecName = "";
+        let qNum = 1;
+
+        window.questions.forEach((q, index) => {
+            let secName = q.section || "Default";
+            
+            // Handle section grouping
+            if (secName !== currentSecName) {
+                currentSecName = secName;
+                currentSection = { name: currentSecName, icon: "", questions: [] };
+                data.sections.push(currentSection);
+                qNum = 1;
+            }
+
+            // Schema-compliant types
+            let qType = q.type === "multi" ? "multi_mcq" : (q.type || "mcq");
+            
+            // Clean Question HTML
+            let cleanQuestionHtml = cleanHtmlMath(q.question || "");
+            
+            // Extract Image
+            let tempDiv = document.createElement('div');
+            tempDiv.innerHTML = cleanQuestionHtml;
+            let imgEl = tempDiv.querySelector('img');
+            let imageUrl = imgEl ? (imgEl.src || imgEl.getAttribute('src')) : null;
+            if (imgEl) imgEl.remove();
+            cleanQuestionHtml = tempDiv.innerHTML.trim();
+
+            // Proceed if text OR image exists
+            if (cleanQuestionHtml.length > 0 || imageUrl) {
+                let questionData = {
+                    id: `${testId}_${currentSecName.substring(0,3).toLowerCase()}_q${qNum}`,
+                    type: qType,
+                    question: cleanQuestionHtml,
+                    image_url: imageUrl
+                };
+
+                let tableAns = tableAnswers[index] || "";
+
+                if (qType === "integer") {
+                    questionData.answer = getRawText(tableAns); 
+                } else {
+                    let cleanOptions = (q.options || []).map(opt => cleanHtmlMath(opt));
+                    questionData.options = cleanOptions.length > 0 ? cleanOptions : ["A", "B", "C", "D"];
+                    
+                    const targetText = getRawText(tableAns);
+                    let correctIndex = questionData.options.findIndex(opt => getRawText(opt) === targetText);
+                    
+                    if (qType === "multi_mcq") {
+                        questionData.correct = correctIndex !== -1 ? [correctIndex] : [0]; 
+                    } else {
+                        questionData.correct = correctIndex !== -1 ? correctIndex : 0;
+                    }
+                }
+
+                currentSection.questions.push(questionData);
+                qNum++;
+            }
+        });
+    } else {
+        // Fallback: Legacy table TR image scraping if window.questions is not populated
+        let currentSectionObj = null;
+        let currentSecKey = "";
+        let qNum = 1;
+        const optMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+        const elements = document.querySelectorAll("h3, table tr");
+        
+        elements.forEach(el => {
+            if (el.tagName === "H3" && el.innerText.toUpperCase().includes("SECTION")) {
+                let text = el.innerText.toUpperCase();
+                let secName = text.replace(/SECTION\\s*:?/i, '').trim();
+                secName = secName.charAt(0).toUpperCase() + secName.slice(1).toLowerCase();
+                currentSectionObj = { name: secName, icon: "", questions: [] };
+                currentSecKey = secName.substring(0, 3).toLowerCase();
+                qNum = 1;
+                data.sections.push(currentSectionObj);
+            } else if (el.tagName === "TR" && currentSectionObj) {
+                const tds = el.querySelectorAll("td");
+                if (tds.length >= 3) {
+                    const qNumberStr = tds[0].innerText.trim();
+                    const img = tds[1].querySelector("img");
+                    const imageUrl = img ? (img.src || img.getAttribute('src')) : null;
+                    if (imageUrl && !isNaN(parseInt(qNumberStr))) {
+                        let correctAns = 0;
+                        let qType = "mcq";
+                        const divs = tds[2].querySelectorAll("div");
+                        let answerText = "";
+                        divs.forEach(div => {
+                            if (div.innerText.includes("Correct Answer")) answerText = div.innerText;
+                        });
+                        if (answerText) {
+                            const match = answerText.match(/Correct Answers?\\s*:\\s*(.*)/i);
+                            if (match) {
+                                let rawAns = match[1].trim().toUpperCase();
+                                if (answerText.toLowerCase().includes("answers") || rawAns.includes(',')) {
+                                    qType = "multi_mcq";
+                                    let parts = rawAns.match(/[A-D]/g) || [];
+                                    correctAns = parts.map(s => optMap[s] !== undefined ? optMap[s] : 0);
+                                } else if (/^-?\\d+(\\.\\d+)?$/.test(rawAns)) {
+                                    qType = "integer";
+                                    correctAns = rawAns;
+                                } else {
+                                    qType = "mcq";
+                                    correctAns = optMap[rawAns] !== undefined ? optMap[rawAns] : 0;
+                                }
+                            }
+                        }
+                        let questionData = {
+                            id: `${testId}_${currentSecKey}_q${qNum}`,
+                            type: qType,
+                            question: "",
+                            image_url: imageUrl,
+                            correct: correctAns
+                        };
+                        if (qType === "integer") {
+                            questionData.answer = String(correctAns);
+                        } else {
+                            questionData.options = ["A", "B", "C", "D"];
+                        }
+                        currentSectionObj.questions.push(questionData);
+                        qNum++;
+                    }
+                }
+            }
+        });
+    }
+
+    // 3. Fallback: Extract Syllabus from Instructions modal 
     const instructionsContent = document.getElementById('instructionsContent');
     if (instructionsContent) {
         const html = instructionsContent.innerHTML;
@@ -234,6 +331,217 @@ def fetch_syllabus(page, base_url: str, batch_id: str, batch_name: str, test_id:
     return "Syllabus not available"
 
 
+class QuizardBrain:
+    """Intelligent Cache & Local Library Indexer for Quizard Tests.
+    
+    Scans existing downloaded batch archives (e.g. from 'my-original-file/pw test'
+    and runner workspace outputs) to keep track of already downloaded tests.
+    Enables instant detection of which tests are Already Downloaded vs New Tests.
+    """
+
+    def __init__(self, pw_test_dir: Optional[Path] = None, cache_file: Optional[Path] = None):
+        self.pw_test_dir = pw_test_dir or (Path(__file__).parent.parent / "my-original-file" / "pw test")
+        self.runner_dir = Path(__file__).parent / "workspace" / "quizard_outputs"
+        self.cache_file = cache_file or (Path(__file__).parent / "workspace" / "quizard_brain.json")
+        
+        # In-memory structures
+        self.total_tests: int = 0
+        self.total_batches: int = 0
+        self.last_scanned: str = ""
+        # norm_batch -> set of norm_test_names
+        self.batches: Dict[str, Dict[str, Any]] = {}
+        # global set of norm_test_names
+        self.global_tests: set = set()
+
+        self.load_or_scan()
+
+    @staticmethod
+    def norm(s: str) -> str:
+        """Normalizes titles for resilient matching across minor formatting differences."""
+        if not s:
+            return ""
+        clean = (s or "").lower()
+        clean = re.sub(r'_\d+$', '', clean)
+        clean = re.sub(r'[^a-z0-9]', '', clean)
+        return clean
+
+    def load_or_scan(self):
+        """Loads cached brain index if valid; otherwise performs a rapid local scan."""
+        if self.cache_file.exists():
+            try:
+                with open(self.cache_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                self.total_tests = data.get("total_tests", 0)
+                self.total_batches = data.get("total_batches", 0)
+                self.last_scanned = data.get("last_scanned", "")
+                self.batches = {}
+                self.global_tests = set()
+
+                for nb, binfo in data.get("batches", {}).items():
+                    test_set = set(binfo.get("tests", []))
+                    self.batches[nb] = {
+                        "name": binfo.get("name", nb),
+                        "tests": test_set,
+                        "count": len(test_set)
+                    }
+                    self.global_tests.update(test_set)
+                if self.total_tests > 0:
+                    return
+            except Exception:
+                pass
+
+        self.scan_library()
+
+    def scan_library(self) -> Dict[str, Any]:
+        """Scans all zip files in pw test directory and runner workspace."""
+        self.batches = {}
+        self.global_tests = set()
+        total_count = 0
+
+        target_dirs = []
+        if self.pw_test_dir.exists():
+            target_dirs.append(self.pw_test_dir)
+        if self.runner_dir.exists():
+            target_dirs.append(self.runner_dir)
+
+        for base_dir in target_dirs:
+            for root, _, files in os.walk(base_dir):
+                for f in files:
+                    if f.lower().endswith(".zip"):
+                        zp = os.path.join(root, f)
+                        bname = os.path.splitext(f)[0]
+                        norm_b = self.norm(bname)
+                        if norm_b not in self.batches:
+                            self.batches[norm_b] = {
+                                "name": bname,
+                                "tests": set(),
+                                "count": 0
+                            }
+                        try:
+                            with zipfile.ZipFile(zp) as z:
+                                for member in z.namelist():
+                                    if member.lower().endswith(".json"):
+                                        tname = os.path.splitext(os.path.basename(member))[0]
+                                        norm_t = self.norm(tname)
+                                        if norm_t:
+                                            self.batches[norm_b]["tests"].add(norm_t)
+                                            self.global_tests.add(norm_t)
+                                            total_count += 1
+                        except Exception:
+                            pass
+                    elif f.lower().endswith(".json") and not f.startswith("quizard_brain"):
+                        parent_batch = os.path.basename(root)
+                        norm_b = self.norm(parent_batch)
+                        if norm_b not in self.batches:
+                            self.batches[norm_b] = {"name": parent_batch, "tests": set(), "count": 0}
+                        tname = os.path.splitext(f)[0]
+                        norm_t = self.norm(tname)
+                        if norm_t:
+                            self.batches[norm_b]["tests"].add(norm_t)
+                            self.global_tests.add(norm_t)
+                            total_count += 1
+
+        for binfo in self.batches.values():
+            binfo["count"] = len(binfo["tests"])
+
+        self.total_tests = total_count
+        self.total_batches = len(self.batches)
+        self.last_scanned = datetime.datetime.now().isoformat()
+
+        self._save_cache()
+        return self.get_stats()
+
+    def _save_cache(self):
+        try:
+            self.cache_file.parent.mkdir(parents=True, exist_ok=True)
+            serializable = {
+                "version": 1,
+                "last_scanned": self.last_scanned,
+                "total_tests": self.total_tests,
+                "total_batches": self.total_batches,
+                "batches": {
+                    nb: {
+                        "name": binfo["name"],
+                        "tests": list(binfo["tests"]),
+                        "count": binfo["count"]
+                    }
+                    for nb, binfo in self.batches.items()
+                }
+            }
+            with open(self.cache_file, "w", encoding="utf-8") as f:
+                json.dump(serializable, f, indent=2)
+        except Exception:
+            pass
+
+    def get_stats(self) -> Dict[str, Any]:
+        return {
+            "total_tests": self.total_tests,
+            "total_batches": self.total_batches,
+            "last_scanned": self.last_scanned,
+            "pw_test_dir": str(self.pw_test_dir),
+            "exists": self.pw_test_dir.exists()
+        }
+
+    def is_downloaded(self, batch_name: str, test_title: str) -> bool:
+        """Determines if a test is already present in our local library."""
+        norm_t = self.norm(test_title)
+        if not norm_t:
+            return False
+
+        norm_b = self.norm(batch_name)
+
+        if norm_b in self.batches:
+            if norm_t in self.batches[norm_b]["tests"]:
+                return True
+
+        for nb, binfo in self.batches.items():
+            if norm_b in nb or nb in norm_b:
+                if norm_t in binfo["tests"]:
+                    return True
+
+        if norm_t in self.global_tests:
+            return True
+
+        return False
+
+    def check_batch_tests(self, batch_name: str, candidate_titles: List[str]) -> Dict[str, Any]:
+        """Separates candidate tests into already downloaded vs new tests."""
+        downloaded = []
+        new_tests = []
+
+        for title in candidate_titles:
+            if self.is_downloaded(batch_name, title):
+                downloaded.append(title)
+            else:
+                new_tests.append(title)
+
+        return {
+            "batch_name": batch_name,
+            "total": len(candidate_titles),
+            "downloaded": downloaded,
+            "downloaded_count": len(downloaded),
+            "new_tests": new_tests,
+            "new_tests_count": len(new_tests)
+        }
+
+    def record_downloaded(self, batch_name: str, test_title: str):
+        """Dynamically registers newly downloaded test into brain."""
+        norm_b = self.norm(batch_name)
+        norm_t = self.norm(test_title)
+        if not norm_t:
+            return
+        if norm_b not in self.batches:
+            self.batches[norm_b] = {"name": batch_name, "tests": set(), "count": 0}
+        self.batches[norm_b]["tests"].add(norm_t)
+        self.batches[norm_b]["count"] = len(self.batches[norm_b]["tests"])
+        self.global_tests.add(norm_t)
+        self.total_tests += 1
+
+
+# Global Brain Singleton
+brain = QuizardBrain()
+
+
 class QuizardJob:
     """Thread-safe background runner for Quizard batch extraction."""
 
@@ -244,6 +552,7 @@ class QuizardJob:
         base_url: str = DEFAULT_BASE_URL,
         use_api_syllabus: bool = True,
         headless: bool = True,
+        download_mode: str = "new_only",
         output_dir: Optional[Path] = None,
     ):
         self.id = uuid.uuid4().hex[:10]
@@ -252,6 +561,13 @@ class QuizardJob:
         self.batch_input = (batches or "all").strip()
         self.use_api_syllabus = use_api_syllabus
         self.headless = headless
+        self.download_mode = (download_mode or "new_only").strip().lower()
+
+        self.brain = brain
+        self.test_details: List[Dict[str, Any]] = []
+        self.text_format_count: int = 0
+        self.image_only_count: int = 0
+        self.skipped_brain_list: List[Dict[str, Any]] = []
 
         self.output_dir = output_dir or (Path(__file__).parent / "workspace" / "quizard_outputs")
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -463,6 +779,17 @@ class QuizardJob:
                             self.active_test = raw_test_name
                             total_tests_processed += 1
 
+                            # Brain Cache Check: Skip already downloaded tests if download_mode is 'new_only'
+                            if self.download_mode == "new_only" and self.brain.is_downloaded(current_batch, raw_test_name):
+                                total_skipped_count += 1
+                                self.log(f"   🧠 [Brain Cache] '{raw_test_name}' is already downloaded in library. (Skipping {i + 1}/{test_count})", level="info")
+                                self.skipped_brain_list.append({
+                                    "batch": current_batch,
+                                    "test": raw_test_name,
+                                    "reason": "Already downloaded in local library"
+                                })
+                                continue
+
                             base_clean_name = sanitize_filename(raw_test_name)
                             is_duplicate = False
                             dup_index = 1
@@ -579,16 +906,59 @@ class QuizardJob:
                                     with open(json_path, "w", encoding="utf-8") as f:
                                         json.dump(extracted_data, f, indent=2, ensure_ascii=False)
 
+                                    # Format & Text analytics for new format reporting
+                                    all_q = []
+                                    for sec in extracted_data.get("sections", []):
+                                        all_q.extend(sec.get("questions", []))
+
+                                    tot_q = len(all_q)
+                                    txt_q = 0
+                                    img_q = 0
+                                    for q_obj in all_q:
+                                        q_text = q_obj.get("question", "") or ""
+                                        raw_text = re.sub(r'<[^>]+>', '', q_text).strip()
+                                        if len(raw_text) > 0 or "$" in q_text:
+                                            txt_q += 1
+                                        if q_obj.get("image_url"):
+                                            img_q += 1
+
+                                    is_text_fmt = (txt_q > 0)
+                                    if is_text_fmt:
+                                        self.text_format_count += 1
+                                    else:
+                                        self.image_only_count += 1
+
+                                    test_record = {
+                                        "test_name": raw_test_name,
+                                        "batch_name": current_batch,
+                                        "total_questions": tot_q,
+                                        "text_questions": txt_q,
+                                        "image_questions": img_q,
+                                        "has_text": is_text_fmt,
+                                        "format": "Text + LaTeX (New Format)" if is_text_fmt else "Image-Only (Legacy)",
+                                        "file_name": file_name,
+                                        "rel_path": f"{safe_batch_name}/{file_name}",
+                                        "size_bytes": json_path.stat().st_size
+                                    }
+                                    self.test_details.append(test_record)
+
+                                    # Dynamically record newly downloaded test in brain
+                                    self.brain.record_downloaded(current_batch, raw_test_name)
+
                                     json_saved = True
                                     total_saved_count += 1
-                                    self.log(f"      ✅ Saved JSON: {file_name}", level="success")
+                                    fmt_label = f"✨ Text + LaTeX ({txt_q}/{tot_q} text questions)" if is_text_fmt else f"🖼️ Image-Only ({tot_q} questions)"
+                                    self.log(f"      ✅ Saved JSON: {file_name} [{fmt_label}]", level="success")
                                     display_test_name = f"{raw_test_name} (Copy {dup_index})" if is_duplicate else raw_test_name
                                     self.json_files.append({
                                         "batch": current_batch,
                                         "test": display_test_name,
                                         "filename": file_name,
                                         "rel_path": f"{safe_batch_name}/{file_name}",
-                                        "size_bytes": json_path.stat().st_size
+                                        "size_bytes": json_path.stat().st_size,
+                                        "has_text": is_text_fmt,
+                                        "text_questions": txt_q,
+                                        "total_questions": tot_q
                                     })
 
                                 except Exception as e:
@@ -653,6 +1023,11 @@ class QuizardJob:
                 "total_duplicates": total_duplicates_count,
                 "total_skipped": total_skipped_count,
                 "total_failed": total_failed_tests,
+                "text_format_count": self.text_format_count,
+                "image_only_count": self.image_only_count,
+                "test_details": self.test_details,
+                "skipped_brain_count": len(self.skipped_brain_list),
+                "skipped_brain_list": self.skipped_brain_list,
                 "duplicate_tracker": self.duplicate_tracker,
                 "duplicate_list": self.duplicate_list,
                 "skipped_tracker": self.skipped_tracker,
@@ -668,7 +1043,10 @@ class QuizardJob:
             self.progress(batch_total, batch_total, "Extraction completed successfully!")
             self.log("=======================================================", level="batch")
             self.log(f"🏁 EXECUTION FINISHED in {elapsed_sec}s!", level="success")
-            self.log(f"✅ Saved: {total_saved_count} | 📑 Duplicates Saved: {total_duplicates_count} | ⏭️ Skipped: {total_skipped_count} | ❌ Failed: {total_failed_tests}")
+            self.log(f"✅ Saved: {total_saved_count} | ✨ With Text (New Format): {self.text_format_count} | 🖼️ Image-Only: {self.image_only_count}")
+            if self.skipped_brain_list:
+                self.log(f"🧠 Brain Filter: {len(self.skipped_brain_list)} already downloaded tests were skipped.")
+            self.log(f"📑 Duplicates Saved: {total_duplicates_count} | ⏭️ Skipped: {total_skipped_count} | ❌ Failed: {total_failed_tests}")
             if self.failed_tracker:
                 self.log(f"⚠️ Failed batches retry list: {failed_batches_str}", level="warning")
             self.log("=======================================================", level="batch")

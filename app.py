@@ -128,6 +128,11 @@ class Handler(BaseHTTPRequestHandler):
                     "logs": active_quizard_job.logs[since_idx:],
                     "log_total": len(active_quizard_job.logs),
                     "summary": active_quizard_job.summary,
+                    "test_details": getattr(active_quizard_job, "test_details", []),
+                    "text_format_count": getattr(active_quizard_job, "text_format_count", 0),
+                    "image_only_count": getattr(active_quizard_job, "image_only_count", 0),
+                    "skipped_brain_count": len(getattr(active_quizard_job, "skipped_brain_list", [])),
+                    "skipped_brain_list": getattr(active_quizard_job, "skipped_brain_list", []),
                     "zip_files": active_quizard_job.zip_files,
                     "json_files": active_quizard_job.json_files,
                     "failed_tracker": active_quizard_job.failed_tracker,
@@ -137,6 +142,9 @@ class Handler(BaseHTTPRequestHandler):
                     "skipped_list": getattr(active_quizard_job, "skipped_list", []),
                 }
                 self.send_json(res)
+
+        elif path == "/api/quizard/brain-stats":
+            self.send_json(QUIZARD.brain.get_stats())
 
         elif path == "/api/quizard/download":
             qs = parse_qs(parsed.query)
@@ -176,17 +184,22 @@ class Handler(BaseHTTPRequestHandler):
                 since_idx = int(qs.get("since", ["0"])[0])
                 res = {
                     "id": active_ray_book_job.id,
+                    "mode": getattr(active_ray_book_job, "mode", "urls"),
                     "state": active_ray_book_job.state,
                     "message": active_ray_book_job.message,
                     "done": active_ray_book_job.done,
                     "total": active_ray_book_job.total,
                     "active_book": active_ray_book_job.active_book,
+                    "active_chapter": getattr(active_ray_book_job, "active_chapter", ""),
                     "active_page": active_ray_book_job.active_page,
                     "current_phase": active_ray_book_job.current_phase,
                     "logs": active_ray_book_job.logs[since_idx:],
                     "log_total": len(active_ray_book_job.logs),
                     "extracted_files": active_ray_book_job.extracted_files,
-                    "zip_file_info": active_ray_book_job.zip_file_info,
+                    "book_zips": getattr(active_ray_book_job, "book_zips", []),
+                    "part_zips": getattr(active_ray_book_job, "part_zips", []),
+                    "zip_file_info": active_ray_book_job.master_zip or active_ray_book_job.zip_file_info,
+                    "master_zip": getattr(active_ray_book_job, "master_zip", None),
                     "errors": active_ray_book_job.errors
                 }
                 self.send_json(res)
@@ -209,10 +222,12 @@ class Handler(BaseHTTPRequestHandler):
 
         elif path == "/api/ray-book/files":
             files = []
-            for p in RAY_BOOK_OUTPUT_DIR.iterdir():
+            for p in RAY_BOOK_OUTPUT_DIR.rglob("*"):
                 if p.is_file() and p.suffix.lower() in (".pdf", ".zip"):
+                    rel = p.relative_to(RAY_BOOK_OUTPUT_DIR).as_posix()
                     files.append({
-                        "filename": p.name,
+                        "filename": rel,
+                        "display_name": p.name,
                         "is_zip": p.suffix.lower() == ".zip",
                         "size_bytes": p.stat().st_size,
                         "size_mb": round(p.stat().st_size / (1024 * 1024), 2),
@@ -246,6 +261,7 @@ class Handler(BaseHTTPRequestHandler):
             base_url = payload.get("base_url", QUIZARD.DEFAULT_BASE_URL).strip()
             use_syllabus = bool(payload.get("use_api_syllabus", True))
             headless = bool(payload.get("headless", True))
+            download_mode = payload.get("download_mode", "new_only").strip().lower()
 
             with quizard_lock:
                 if active_quizard_job and active_quizard_job.state in ("queued", "running"):
@@ -258,11 +274,16 @@ class Handler(BaseHTTPRequestHandler):
                     base_url=base_url,
                     use_api_syllabus=use_syllabus,
                     headless=headless,
+                    download_mode=download_mode,
                     output_dir=QUIZARD_OUTPUT_DIR
                 )
                 t = threading.Thread(target=active_quizard_job.run, daemon=True)
                 t.start()
                 self.send_json({"id": active_quizard_job.id, "state": "queued"})
+
+        elif path == "/api/quizard/rescan-brain":
+            stats = QUIZARD.brain.scan_library()
+            self.send_json({"success": True, "stats": stats})
 
         elif path == "/api/quizard/stop":
             with quizard_lock:
@@ -284,6 +305,34 @@ class Handler(BaseHTTPRequestHandler):
         # -------------------------------------------------------------
         # Ray Book Extractor POST Endpoints
         # -------------------------------------------------------------
+        elif path == "/api/ray-book/analyse-book":
+            try:
+                payload = json.loads(body.decode("utf-8")) if body else {}
+            except Exception as e:
+                self.send_json({"error": f"Invalid JSON payload: {e}"}, code=400)
+                return
+            book_id = payload.get("book_id", "").strip()
+            token = payload.get("token", "").strip() or RBE.DEFAULT_TOKEN
+            if not book_id:
+                self.send_json({"error": "Book ID or URL is required."}, code=400)
+                return
+            result = RBE.analyse_book(book_id, token)
+            self.send_json(result)
+
+        elif path == "/api/ray-book/analyse-cohort":
+            try:
+                payload = json.loads(body.decode("utf-8")) if body else {}
+            except Exception as e:
+                self.send_json({"error": f"Invalid JSON payload: {e}"}, code=400)
+                return
+            cohort = payload.get("cohort", "").strip()
+            token = payload.get("token", "").strip() or RBE.DEFAULT_TOKEN
+            if not cohort:
+                self.send_json({"error": "Cohort name is required."}, code=400)
+                return
+            result = RBE.analyse_cohort(cohort, token)
+            self.send_json(result)
+
         elif path == "/api/ray-book/start":
             try:
                 payload = json.loads(body.decode("utf-8")) if body else {}
@@ -291,15 +340,15 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({"error": f"Invalid JSON payload: {e}"}, code=400)
                 return
 
+            mode = payload.get("mode", "urls").strip()
+            books = payload.get("books", [])
             items = payload.get("items", [])
-            if not items or not isinstance(items, list):
-                self.send_json({"error": "Items list is required (at least 1 book URL)."}, code=400)
+
+            if not books and not items:
+                self.send_json({"error": "Please provide books or items to extract."}, code=400)
                 return
 
-            if len(items) > 30:
-                self.send_json({"error": "Maximum 30 books can be processed in a single batch."}, code=400)
-                return
-
+            cohort_name = payload.get("cohort_name", "").strip()
             default_token = payload.get("token", "").strip() or RBE.DEFAULT_TOKEN
             zip_name = payload.get("zip_name", "Extracted_Books.zip").strip()
             remove_watermarks = bool(payload.get("remove_watermarks", True))
@@ -312,7 +361,10 @@ class Handler(BaseHTTPRequestHandler):
                     return
 
                 active_ray_book_job = RBE.RayBookJob(
+                    mode=mode,
+                    books=books,
                     items=items,
+                    cohort_name=cohort_name,
                     default_token=default_token,
                     zip_name=zip_name,
                     remove_watermarks=remove_watermarks,

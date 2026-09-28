@@ -1,15 +1,17 @@
 """Ray Book Extraction & Watermark Removal Engine.
 
-Batch processing for PW & Streamfiles encrypted books:
-- Supports batch download of up to 30 books with custom names.
-- Decrypts XOR-ciphered PDF pages on-the-fly.
-- Template-based nanmedian watermark removal using PyMuPDF and OpenCV.
-- Live progress streaming, log emission, individual downloads, and custom ZIP exports.
+Dual Mode & Batch Processing for PW & Streamfiles encrypted books:
+- Direct URLs Mode: Unlimited batch download with custom names.
+- Book ID Mode: Inspect full book chapters, interactive chapter selection, ZIP per book.
+- Cohort Mode: Inspect cohorts (e.g. 12th JEE, Dropper JEE, 12th NEET, Dropper NEET),
+  interactive book & chapter selection, ZIP per book, ZIP per 5 books, and ZIP of whole cohort.
+- XOR decryption on-the-fly and nanmedian watermark template removal.
 """
 
 from __future__ import annotations
 
 import base64
+from concurrent.futures import ThreadPoolExecutor
 import datetime
 import io
 import json
@@ -42,7 +44,7 @@ DEFAULT_TOKEN = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3ODg4NjM
 
 def sanitize_filename(name: str) -> str:
     """Sanitize string to be safe for filenames across OSes."""
-    clean = re.sub(r'[\\/*?:"<>|]', '_', name.strip())
+    clean = re.sub(r'[\\/*?:"<>|]', '_', (name or '').strip())
     clean = re.sub(r'\s+', '_', clean)
     clean = clean.strip(' ._')
     return clean or "extracted_book"
@@ -65,6 +67,246 @@ def extract_asset_ref(url_or_ref: str) -> str:
         if match:
             return urllib.parse.unquote(match.group(1).strip())
     return raw
+
+
+def extract_book_id(query_or_url: str) -> str:
+    """Extracts book ID from book_chapters query or raw string."""
+    raw = (query_or_url or "").strip()
+    if not raw:
+        return ""
+    if "book_chapters=" in raw:
+        try:
+            parsed = urllib.parse.urlparse(raw)
+            qs = urllib.parse.parse_qs(parsed.query)
+            if "book_chapters" in qs and qs["book_chapters"]:
+                return qs["book_chapters"][0].strip()
+        except Exception:
+            pass
+        match = re.search(r'book_chapters=([a-zA-Z0-9_\-]+)', raw)
+        if match:
+            return match.group(1).strip()
+    return raw
+
+
+def normalize_cohort(input_str: str) -> str:
+    """Normalizes friendly cohort inputs into API cohort identifiers.
+    e.g. '12th jee' -> '12_JEE', 'dropper neet' -> 'DROPPER_NEET', '11th jee' -> '11_JEE', '10th boards' -> '10_BOARDS'
+    """
+    s = (input_str or "").strip()
+    if not s:
+        return ""
+    clean = re.sub(r'[\s\-_]+', '_', s).upper()
+    clean = re.sub(r'^12TH_', '12_', clean)
+    clean = re.sub(r'^11TH_', '11_', clean)
+    clean = re.sub(r'^10TH_', '10_', clean)
+    clean = re.sub(r'^9TH_', '9_', clean)
+    clean = re.sub(r'^CLASS_12_', '12_', clean)
+    clean = re.sub(r'^CLASS_11_', '11_', clean)
+    clean = re.sub(r'^CLASS_10_', '10_', clean)
+    clean = re.sub(r'^CLASS_9_', '9_', clean)
+    return clean
+
+
+def get_api_headers(token: str = "") -> Dict[str, str]:
+    """Returns headers required for streamfiles books API."""
+    act_token = (token or "").strip() or DEFAULT_TOKEN
+    if act_token and not act_token.lower().startswith("bearer "):
+        act_token = f"Bearer {act_token}"
+    return {
+        "Authorization": act_token,
+        "x-authorization": act_token,
+        "client-id": "5eb393ee95fab7468a79d189",
+        "client-type": "WEB",
+        "randomid": "f4fbd160-4407-4886-b48f-1a9463e0acde",
+        "x-sdk-version": "0.0.20-alpha-1",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+    }
+
+
+def analyse_book(book_id_or_url: str, token: str = "") -> Dict[str, Any]:
+    """Fetches and analyses all chapters for a given Book ID."""
+    book_id = extract_book_id(book_id_or_url)
+    if not book_id:
+        return {"success": False, "error": "Invalid book ID or URL provided."}
+
+    headers = get_api_headers(token)
+    api_url = f"https://books.streamfiles.eu.org/api/books.php?book_chapters={book_id}"
+
+    try:
+        res = requests.get(api_url, headers=headers, timeout=20)
+        if res.status_code != 200:
+            return {"success": False, "error": f"Server returned HTTP {res.status_code}: {res.text[:200]}"}
+        json_data = res.json()
+    except Exception as e:
+        return {"success": False, "error": f"Failed to connect to API: {e}"}
+
+    chapters_raw = []
+    book_title = "Unknown Book"
+
+    if json_data.get("data") and isinstance(json_data["data"], dict):
+        chapters_raw = json_data["data"].get("chapterDetails", []) or []
+        book_title = json_data["data"].get("title") or book_title
+    elif json_data.get("chapterDetails"):
+        chapters_raw = json_data.get("chapterDetails", []) or []
+        book_title = json_data.get("title") or book_title
+
+    if not chapters_raw:
+        return {"success": False, "error": f"No chapter data found for Book ID: {book_id}"}
+
+    base_viewer_url = "https://books.streamfiles.eu.org/viewer.php?asset_ref="
+    chapters = []
+    for chap in chapters_raw:
+        eq = chap.get("encryptedQuery")
+        if not eq:
+            continue
+        c_num = chap.get("displayChapterNumber")
+        if c_num is None:
+            c_num = len(chapters) + 1
+        c_title = (chap.get("title") or f"Chapter {c_num}").strip()
+        chapters.append({
+            "id": chap.get("_id") or str(len(chapters) + 1),
+            "chapter_number": c_num,
+            "title": c_title,
+            "asset_ref": eq,
+            "viewer_url": f"{base_viewer_url}{eq}"
+        })
+
+    return {
+        "success": True,
+        "book": {
+            "id": book_id,
+            "title": book_title.strip(),
+            "total_chapters": len(chapters),
+            "chapters": chapters
+        }
+    }
+
+
+def analyse_cohort(cohort_input: str, token: str = "") -> Dict[str, Any]:
+    """Fetches explore pages for a cohort, extracts unique books, and inspects their chapters."""
+    if not cohort_input or not cohort_input.strip():
+        return {"success": False, "error": "Cohort name cannot be empty."}
+
+    headers = get_api_headers(token)
+    raw_str = cohort_input.strip()
+    norm = normalize_cohort(raw_str)
+    raw_upper = raw_str.upper().replace(" ", "_")
+    candidates = []
+    for cand in [
+        norm,
+        raw_str,
+        raw_upper,
+        norm.replace("_BOARDS", "_BOARD"),
+        norm.replace("_BOARDS", "_CBSE"),
+        raw_str.lower(),
+        raw_str.lower().replace(" ", "_"),
+    ]:
+        if cand and cand not in candidates:
+            candidates.append(cand)
+
+    cohort_json = None
+    used_cohort = norm
+
+    for cand in candidates:
+        api_url = f"https://books.streamfiles.eu.org/api/books.php?cohort={urllib.parse.quote(cand)}"
+        try:
+            res = requests.get(api_url, headers=headers, timeout=20)
+            if res.status_code == 200:
+                data = res.json()
+                if data.get("data") and data["data"].get("explorePages"):
+                    cohort_json = data
+                    used_cohort = cand
+                    break
+        except Exception:
+            pass
+
+    if not cohort_json:
+        return {
+            "success": False,
+            "error": f"No books returned from API for cohort '{cohort_input}'. Popular verified cohorts include: '12th jee', 'dropper jee', '11th jee', '12th neet', 'dropper neet', '11th neet'. You can also use Mode 1 (Book ID) to extract any specific book directly."
+        }
+
+    explore_pages = cohort_json.get("data", {}).get("explorePages", [])
+    extracted_books = []
+
+    for page in explore_pages:
+        items = page.get("explorePage", {}).get("books", []) or []
+        for item in items:
+            if item.get("books") and isinstance(item["books"], list):
+                for b in item["books"]:
+                    if b.get("bookId"):
+                        extracted_books.append({"id": b["bookId"], "title": b.get("title") or "Book"})
+            elif item.get("bookId") or item.get("_id"):
+                extracted_books.append({"id": item.get("bookId") or item.get("_id"), "title": item.get("title") or "Book"})
+
+    seen = set()
+    unique_books = []
+    for b in extracted_books:
+        bid = b["id"]
+        if bid and bid not in seen:
+            seen.add(bid)
+            unique_books.append(b)
+
+    if not unique_books:
+        return {"success": False, "error": f"No books discovered in cohort '{cohort_input}'."}
+
+    # Fetch chapters in parallel for all books
+    def _fetch_single_book_chaps(b):
+        bid = b["id"]
+        try:
+            url = f"https://books.streamfiles.eu.org/api/books.php?book_chapters={bid}"
+            r = requests.get(url, headers=headers, timeout=15)
+            if r.status_code == 200:
+                cd = r.json()
+                data = cd.get("data") if isinstance(cd.get("data"), dict) else cd
+                c_title = data.get("title") or b["title"]
+                c_list = data.get("chapterDetails", []) or []
+                chapters = []
+                base_viewer = "https://books.streamfiles.eu.org/viewer.php?asset_ref="
+                for c in c_list:
+                    eq = c.get("encryptedQuery")
+                    if not eq:
+                        continue
+                    num = c.get("displayChapterNumber")
+                    if num is None:
+                        num = len(chapters) + 1
+                    t = (c.get("title") or f"Chapter {num}").strip()
+                    chapters.append({
+                        "id": c.get("_id") or str(len(chapters) + 1),
+                        "chapter_number": num,
+                        "title": t,
+                        "asset_ref": eq,
+                        "viewer_url": f"{base_viewer}{eq}"
+                    })
+                return {
+                    "id": bid,
+                    "title": c_title.strip(),
+                    "chapter_count": len(chapters),
+                    "chapters": chapters
+                }
+        except Exception:
+            pass
+        return {
+            "id": bid,
+            "title": b["title"].strip(),
+            "chapter_count": 0,
+            "chapters": []
+        }
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        books_data = list(executor.map(_fetch_single_book_chaps, unique_books))
+
+    total_chapters = sum(b["chapter_count"] for b in books_data)
+    display_name = used_cohort.replace("_", " ").title()
+
+    return {
+        "success": True,
+        "cohort": used_cohort,
+        "cohort_display": display_name,
+        "total_books": len(books_data),
+        "total_chapters": total_chapters,
+        "books": books_data
+    }
 
 
 def clean_page_image(arr: np.ndarray, alpha_3d: np.ndarray, c_wm: float, dilated_wm_mask: np.ndarray) -> np.ndarray:
@@ -142,11 +384,21 @@ def extract_master_template(doc: fitz.Document, period_h: int = 500) -> np.ndarr
 
 
 class RayBookJob:
-    """Thread-safe batch processor for Ray Book extraction and watermark removal."""
+    """Thread-safe batch processor for Ray Book extraction and watermark removal.
+
+    Supports:
+    - Mode 'urls': Unlimited direct URLs / asset_refs.
+    - Mode 'book': Single book extraction with selected chapters -> ZIP per book.
+    - Mode 'cohort': Cohort extraction with selected books & chapters ->
+      ZIP per book, ZIP per 5 books, and Master ZIP of whole cohort!
+    """
 
     def __init__(
         self,
-        items: List[Dict[str, str]],
+        mode: str = "urls",
+        books: Optional[List[Dict[str, Any]]] = None,
+        items: Optional[List[Dict[str, str]]] = None,
+        cohort_name: str = "",
         default_token: str = "",
         zip_name: str = "Extracted_Books.zip",
         remove_watermarks: bool = True,
@@ -155,7 +407,9 @@ class RayBookJob:
         output_dir: Optional[Path] = None,
     ):
         self.id = uuid.uuid4().hex[:10]
-        self.items = items[:30]  # capped at 30 items
+        self.mode = mode  # "urls", "book", "cohort"
+        self.cohort_name = sanitize_filename(cohort_name or "Cohort")
+
         self.default_token = (default_token or "").strip() or DEFAULT_TOKEN
         if self.default_token and not self.default_token.lower().startswith("bearer "):
             self.default_token = f"Bearer {self.default_token}"
@@ -174,17 +428,50 @@ class RayBookJob:
         self.temp_dir = self.output_dir / f"_temp_{self.id}"
         self.temp_dir.mkdir(parents=True, exist_ok=True)
 
+        # Normalize structured books representation
+        if books:
+            self.books = books
+        elif items:
+            # Mode "urls": Direct items list (unlimited)
+            self.books = [{
+                "id": "direct_batch",
+                "title": sanitize_filename(clean_zip.replace(".zip", "") or "Batch_Extraction"),
+                "chapters": [
+                    {
+                        "id": str(i + 1),
+                        "chapter_number": i + 1,
+                        "title": it.get("custom_name") or f"Item_{i + 1}",
+                        "asset_ref": extract_asset_ref(it.get("url") or ""),
+                        "custom_name": sanitize_filename(it.get("custom_name") or f"Book_{i + 1}"),
+                        "token": it.get("token") or ""
+                    }
+                    for i, it in enumerate(items)
+                    if extract_asset_ref(it.get("url") or "")
+                ]
+            }]
+        else:
+            self.books = []
+
+        # Count total chapters to extract
+        total_chaps = 0
+        for b in self.books:
+            total_chaps += len(b.get("chapters", []))
+        self.total = max(total_chaps, 1)
+        self.done = 0
+
         self.state = "queued"  # queued, running, finished, stopped, error
         self.message = "Job queued..."
-        self.done = 0
-        self.total = max(len(self.items), 1)
         self.active_book = ""
+        self.active_chapter = ""
         self.active_page = 0
         self.current_phase = ""  # downloading, watermarking, archiving
         self.stop_requested = False
 
         self.logs: List[Dict[str, str]] = []
         self.extracted_files: List[Dict[str, Any]] = []
+        self.book_zips: List[Dict[str, Any]] = []
+        self.part_zips: List[Dict[str, Any]] = []
+        self.master_zip: Optional[Dict[str, Any]] = None
         self.zip_file_info: Optional[Dict[str, Any]] = None
         self.errors: List[str] = []
         self.start_time: Optional[float] = None
@@ -236,125 +523,232 @@ class RayBookJob:
         self.stop_requested = True
         self.state = "stopped"
         self.message = "Stop requested by user..."
-        self.log("Stopping batch extraction...", "warning")
+        self.log("Stopping extraction job...", "warning")
 
     def run(self):
         self.state = "running"
         self.start_time = time.time()
-        total_items = len(self.items)
-        self.total = total_items
-        self.log(f"Starting Ray Book batch extraction for {total_items} book(s)...", "info")
+        num_books = len(self.books)
+        self.log(f"Starting Ray Book extraction: {num_books} book(s), {self.total} total chapter(s)...", "info")
 
-        if not self.default_token and not any(it.get("token") for it in self.items):
-            self.default_token = DEFAULT_TOKEN
-
-        success_count = 0
+        success_chapters = 0
+        books_completed = []  # stores paths and book info
 
         try:
-            for idx, item in enumerate(self.items):
+            for b_idx, book in enumerate(self.books):
                 if self.stop_requested:
                     break
 
-                url_raw = (item.get("url") or "").strip()
-                raw_name = (item.get("custom_name") or "").strip()
-                if not raw_name:
-                    raw_name = f"Book_{idx + 1}"
-                custom_name = sanitize_filename(raw_name)
+                raw_b_title = book.get("title") or f"Book_{b_idx + 1}"
+                clean_b_title = sanitize_filename(raw_b_title)
+                chapters = book.get("chapters", [])
 
-                book_token = (item.get("token") or "").strip()
-                if book_token and not book_token.lower().startswith("bearer "):
-                    book_token = f"Bearer {book_token}"
-                active_token = book_token or self.default_token or DEFAULT_TOKEN
-
-                asset_ref = extract_asset_ref(url_raw)
-                if not asset_ref:
-                    self.log(f"[{idx + 1}/{total_items}] ❌ Invalid URL / asset_ref for '{custom_name}'. Skipping.", "error")
-                    self.errors.append(f"'{custom_name}': Invalid URL / asset_ref")
-                    self.done += 1
+                if not chapters:
                     continue
 
-                self.active_book = custom_name
-                self.current_phase = "downloading"
-                self.message = f"Processing ({idx + 1}/{total_items}): {custom_name}"
-                self.log(f"[{idx + 1}/{total_items}] 📖 Processing: {custom_name}...", "info")
+                self.active_book = clean_b_title
+                self.log(f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", "info")
+                self.log(f"📖 [{b_idx + 1}/{num_books}] Processing Book: {clean_b_title} ({len(chapters)} chapter(s))", "info")
 
-                raw_pdf_path = self.temp_dir / f"raw_{idx}_{custom_name}.pdf"
-                final_pdf_path = self.output_dir / f"{custom_name}.pdf"
+                # Dedicated folder for this book's chapter PDFs
+                book_dir = self.output_dir / clean_b_title
+                book_dir.mkdir(parents=True, exist_ok=True)
 
-                try:
-                    # Phase 1: Download and decrypt pages
-                    self.log(f"[{idx + 1}/{total_items}] [Phase 1] Downloading & decrypting pages from server...", "info")
-                    pages_fetched = self._download_and_decrypt(asset_ref, active_token, raw_pdf_path, idx, total_items)
+                book_extracted_pdfs = []
 
+                for c_idx, chap in enumerate(chapters):
                     if self.stop_requested:
                         break
 
-                    if pages_fetched == 0 or not raw_pdf_path.exists():
-                        raise ValueError(f"No pages fetched for '{custom_name}'. Token might be expired or URL invalid.")
+                    asset_ref = extract_asset_ref(chap.get("asset_ref") or chap.get("url") or "")
+                    chap_num = chap.get("chapter_number", c_idx + 1)
+                    raw_c_title = chap.get("title") or f"Chapter {chap_num}"
+                    clean_c_title = sanitize_filename(raw_c_title)
 
-                    # Phase 2: Watermark removal or direct copy
-                    if self.remove_watermarks:
-                        self.current_phase = "watermarking"
-                        self.log(f"[{idx + 1}/{total_items}] [Phase 2] Synthesizing watermark template & cleaning pages...", "info")
-                        self._remove_watermarks(raw_pdf_path, final_pdf_path, idx, total_items)
-                    else:
-                        self.log(f"[{idx + 1}/{total_items}] Watermark removal skipped by user option. Saving raw book.", "info")
-                        shutil.copyfile(raw_pdf_path, final_pdf_path)
+                    # Standardized chapter filename
+                    try:
+                        num_pad = f"{int(chap_num):02d}"
+                    except Exception:
+                        num_pad = str(chap_num)
+                    pdf_filename = f"{num_pad} - {clean_c_title}.pdf"
 
-                    # Clean up raw temp file
-                    if raw_pdf_path.exists():
-                        try:
-                            os.remove(raw_pdf_path)
-                        except Exception:
-                            pass
+                    self.active_chapter = f"{clean_b_title} / {pdf_filename}"
+                    self.current_phase = "downloading"
+                    self.message = f"[{self.done + 1}/{self.total}] Downloading: {pdf_filename}"
+                    self.log(f"   ⬇ [Chap {c_idx + 1}/{len(chapters)}] Fetching: {pdf_filename}...", "info")
 
-                    file_size = final_pdf_path.stat().st_size
-                    size_mb = file_size / (1024 * 1024)
-                    self.log(f"[{idx + 1}/{total_items}] ✅ Finished: {final_pdf_path.name} ({pages_fetched} pages, {size_mb:.2f} MB)", "success")
+                    token = chap.get("token") or self.default_token
+                    if token and not token.lower().startswith("bearer "):
+                        token = f"Bearer {token}"
 
-                    self.extracted_files.append({
-                        "name": custom_name,
-                        "filename": final_pdf_path.name,
-                        "pages": pages_fetched,
-                        "size_bytes": file_size,
-                        "size_mb": round(size_mb, 2),
-                        "status": "completed",
-                        "path": str(final_pdf_path.resolve())
-                    })
-                    success_count += 1
+                    if not asset_ref:
+                        self.log(f"   ❌ Missing asset_ref for '{pdf_filename}'. Skipping.", "error")
+                        self.errors.append(f"{clean_b_title} - {pdf_filename}: Missing asset_ref")
+                        self.done += 1
+                        continue
 
-                except Exception as e:
-                    err_msg = str(e)
-                    self.log(f"[{idx + 1}/{total_items}] ❌ Failed processing '{custom_name}': {err_msg}", "error")
-                    self.errors.append(f"'{custom_name}': {err_msg}")
-                finally:
-                    self.done += 1
+                    raw_pdf_path = self.temp_dir / f"raw_{self.id}_{b_idx}_{c_idx}.pdf"
+                    final_pdf_path = book_dir / pdf_filename
 
-            # Phase 3: Build master ZIP archive if any books succeeded
-            if success_count > 0 and not self.stop_requested:
+                    try:
+                        pages_fetched = self._download_and_decrypt(asset_ref, token, raw_pdf_path)
+
+                        if self.stop_requested:
+                            break
+
+                        if pages_fetched == 0 or not raw_pdf_path.exists():
+                            raise ValueError(f"0 pages fetched for '{pdf_filename}'. Token expired or URL invalid.")
+
+                        if self.remove_watermarks:
+                            self.current_phase = "watermarking"
+                            self.message = f"[{self.done + 1}/{self.total}] Cleaning watermarks: {pdf_filename}"
+                            self.log(f"   ✨ Inverting watermarks on {pages_fetched} page(s)...", "info")
+                            self._remove_watermarks(raw_pdf_path, final_pdf_path)
+                        else:
+                            shutil.copyfile(raw_pdf_path, final_pdf_path)
+
+                        if raw_pdf_path.exists():
+                            try:
+                                os.remove(raw_pdf_path)
+                            except Exception:
+                                pass
+
+                        file_size = final_pdf_path.stat().st_size
+                        size_mb = file_size / (1024 * 1024)
+                        self.log(f"   ✅ Saved: {pdf_filename} ({pages_fetched} pages, {size_mb:.2f} MB)", "success")
+
+                        rel_path = f"{clean_b_title}/{pdf_filename}"
+                        file_record = {
+                            "book_name": clean_b_title,
+                            "filename": rel_path,
+                            "display_name": pdf_filename,
+                            "pages": pages_fetched,
+                            "size_bytes": file_size,
+                            "size_mb": round(size_mb, 2),
+                            "path": str(final_pdf_path.resolve())
+                        }
+                        self.extracted_files.append(file_record)
+                        book_extracted_pdfs.append(file_record)
+                        success_chapters += 1
+
+                    except Exception as e:
+                        err_msg = str(e)
+                        self.log(f"   ❌ Failed '{pdf_filename}': {err_msg}", "error")
+                        self.errors.append(f"{clean_b_title} / {pdf_filename}: {err_msg}")
+                    finally:
+                        self.done += 1
+
+                # -------------------------------------------------------------
+                # Tier 1 ZIP: Create ZIP per Book
+                # -------------------------------------------------------------
+                if book_extracted_pdfs:
+                    self.current_phase = "archiving"
+                    book_zip_name = f"{clean_b_title}.zip"
+                    book_zip_path = self.output_dir / book_zip_name
+                    try:
+                        with zipfile.ZipFile(book_zip_path, "w", zipfile.ZIP_DEFLATED) as bzf:
+                            for ef in book_extracted_pdfs:
+                                p = Path(ef["path"])
+                                if p.exists():
+                                    bzf.write(p, arcname=p.name)
+
+                        b_size = book_zip_path.stat().st_size
+                        b_mb = b_size / (1024 * 1024)
+                        book_zip_info = {
+                            "book_title": clean_b_title,
+                            "filename": book_zip_name,
+                            "size_bytes": b_size,
+                            "size_mb": round(b_mb, 2),
+                            "file_count": len(book_extracted_pdfs),
+                            "path": str(book_zip_path.resolve())
+                        }
+                        self.book_zips.append(book_zip_info)
+                        self.log(f"📦 [ZIP Per Book] Created: {book_zip_name} ({len(book_extracted_pdfs)} chapters, {b_mb:.2f} MB)", "success")
+                        books_completed.append({
+                            "title": clean_b_title,
+                            "dir": book_dir,
+                            "zip_info": book_zip_info
+                        })
+                    except Exception as e:
+                        self.log(f"Failed to create book ZIP for '{clean_b_title}': {e}", "warning")
+
+            # -------------------------------------------------------------
+            # Tier 2 ZIP: For Cohort Mode -> Create ZIP per 5 Books
+            # -------------------------------------------------------------
+            if self.mode == "cohort" and books_completed and not self.stop_requested:
                 self.current_phase = "archiving"
-                self.log(f"📦 Creating consolidated ZIP archive '{self.zip_name}' with {success_count} file(s)...", "info")
-                zip_dest = self.output_dir / self.zip_name
-                try:
-                    with zipfile.ZipFile(zip_dest, "w", zipfile.ZIP_DEFLATED) as zf:
-                        for ef in self.extracted_files:
-                            p = Path(ef["path"])
-                            if p.exists():
-                                zf.write(p, arcname=ef["filename"])
-                    zip_size = zip_dest.stat().st_size
-                    zip_mb = zip_size / (1024 * 1024)
-                    self.zip_file_info = {
-                        "filename": self.zip_name,
-                        "size_bytes": zip_size,
-                        "size_mb": round(zip_mb, 2),
-                        "file_count": success_count,
-                        "path": str(zip_dest.resolve())
-                    }
-                    self.log(f"🎉 Master ZIP archive created successfully: {self.zip_name} ({zip_mb:.2f} MB)", "success")
-                except Exception as e:
-                    self.log(f"Warning: Failed to create ZIP archive: {e}", "warning")
+                self.log(f"📦 Building batch ZIPs per 5 books...", "info")
+                chunk_size = 5
+                for part_idx, i in enumerate(range(0, len(books_completed), chunk_size), start=1):
+                    chunk_books = books_completed[i:i + chunk_size]
+                    start_num = i + 1
+                    end_num = i + len(chunk_books)
+                    part_zip_name = f"{self.cohort_name}_Part_{part_idx:02d}_(Books_{start_num:02d}-{end_num:02d}).zip"
+                    part_zip_path = self.output_dir / part_zip_name
+                    try:
+                        with zipfile.ZipFile(part_zip_path, "w", zipfile.ZIP_DEFLATED) as pzf:
+                            for b in chunk_books:
+                                b_dir = b["dir"]
+                                if b_dir.exists():
+                                    for pdf_file in b_dir.glob("*.pdf"):
+                                        pzf.write(pdf_file, arcname=f"{b['title']}/{pdf_file.name}")
 
-            # Clean up temp folder
+                        p_size = part_zip_path.stat().st_size
+                        p_mb = p_size / (1024 * 1024)
+                        part_info = {
+                            "part_num": part_idx,
+                            "range": f"Books {start_num}-{end_num}",
+                            "filename": part_zip_name,
+                            "size_bytes": p_size,
+                            "size_mb": round(p_mb, 2),
+                            "book_count": len(chunk_books),
+                            "path": str(part_zip_path.resolve())
+                        }
+                        self.part_zips.append(part_info)
+                        self.log(f"📦 [ZIP Per 5 Books] Created Part {part_idx}: {part_zip_name} ({len(chunk_books)} books, {p_mb:.2f} MB)", "success")
+                    except Exception as e:
+                        self.log(f"Failed to create part ZIP {part_zip_name}: {e}", "warning")
+
+            # -------------------------------------------------------------
+            # Tier 3 ZIP: Consolidated Master ZIP of Whole Batch / Cohort
+            # -------------------------------------------------------------
+            if books_completed and not self.stop_requested:
+                self.current_phase = "archiving"
+                master_name = self.zip_name
+                if self.mode == "cohort":
+                    master_name = f"{self.cohort_name}_Complete_All_Books.zip"
+                elif self.mode == "book" and len(books_completed) == 1:
+                    master_name = f"{books_completed[0]['title']}_Full_Book.zip"
+
+                if not master_name.lower().endswith(".zip"):
+                    master_name += ".zip"
+
+                master_zip_path = self.output_dir / master_name
+                self.log(f"📦 [ZIP of Whole] Generating master consolidated ZIP: {master_name}...", "info")
+                try:
+                    with zipfile.ZipFile(master_zip_path, "w", zipfile.ZIP_DEFLATED) as mzf:
+                        for b in books_completed:
+                            b_dir = b["dir"]
+                            if b_dir.exists():
+                                for pdf_file in b_dir.glob("*.pdf"):
+                                    mzf.write(pdf_file, arcname=f"{b['title']}/{pdf_file.name}")
+
+                    m_size = master_zip_path.stat().st_size
+                    m_mb = m_size / (1024 * 1024)
+                    self.master_zip = {
+                        "filename": master_name,
+                        "size_bytes": m_size,
+                        "size_mb": round(m_mb, 2),
+                        "book_count": len(books_completed),
+                        "chapter_count": success_chapters,
+                        "path": str(master_zip_path.resolve())
+                    }
+                    self.zip_file_info = self.master_zip
+                    self.log(f"🎉 Master ZIP Archive created: {master_name} ({len(books_completed)} books, {m_mb:.2f} MB)", "success")
+                except Exception as e:
+                    self.log(f"Warning: Failed to create Master ZIP: {e}", "warning")
+
+            # Clean up temp working folder
             if self.temp_dir.exists():
                 shutil.rmtree(self.temp_dir, ignore_errors=True)
 
@@ -363,26 +757,28 @@ class RayBookJob:
 
             if self.stop_requested:
                 self.state = "stopped"
-                self.message = f"Stopped after {self.done} items ({success_count} succeeded, took {elapsed:.1f}s)"
+                self.message = f"Stopped after {self.done} chapters ({success_chapters} succeeded, took {elapsed:.1f}s)"
                 self.log(self.message, "warning")
-            elif success_count == 0 and total_items > 0:
+            elif success_chapters == 0 and self.total > 0:
                 self.state = "error"
-                self.message = f"All {total_items} items failed to extract."
+                self.message = f"All {self.total} chapter(s) failed to extract."
                 self.log(self.message, "error")
             else:
                 self.state = "finished"
-                self.message = f"Successfully processed {success_count}/{total_items} book(s) in {elapsed:.1f}s"
+                self.message = f"Completed extraction of {success_chapters} chapter(s) across {len(books_completed)} book(s) in {elapsed:.1f}s"
                 self.log(f"🏆 {self.message}", "success")
+
         finally:
             self._close_playwright()
 
-    def _download_and_decrypt(self, asset_ref: str, token: str, output_raw: Path, book_idx: int, total_books: int) -> int:
+    def _download_and_decrypt(self, asset_ref: str, token: str, output_raw: Path) -> int:
         """Downloads encrypted pages sequentially, reverses XOR cipher, and merges into raw PDF.
         Features automatic fallback to Chromium browser engine if cloud/datacenter IP gets HTTP 403.
         """
         session = requests.Session()
         headers = {
             "Authorization": token,
+            "x-authorization": token,
             "Referer": f"https://books.streamfiles.eu.org/viewer.php?asset_ref={asset_ref}",
             "Origin": "https://books.streamfiles.eu.org",
             "Accept": "application/json, text/plain, */*",
@@ -397,7 +793,6 @@ class RayBookJob:
         }
         session.headers.update(headers)
 
-        # Pre-seed session cookies by visiting the viewer page first
         try:
             session.get(f"https://books.streamfiles.eu.org/viewer.php?asset_ref={asset_ref}", timeout=10)
         except Exception:
@@ -413,31 +808,30 @@ class RayBookJob:
                 url = f"https://books.streamfiles.eu.org/api/page.php?asset_ref={asset_ref}&page={page_num}"
                 data = None
 
-                # 1. Try fast HTTP session first (unless browser engine already activated)
+                # 1. Try fast HTTP session first
                 if not use_browser_engine:
                     try:
                         response = session.get(url, timeout=20)
                         if response.status_code == 200:
                             data = response.json()
                         elif response.status_code == 403:
-                            self.log(f"   [P.{page_num}] Received HTTP 403 on direct connection (Cloudflare Datacenter filter). Launching Chromium engine...", "warning")
+                            self.log(f"      [P.{page_num}] Received HTTP 403 on direct connection. Launching Chromium engine...", "warning")
                             use_browser_engine = True
                         else:
                             if page_num == 1:
                                 raise ValueError(f"Server returned HTTP {response.status_code}: {response.text[:200]}")
-                            self.log(f"   Reached end of pages (HTTP {response.status_code} on page {page_num}). Total fetched: {page_num - 1}", "info")
                             break
                     except ValueError:
                         raise
                     except Exception as e:
-                        self.log(f"   [P.{page_num}] Direct connection error: {e}. Switching to Chromium engine...", "warning")
+                        self.log(f"      [P.{page_num}] Direct connection error: {e}. Switching to Chromium engine...", "warning")
                         use_browser_engine = True
 
-                # 2. Seamlessly use Chromium browser page if Cloudflare blocks datacenter IP
+                # 2. Chromium engine fallback
                 if use_browser_engine:
                     try:
                         if pw_page is None:
-                            self.log(f"   [P.{page_num}] Initializing browser session on viewer page...", "info")
+                            self.log(f"      [P.{page_num}] Initializing browser session on viewer page...", "info")
                             pw_ctx = self._get_playwright_context()
                             pw_page = pw_ctx.new_page()
                             viewer_url = f"https://books.streamfiles.eu.org/viewer.php?asset_ref={asset_ref}"
@@ -447,7 +841,7 @@ class RayBookJob:
                         data = pw_page.evaluate('''
                             async ([targetUrl, bearerToken]) => {
                                 const res = await fetch(targetUrl, {
-                                    headers: { 'Authorization': bearerToken }
+                                    headers: { 'Authorization': bearerToken, 'x-authorization': bearerToken }
                                 });
                                 return await res.json();
                             }
@@ -455,7 +849,6 @@ class RayBookJob:
                     except Exception as e:
                         if page_num == 1:
                             raise ValueError(f"Browser engine fetch error: {e}")
-                        self.log(f"   Reached end of pages on page {page_num}: {e}", "info")
                         break
 
                 if not data:
@@ -463,7 +856,6 @@ class RayBookJob:
 
                 b64_payload = data.get('data')
                 if not b64_payload:
-                    self.log(f"   Reached end of chapter. Total pages fetched: {page_num - 1}", "info")
                     break
 
                 # Reverse the XOR Cipher
@@ -478,10 +870,10 @@ class RayBookJob:
 
                 self.active_page = page_num
                 if page_num % 10 == 0 or page_num == 1:
-                    self.log(f"   [{self.active_book}] Fetched & decrypted page {page_num}...", "info")
+                    self.log(f"      [{self.active_chapter}] Decrypted page {page_num}...", "info")
 
                 page_num += 1
-                time.sleep(0.15)  # courteous delay
+                time.sleep(0.12)
 
         finally:
             if pw_page is not None:
@@ -496,7 +888,7 @@ class RayBookJob:
         merged_pdf.close()
         return total_pages
 
-    def _remove_watermarks(self, input_pdf: Path, output_pdf: Path, book_idx: int, total_books: int):
+    def _remove_watermarks(self, input_pdf: Path, output_pdf: Path):
         """Processes document and eliminates repeating watermarks using master template nanmedian."""
         doc = fitz.open(str(input_pdf.resolve()))
         total_pages = len(doc)
@@ -504,39 +896,37 @@ class RayBookJob:
             doc.close()
             return
 
-        self.log(f"   Analyzing document and synthesizing watermark master template...", "info")
-        full_template = extract_master_template(doc, period_h=self.period_h)
-        full_template[full_template < 215.0] = 255.0
-        full_template[full_template > 250.0] = 255.0
+        try:
+            full_template = extract_master_template(doc, period_h=self.period_h)
+            full_template[full_template < 215.0] = 255.0
+            full_template[full_template > 250.0] = 255.0
 
-        alpha = np.clip((255.0 - full_template) / (255.0 - self.c_wm), 0.0, 0.35)
-        alpha_3d = np.stack([alpha] * 3, axis=-1)
+            alpha = np.clip((255.0 - full_template) / (255.0 - self.c_wm), 0.0, 0.35)
+            alpha_3d = np.stack([alpha] * 3, axis=-1)
 
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-        dilated_wm_mask = cv2.dilate((alpha > 0.003).astype(np.uint8), kernel).astype(bool)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+            dilated_wm_mask = cv2.dilate((alpha > 0.003).astype(np.uint8), kernel).astype(bool)
 
-        for idx, page in enumerate(doc):
-            if self.stop_requested:
-                break
-            images = page.get_images()
-            if not images:
-                continue
+            for idx, page in enumerate(doc):
+                if self.stop_requested:
+                    break
+                images = page.get_images()
+                if not images:
+                    continue
 
-            xref = images[0][0]
-            base = doc.extract_image(xref)
-            arr = cv2.imdecode(np.frombuffer(base['image'], np.uint8), cv2.IMREAD_COLOR)
-            if arr is None:
-                continue
+                xref = images[0][0]
+                base = doc.extract_image(xref)
+                arr = cv2.imdecode(np.frombuffer(base['image'], np.uint8), cv2.IMREAD_COLOR)
+                if arr is None:
+                    continue
 
-            restored = clean_page_image(arr, alpha_3d, self.c_wm, dilated_wm_mask)
-            _, buf = cv2.imencode('.png', restored, [cv2.IMWRITE_PNG_COMPRESSION, 6])
-            page.replace_image(xref, stream=buf.tobytes())
+                restored = clean_page_image(arr, alpha_3d, self.c_wm, dilated_wm_mask)
+                _, buf = cv2.imencode('.png', restored, [cv2.IMWRITE_PNG_COMPRESSION, 6])
+                page.replace_image(xref, stream=buf.tobytes())
 
-            if (idx + 1) % 15 == 0 or (idx + 1) == total_pages:
-                self.log(f"   Cleaned watermarks on page {idx + 1}/{total_pages}...", "info")
-
-        doc.save(str(output_pdf.resolve()), garbage=4, deflate=True)
-        doc.close()
+            doc.save(str(output_pdf.resolve()), garbage=4, deflate=True)
+        finally:
+            doc.close()
 
 
 def standalone_cli():
@@ -546,21 +936,55 @@ def standalone_cli():
     parser.add_argument("--url", help="Target book viewer URL or asset_ref", default="")
     parser.add_argument("--token", help="Bearer Authorization Token", default="")
     parser.add_argument("--name", help="Custom name for the book", default="Final_Extracted_Book")
+    parser.add_argument("--book-id", help="Book ID to extract all chapters", default="")
+    parser.add_argument("--cohort", help="Cohort name (e.g. 12th jee, dropper jee)", default="")
     parser.add_argument("--no-clean", action="store_true", help="Skip watermark removal")
     args = parser.parse_args()
 
-    # Fallback to interactive input if arguments are missing
-    url = args.url or input("Enter Target Book URL (or asset_ref): ").strip()
-    token = args.token or input("Enter Authorization Bearer Token: ").strip()
-    name = args.name or input("Enter Custom Book Name (leave empty for default): ").strip() or "Final_Extracted_Book"
+    token = args.token or DEFAULT_TOKEN
 
-    job = RayBookJob(
-        items=[{"url": url, "custom_name": name, "token": token}],
-        default_token=token,
-        zip_name=f"{name}.zip",
-        remove_watermarks=not args.no_clean
-    )
-    job.run()
+    if args.cohort:
+        print(f"Analysing cohort '{args.cohort}'...")
+        res = analyse_cohort(args.cohort, token)
+        if not res.get("success"):
+            print("Error:", res.get("error"))
+            return
+        print(f"Found {res['total_books']} books with {res['total_chapters']} total chapters.")
+        job = RayBookJob(
+            mode="cohort",
+            books=res["books"],
+            cohort_name=res["cohort"],
+            default_token=token,
+            remove_watermarks=not args.no_clean
+        )
+        job.run()
+    elif args.book_id:
+        print(f"Analysing Book ID '{args.book_id}'...")
+        res = analyse_book(args.book_id, token)
+        if not res.get("success"):
+            print("Error:", res.get("error"))
+            return
+        b = res["book"]
+        print(f"Book: {b['title']} ({b['total_chapters']} chapters)")
+        job = RayBookJob(
+            mode="book",
+            books=[b],
+            zip_name=f"{sanitize_filename(b['title'])}.zip",
+            default_token=token,
+            remove_watermarks=not args.no_clean
+        )
+        job.run()
+    else:
+        url = args.url or input("Enter Target Book URL (or asset_ref): ").strip()
+        name = args.name or input("Enter Custom Book Name (leave empty for default): ").strip() or "Final_Extracted_Book"
+        job = RayBookJob(
+            mode="urls",
+            items=[{"url": url, "custom_name": name, "token": token}],
+            default_token=token,
+            zip_name=f"{name}.zip",
+            remove_watermarks=not args.no_clean
+        )
+        job.run()
 
 
 if __name__ == "__main__":

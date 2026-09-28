@@ -536,6 +536,347 @@
       background: rgba(15, 23, 42, 0.95);
     }
 
+    /* Class and Exam Selector (PW Style) */
+    .class-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .class-card-btn {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border);
+      border-radius: 0.85rem;
+      padding: 0.85rem 0.65rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.92rem;
+      user-select: none;
+    }
+
+    .class-card-btn:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .class-card-btn.active {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.14);
+      color: #60a5fa;
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.25);
+    }
+
+    .exam-card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .exam-card-item {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border);
+      border-radius: 0.85rem;
+      padding: 0.85rem 1.15rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .exam-card-item:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      background: rgba(15, 23, 42, 0.85);
+    }
+
+    .exam-card-item.active {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.14);
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.2);
+    }
+
+    .exam-card-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .exam-card-sub {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .exam-card-edit-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      border-radius: 0.35rem;
+      padding: 0.15rem 0.45rem;
+      font-size: 0.72rem;
+      color: #93c5fd;
+      cursor: pointer;
+    }
+
+    .exam-card-checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 0.35rem;
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      font-size: 0.75rem;
+    }
+
+    .exam-card-item.active .exam-card-checkbox {
+      background: #3b82f6;
+      border-color: #3b82f6;
+      color: white;
+    }
+
+    /* Quizard Category Cards (Matching User Screenshot) */
+    .qz-category-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    @media (max-width: 640px) {
+      .qz-category-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .qz-category-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border);
+      border-radius: 0.85rem;
+      padding: 1.1rem 1.35rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .qz-category-card:hover {
+      border-color: rgba(99, 102, 241, 0.5);
+      background: rgba(15, 23, 42, 0.9);
+      transform: translateY(-2px);
+    }
+    .qz-category-card.active {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.12);
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.25);
+    }
+    .qz-category-title {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #3b82f6;
+    }
+    .qz-category-card.active .qz-category-title {
+      color: #60a5fa;
+    }
+    .qz-category-chevron {
+      color: #64748b;
+      font-size: 0.85rem;
+      transition: transform 0.2s ease;
+    }
+    .qz-category-card.active .qz-category-chevron {
+      color: #60a5fa;
+      transform: rotate(180deg);
+    }
+
+    /* Ray Book Mode Switcher */
+    .mode-pills-container {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(10, 15, 30, 0.75);
+      padding: 0.4rem;
+      border-radius: 0.85rem;
+      border: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .mode-pill-btn {
+      flex: 1;
+      min-width: 160px;
+      padding: 0.7rem 1rem;
+      border-radius: 0.65rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+    }
+
+    .mode-pill-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .mode-pill-btn.active {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+
+    /* Analysis Result Card */
+    .analysis-card {
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      border-radius: 1rem;
+      padding: 1.35rem;
+      margin-top: 1.25rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .analysis-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chapter-checklist-box {
+      max-height: 380px;
+      overflow-y: auto;
+      background: rgba(10, 15, 28, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .chapter-check-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.55rem 0.75rem;
+      border-radius: 0.5rem;
+      transition: background 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .chapter-check-item:hover {
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .chapter-check-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .chap-meta-info {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex: 1;
+      margin-left: 0.65rem;
+      overflow: hidden;
+    }
+
+    .chap-num-tag {
+      background: rgba(99, 102, 241, 0.2);
+      color: #818cf8;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 0.35rem;
+      flex-shrink: 0;
+    }
+
+    .chap-title-text {
+      font-size: 0.88rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Cohort Accordion Items */
+    .cohort-book-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      margin-bottom: 0.65rem;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .cohort-book-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .cohort-book-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: rgba(20, 30, 55, 0.5);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .cohort-book-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex: 1;
+    }
+
+    .cohort-book-chapters-list {
+      display: none;
+      padding: 0.65rem 1rem;
+      border-top: 1px solid var(--border);
+      background: rgba(10, 15, 30, 0.5);
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .tier-badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 0.35rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
     /* Modal */
     .modal-backdrop {
       position: fixed;
@@ -727,13 +1068,76 @@
         </div>
 
         <form id="quizard-form">
+          <!-- Brain Active Library Banner -->
+          <div style="background: rgba(99, 102, 241, 0.08); border: 1px dashed rgba(99, 102, 241, 0.45); border-radius: 0.85rem; padding: 0.9rem 1.15rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <span style="font-weight: 700; color: white; display: flex; align-items: center; gap: 0.45rem; font-size: 0.92rem;">
+                🧠 Quizard Brain Active
+              </span>
+              <span style="font-size: 0.82rem; color: #cbd5e1;">
+                <b><span id="qz-brain-tests-count">2,558</span></b> tests indexed from local library across <b><span id="qz-brain-batches-count">143</span></b> batches (<code style="color: #93c5fd;">pw test</code>).
+              </span>
+            </div>
+            <button type="button" id="qz-btn-rescan-brain" class="token-action-btn" onclick="rescanQuizardBrain()">
+              🔄 Rescan Library
+            </button>
+          </div>
+
+          <!-- Step 1: Category Selector (Matching Screenshots) -->
+          <div style="margin-bottom: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+              <label class="form-label" style="font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0;">
+                Select Category
+              </label>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">6 Major Quizard Categories</span>
+            </div>
+            
+            <div class="qz-category-grid" id="qz-category-selector">
+              <div class="qz-category-card" data-cat="Boards Level Tests" onclick="selectQuizardCategory('Boards Level Tests')">
+                <span class="qz-category-title">Boards Level Tests</span>
+                <span class="qz-category-chevron">▼</span>
+              </div>
+              <div class="qz-category-card" data-cat="JEE Tests" onclick="selectQuizardCategory('JEE Tests')">
+                <span class="qz-category-title">JEE Tests</span>
+                <span class="qz-category-chevron">▼</span>
+              </div>
+              <div class="qz-category-card" data-cat="NEET Tests" onclick="selectQuizardCategory('NEET Tests')">
+                <span class="qz-category-title">NEET Tests</span>
+                <span class="qz-category-chevron">▼</span>
+              </div>
+              <div class="qz-category-card active" data-cat="DROPPER Tests" onclick="selectQuizardCategory('DROPPER Tests')">
+                <span class="qz-category-title">DROPPER Tests</span>
+                <span class="qz-category-chevron">▼</span>
+              </div>
+              <div class="qz-category-card" data-cat="Other Batch Tests" onclick="selectQuizardCategory('Other Batch Tests')">
+                <span class="qz-category-title">Other Batch Tests</span>
+                <span class="qz-category-chevron">▼</span>
+              </div>
+              <div class="qz-category-card" data-cat="Tests Series" onclick="selectQuizardCategory('Tests Series')">
+                <span class="qz-category-title">Tests Series</span>
+                <span class="qz-category-chevron">▼</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category Input (Auto-synced & Editable) -->
           <div class="form-group">
-            <label class="form-label" for="qz-category">Category Name</label>
-            <input type="text" id="qz-category" class="form-input" placeholder="e.g. Yakeen NEET 2.0 2026, Aarambh, etc." required>
-            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem;">
-              <span class="chip-badge" onclick="document.getElementById('qz-category').value='Yakeen NEET 2.0 2026'">Yakeen NEET 2.0 2026</span>
-              <span class="chip-badge" onclick="document.getElementById('qz-category').value='Aarambh 2026'">Aarambh 2026</span>
-              <span class="chip-badge" onclick="document.getElementById('qz-category').value='Prayas JEE 2026'">Prayas JEE 2026</span>
+            <label class="form-label" for="qz-category">Active Category Identifier</label>
+            <input type="text" id="qz-category" class="form-input" value="DROPPER Tests" placeholder="e.g. DROPPER Tests, JEE Tests, NEET Tests..." required>
+          </div>
+
+          <!-- Extraction Scope & Brain Filter -->
+          <div class="form-group" style="background: rgba(15, 23, 42, 0.65); border: 1px solid var(--border); border-radius: 0.85rem; padding: 0.85rem 1.15rem; margin-bottom: 1.25rem;">
+            <label class="form-label" style="margin-bottom: 0.5rem; font-weight: 700; color: white;">🧠 Brain Download Scope:</label>
+            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+              <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer; color: #60a5fa; font-size: 0.88rem; font-weight: 600;">
+                <input type="radio" name="qz-download-mode" value="new_only" checked style="width: 17px; height: 17px;">
+                ✨ Only New Tests (Skip tests already in library)
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer; color: var(--text-secondary); font-size: 0.88rem;">
+                <input type="radio" name="qz-download-mode" value="all" style="width: 17px; height: 17px;">
+                🔄 All Tests (Force re-download all tests)
+              </label>
             </div>
           </div>
 
@@ -745,7 +1149,7 @@
 
             <div class="form-group">
               <label class="form-label" for="qz-base-url">Quizard Base URL</label>
-              <input type="text" id="qz-base-url" class="form-input" value="https://quizard-v3-new-4fb72be6e76b.herokuapp.com/">
+              <input type="text" id="qz-base-url" class="form-input" value="https://quizard-v3-m-d396d1ad4209.herokuapp.com/">
             </div>
           </div>
 
@@ -795,6 +1199,39 @@
             <p style="color: var(--text-muted); font-size: 0.88rem;">No packages extracted yet in this session.</p>
           </div>
         </div>
+
+        <!-- Test Format & Questions Breakdown (New Format) -->
+        <div id="qz-text-analysis-section" style="display: none; margin-top: 1.75rem; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <h3 style="font-size: 1.05rem; color: white; font-weight: 700; margin-bottom: 0.2rem;">
+                📝 Test Format &amp; Questions Analysis (New Format)
+              </h3>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">
+                Live report of question text extraction and LaTeX support per test
+              </span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <span class="chip-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700;">
+                ✨ <span id="qz-stat-text">0</span> Text Tests
+              </span>
+              <span class="chip-badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8;">
+                🖼️ <span id="qz-stat-image">0</span> Image Tests
+              </span>
+              <span class="chip-badge" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">
+                🧠 <span id="qz-stat-skipped">0</span> Brain Skipped
+              </span>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 0.85rem;">
+            <input type="text" id="qz-test-search" class="form-input" style="padding: 0.5rem 0.85rem; font-size: 0.84rem;" placeholder="🔎 Search tests by name or batch..." oninput="filterQuizardTestDetails()">
+          </div>
+
+          <div id="qz-test-details-list" style="max-height: 380px; overflow-y: auto; padding-right: 0.35rem;">
+            <!-- Dynamically populated test format cards -->
+          </div>
+        </div>
       </div>
     </div>
 
@@ -805,92 +1242,362 @@
       <div class="hero-card">
         <div class="hero-header">
           <span class="hero-badge">PW &amp; STREAMFILES BOOK DECRYPTOR</span>
-          <h1 class="hero-title">Ray Book Batch Extractor</h1>
-          <p class="hero-desc">Batch download up to 30 encrypted books, reverse XOR ciphers, and synthesize nanmedian templates to eliminate repeating watermarks.</p>
+          <h1 class="hero-title">Ray Book Multi-Engine Extractor</h1>
+          <p class="hero-desc">Extract full books via Book ID, batch-extract whole cohorts (12th JEE, Dropper JEE, 12th NEET, Dropper NEET) with interactive chapter selection, unlimited direct URLs, and 3-tier smart zipping (per book, per 5 books, and complete whole).</p>
         </div>
 
-        <form id="ray-form">
-          <!-- Global Configuration -->
+        <!-- Global Settings Card -->
+        <div class="card" style="margin-bottom: 1.25rem;">
+          <h3 style="font-size: 1rem; margin-bottom: 0.85rem; color: #818cf8; display: flex; align-items: center; gap: 0.5rem;">
+            ⚙️ Global Settings &amp; Authentication
+          </h3>
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+              <label class="form-label" for="ray-token" style="margin-bottom: 0;">
+                Authorization Bearer Token (Pre-Filled)
+              </label>
+              <div style="display: flex; gap: 0.4rem;">
+                <button type="button" class="token-action-btn" onclick="toggleTokenVisibility()">👁 View</button>
+                <button type="button" class="token-action-btn" onclick="resetToDefaultToken()">🔄 Reset</button>
+              </div>
+            </div>
+            <input type="password" id="ray-token" class="form-input" placeholder="Bearer eyJ0eXAiOiJKV1QiLC..." required>
+            <small style="color: #34d399; font-size: 0.78rem; margin-top: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
+              ✓ Active token pre-configured and saved. You do not need to enter it manually.
+            </small>
+          </div>
+
+          <div style="display: flex; align-items: center; padding-top: 0.35rem;">
+            <label style="display: flex; align-items: center; gap: 0.55rem; cursor: pointer; color: var(--text); font-weight: 500; font-size: 0.9rem;">
+              <input type="checkbox" id="ray-watermark-toggle" checked style="width: 18px; height: 18px;">
+              ✨ Auto-Remove Watermarks (Template Inversion via nanmedian)
+            </label>
+          </div>
+        </div>
+
+        <!-- Extraction Mode Switcher -->
+        <div class="mode-pills-container">
+          <button type="button" id="ray-tab-book-btn" class="mode-pill-btn active" onclick="switchRaySubMode('book')">
+            📚 Mode 1: Single Book (via Book ID)
+          </button>
+          <button type="button" id="ray-tab-cohort-btn" class="mode-pill-btn" onclick="switchRaySubMode('cohort')">
+            🎓 Mode 2: Cohort / Class Batch (12th JEE, Dropper JEE...)
+          </button>
+          <button type="button" id="ray-tab-urls-btn" class="mode-pill-btn" onclick="switchRaySubMode('urls')">
+            🔗 Mode 3: Direct URLs (Unlimited)
+          </button>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- MODE 1: SINGLE BOOK VIA BOOK ID -->
+        <!-- ============================================================= -->
+        <div id="ray-sec-book">
           <div class="card">
-            <h3 style="font-size: 1rem; margin-bottom: 0.85rem; color: #818cf8; display: flex; align-items: center; gap: 0.5rem;">
-              ⚙️ Global Settings
+            <h3 style="font-size: 1.05rem; color: var(--text); font-weight: 600; margin-bottom: 0.4rem;">
+              📖 Extract Book via Book ID
             </h3>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+              Enter any Book ID or API/Viewer URL. It will automatically fetch the book title and all chapters, allowing you to select chapters and export an individual ZIP for the book.
+            </p>
+
             <div class="form-group">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
-                <label class="form-label" for="ray-token" style="margin-bottom: 0;">
-                  Authorization Bearer Token (Pre-Filled)
-                </label>
-                <div style="display: flex; gap: 0.4rem;">
-                  <button type="button" class="token-action-btn" onclick="toggleTokenVisibility()">👁 View</button>
-                  <button type="button" class="token-action-btn" onclick="resetToDefaultToken()">🔄 Reset</button>
+              <label class="form-label" for="ray-book-id-input">Book ID or URL</label>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <input type="text" id="ray-book-id-input" class="form-input" style="flex: 1; min-width: 260px;" placeholder="e.g. 699eb4309a1240f7a2d435ba or full URL">
+                <button type="button" id="ray-btn-analyse-book" class="btn btn-primary" onclick="analyseBook()">
+                  🔍 Analyse Book
+                </button>
+              </div>
+              <div style="display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.6rem; align-items: center;">
+                <span style="font-size: 0.76rem; color: var(--text-muted);">Quick Example:</span>
+                <span class="chip-badge" onclick="document.getElementById('ray-book-id-input').value='699eb4309a1240f7a2d435ba'; analyseBook();">
+                  38 Years NEET Chemistry (699eb430...)
+                </span>
+              </div>
+            </div>
+
+            <!-- Analysis Box for Book ID -->
+            <div id="ray-book-analysis-box" class="analysis-card" style="display: none;">
+              <div class="analysis-header-row">
+                <div>
+                  <span class="tier-badge" style="background: rgba(99, 102, 241, 0.25); color: #818cf8;">BOOK DISCOVERED</span>
+                  <h4 id="ray-analysis-book-title" style="font-size: 1.1rem; color: white; margin-top: 0.2rem;">Book Title</h4>
+                  <span id="ray-analysis-book-meta" style="font-size: 0.82rem; color: var(--text-muted);">23 Chapters Found</span>
+                </div>
+                <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                  <button type="button" class="token-action-btn" onclick="toggleAllBookChapters(true)">Select All</button>
+                  <button type="button" class="token-action-btn" onclick="toggleAllBookChapters(false)">Deselect All</button>
+                  <button type="button" class="token-action-btn" onclick="invertBookChapters()">Invert</button>
                 </div>
               </div>
-              <input type="password" id="ray-token" class="form-input" placeholder="Bearer eyJ0eXAiOiJKV1QiLC..." required>
-              <small style="color: #34d399; font-size: 0.78rem; margin-top: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
-                ✓ Active token pre-configured and saved. You do not need to enter it manually.
-              </small>
-            </div>
 
-            <div class="grid-2">
               <div class="form-group">
-                <label class="form-label" for="ray-zip-name">Master Consolidated ZIP Name</label>
-                <input type="text" id="ray-zip-name" class="form-input" value="Extracted_Books.zip" placeholder="Extracted_Books.zip">
+                <label class="form-label" for="ray-custom-book-name">Custom Book Title (Used for PDF &amp; ZIP filename)</label>
+                <input type="text" id="ray-custom-book-name" class="form-input">
               </div>
 
-              <div class="form-group" style="display: flex; align-items: center; padding-top: 0.85rem;">
-                <label style="display: flex; align-items: center; gap: 0.55rem; cursor: pointer; color: var(--text); font-weight: 500; font-size: 0.9rem;">
-                  <input type="checkbox" id="ray-watermark-toggle" checked style="width: 18px; height: 18px;">
-                  ✨ Auto-Remove Watermarks (Template Inversion)
-                </label>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <label class="form-label" style="margin-bottom: 0;">Select Chapters to Extract:</label>
+                <span id="ray-book-selected-count" style="font-size: 0.8rem; color: var(--accent); font-weight: 600;">0 selected</span>
               </div>
-            </div>
-          </div>
 
-          <!-- Dynamic Book Items Form (Up to 30) -->
-          <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-              <div>
-                <h3 style="font-size: 1.05rem; color: var(--text); font-weight: 600;">
-                  📚 Target Book URLs &amp; Custom Names (<span id="ray-book-count">1</span>/30)
-                </h3>
-                <span style="font-size: 0.78rem; color: var(--text-muted);">Fill Target URL (or asset_ref) and your desired custom book name.</span>
+              <!-- Checklist -->
+              <div id="ray-book-chapter-list" class="chapter-checklist-box">
+                <!-- Dynamically populated chapters -->
               </div>
-              <div style="display: flex; gap: 0.4rem;">
-                <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: 36px;" onclick="openBulkPasteModal()">
-                  📋 Bulk Paste
-                </button>
-                <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: 36px;" onclick="clearAllBookRows()">
-                  Clear All
-                </button>
+
+              <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 0.65rem; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.82rem; color: #6ee7b7;">
+                📦 <b>Auto-Zipping:</b> Selected chapters will be extracted to individual PDFs and automatically bundled into a <b>ZIP per book</b>.
               </div>
-            </div>
 
-            <!-- Book Rows Grid -->
-            <div class="book-rows-container" id="ray-book-rows">
-              <!-- Dynamically populated rows -->
-            </div>
-
-            <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-              <button type="button" id="ray-add-row-btn" class="btn btn-secondary" onclick="addBookRow()" style="min-height: 42px;">
-                ➕ Add Another Book URL
+              <button type="button" id="ray-btn-start-book" class="btn btn-primary" style="width: 100%; padding: 0.95rem;" onclick="startBookExtraction()">
+                🚀 Extract Selected Chapters
               </button>
-              <span id="ray-limit-msg" style="color: var(--text-muted); font-size: 0.82rem;">Maximum 30 books per batch</span>
             </div>
           </div>
+        </div>
 
-          <!-- Action Buttons -->
-          <div class="action-buttons-group" style="display: flex; gap: 0.85rem; margin-top: 1.25rem;">
-            <button type="submit" id="ray-btn-start" class="btn btn-primary" style="flex: 1; padding: 0.95rem;">
-              🚀 Start Batch Extraction
-            </button>
-            <button type="button" id="ray-btn-stop" class="btn btn-danger" style="display: none; padding: 0.95rem;">
-              🛑 Stop Extraction
-            </button>
-            <button type="button" class="btn btn-secondary" onclick="openFolder('ray-book')" style="padding: 0.95rem;">
-              📂 Open Folder
-            </button>
+        <!-- ============================================================= -->
+        <!-- MODE 2: COHORT / CLASS BATCH -->
+        <!-- ============================================================= -->
+        <div id="ray-sec-cohort" style="display: none;">
+          <div class="card">
+            <h3 style="font-size: 1.05rem; color: var(--text); font-weight: 600; margin-bottom: 0.4rem;">
+              🎓 Batch Extract Cohort / Class Books
+            </h3>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+              Select or type any Cohort (e.g. 12th JEE, Dropper JEE, 12th NEET, Dropper NEET). It analyses all books and chapters, lets you pick which books &amp; chapters to extract, and generates a <b>ZIP per book</b>, a <b>ZIP per 5 books</b>, and a <b>ZIP of the whole cohort</b>!
+            </p>
+
+            <!-- Step 1: Select Class (PW Style) -->
+            <div style="margin-bottom: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+                <label class="form-label" style="font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0;">
+                  Select Class
+                </label>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Step 1 of 2</span>
+              </div>
+              <div class="class-card-grid" id="ray-class-selector">
+                <div class="class-card-btn" data-class="9th" onclick="selectClass('9th')">
+                  <div style="font-size: 0.78rem; opacity: 0.85;">Class</div>
+                  <div style="font-size: 1.05rem; font-weight: 700;">9th</div>
+                </div>
+                <div class="class-card-btn active" data-class="10th" onclick="selectClass('10th')">
+                  <div style="font-size: 0.78rem; opacity: 0.85;">Class</div>
+                  <div style="font-size: 1.05rem; font-weight: 700;">10th</div>
+                </div>
+                <div class="class-card-btn" data-class="11th" onclick="selectClass('11th')">
+                  <div style="font-size: 0.78rem; opacity: 0.85;">Class</div>
+                  <div style="font-size: 1.05rem; font-weight: 700;">11th</div>
+                </div>
+                <div class="class-card-btn" data-class="12th" onclick="selectClass('12th')">
+                  <div style="font-size: 0.78rem; opacity: 0.85;">Class</div>
+                  <div style="font-size: 1.05rem; font-weight: 700;">12th</div>
+                </div>
+                <div class="class-card-btn" data-class="dropper" onclick="selectClass('dropper')" style="display: flex; align-items: center; justify-content: center;">
+                  <div style="font-size: 1.05rem; font-weight: 700; padding: 0.5rem 0;">Dropper</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Select Exam(s) (PW Style) -->
+            <div style="margin-bottom: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+                <label class="form-label" style="font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0;">
+                  Select Exam(s)
+                </label>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Step 2 of 2</span>
+              </div>
+              <div class="exam-card-list" id="ray-exam-selector">
+                <!-- NEET -->
+                <div class="exam-card-item" id="exam-card-neet" onclick="toggleExam('neet')">
+                  <div>
+                    <div class="exam-card-title">NEET</div>
+                  </div>
+                  <div class="exam-card-checkbox" id="exam-check-neet"></div>
+                </div>
+
+                <!-- IIT-JEE -->
+                <div class="exam-card-item" id="exam-card-jee" onclick="toggleExam('jee')">
+                  <div>
+                    <div class="exam-card-title">IIT-JEE</div>
+                  </div>
+                  <div class="exam-card-checkbox" id="exam-check-jee"></div>
+                </div>
+
+                <!-- School/Board Exam (Active by default for 10th) -->
+                <div class="exam-card-item active" id="exam-card-boards" onclick="toggleExam('boards')">
+                  <div style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <div class="exam-card-title">School/Board Exam</div>
+                      <div class="exam-card-checkbox" id="exam-check-boards">✓</div>
+                    </div>
+                    <div id="exam-board-sub" style="border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 0.6rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+                      <span id="ray-selected-board-name" style="font-size: 0.84rem; color: #94a3b8; font-weight: 500;">CBSE</span>
+                      <button type="button" class="exam-card-edit-btn" onclick="event.stopPropagation(); cycleBoardSelection();">
+                        ✏ Edit Board
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- UPSC -->
+                <div class="exam-card-item" id="exam-card-upsc" onclick="toggleExam('upsc')">
+                  <div>
+                    <div class="exam-card-title">UPSC</div>
+                  </div>
+                  <div class="exam-card-checkbox" id="exam-check-upsc"></div>
+                </div>
+
+                <!-- Others -->
+                <div class="exam-card-item" id="exam-card-others" onclick="toggleExam('others')">
+                  <div style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <div class="exam-card-title">Others</div>
+                      <div class="exam-card-checkbox" id="exam-check-others"></div>
+                    </div>
+                    <div id="exam-others-sub" style="display: none; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 0.6rem; padding-top: 0.6rem;">
+                      <input type="text" id="ray-others-custom-input" class="form-input" style="padding: 0.4rem 0.7rem; font-size: 0.82rem;" placeholder="Type custom exam or batch name..." onclick="event.stopPropagation();" oninput="computeCohortFromSelection();">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Cohort Result Banner -->
+            <div style="background: rgba(99, 102, 241, 0.08); border: 1px dashed rgba(99, 102, 241, 0.45); border-radius: 0.85rem; padding: 0.9rem 1.15rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+              <div>
+                <span style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; display: block;">Computed Target Cohort:</span>
+                <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.25rem; flex-wrap: wrap;">
+                  <span id="ray-cohort-badge-text" style="font-size: 1.15rem; font-weight: 700; color: #60a5fa; font-family: 'JetBrains Mono', monospace;">10th boards</span>
+                  <span id="ray-cohort-rule-note" style="font-size: 0.76rem; color: #a5b4fc; background: rgba(99, 102, 241, 0.2); padding: 0.2rem 0.55rem; border-radius: 9999px;">
+                    Rule applied: Class 10th + School/Board = 10th boards
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cohort Input & Trigger Action -->
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label class="form-label" for="ray-cohort-input">Target Cohort Identifier (Editable)</label>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <input type="text" id="ray-cohort-input" class="form-input" style="flex: 1; min-width: 260px; font-weight: 600;" value="10th boards" placeholder="e.g. 10th boards, 11th jee, 12th neet, dropper jee">
+                <button type="button" id="ray-btn-analyse-cohort" class="btn btn-primary" onclick="analyseCohort()" style="min-width: 175px;">
+                  🔍 Analyse Cohort
+                </button>
+              </div>
+              <div style="display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.75rem; align-items: center;">
+                <span style="font-size: 0.76rem; color: var(--text-muted); margin-right: 0.25rem;">Quick Presets:</span>
+                <span class="chip-badge" onclick="setCohortPreset('10th boards')">10th Boards</span>
+                <span class="chip-badge" onclick="setCohortPreset('DROPPER_JEE')">Dropper JEE</span>
+                <span class="chip-badge" onclick="setCohortPreset('DROPPER_NEET')">Dropper NEET</span>
+                <span class="chip-badge" onclick="setCohortPreset('12_JEE')">12th JEE</span>
+                <span class="chip-badge" onclick="setCohortPreset('12_NEET')">12th NEET</span>
+                <span class="chip-badge" onclick="setCohortPreset('11_JEE')">11th JEE</span>
+                <span class="chip-badge" onclick="setCohortPreset('11_NEET')">11th NEET</span>
+              </div>
+            </div>
+
+            <!-- Cohort Analysis Results -->
+            <div id="ray-cohort-analysis-box" class="analysis-card" style="display: none;">
+              <div class="analysis-header-row">
+                <div>
+                  <span class="tier-badge" style="background: rgba(16, 185, 129, 0.25); color: #34d399;">COHORT ANALYSED</span>
+                  <h4 id="ray-cohort-title" style="font-size: 1.15rem; color: white; margin-top: 0.2rem;">Dropper JEE</h4>
+                  <span id="ray-cohort-meta" style="font-size: 0.82rem; color: var(--text-muted);">29 Books &amp; 432 Chapters Available</span>
+                </div>
+                <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                  <button type="button" class="token-action-btn" onclick="toggleAllCohortBooks(true)">Select All Books</button>
+                  <button type="button" class="token-action-btn" onclick="toggleAllCohortBooks(false)">Deselect All</button>
+                  <button type="button" class="token-action-btn" onclick="selectFirstNCohortBooks(5)">First 5 Books</button>
+                  <button type="button" class="token-action-btn" onclick="selectFirstNCohortBooks(10)">First 10 Books</button>
+                </div>
+              </div>
+
+              <!-- 3-Tier Architecture Information Banner -->
+              <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 0.75rem; padding: 0.85rem 1rem; margin-bottom: 1rem; font-size: 0.83rem; line-height: 1.55;">
+                <span style="font-weight: 700; color: white; display: block; margin-bottom: 0.3rem;">✨ 3-Tier Multi-ZIP Output Architecture:</span>
+                <span style="color: #cbd5e1; display: block;">1️⃣ <b>ZIP per book:</b> Every selected book gets its own ZIP archive (e.g. <code>Prayas_Physics.zip</code>).</span>
+                <span style="color: #cbd5e1; display: block;">2️⃣ <b>ZIP per 5 books:</b> Segmented batch ZIPs for easy downloads (e.g. <code>Part_1_(Books_1-5).zip</code>).</span>
+                <span style="color: #cbd5e1; display: block;">3️⃣ <b>ZIP of whole:</b> Consolidated master archive with all books and chapters.</span>
+              </div>
+
+              <!-- Filter Search & Selection Summary -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                <input type="text" id="ray-cohort-search" class="form-input" style="flex: 1; min-width: 220px; padding: 0.55rem 0.85rem; font-size: 0.84rem;" placeholder="🔎 Filter books by name (e.g. Physics, Chemistry, Modules)..." oninput="filterCohortBooks()">
+                <span id="ray-cohort-selection-summary" style="font-size: 0.82rem; color: var(--accent); font-weight: 600;">
+                  0 books selected (0 chapters)
+                </span>
+              </div>
+
+              <!-- Books Tree Checklist -->
+              <div id="ray-cohort-books-list" style="max-height: 440px; overflow-y: auto; padding-right: 0.35rem; margin-bottom: 1rem;">
+                <!-- Dynamically populated books -->
+              </div>
+
+              <button type="button" id="ray-btn-start-cohort" class="btn btn-primary" style="width: 100%; padding: 0.95rem;" onclick="startCohortExtraction()">
+                🚀 Start Cohort Batch Extraction
+              </button>
+            </div>
           </div>
-        </form>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- MODE 3: DIRECT URLS BATCH (UNLIMITED) -->
+        <!-- ============================================================= -->
+        <div id="ray-sec-urls" style="display: none;">
+          <form id="ray-form-urls" onsubmit="event.preventDefault(); startUrlsExtraction();">
+            <div class="card">
+              <div class="form-group">
+                <label class="form-label" for="ray-urls-zip-name">Master Consolidated ZIP Name</label>
+                <input type="text" id="ray-urls-zip-name" class="form-input" value="Extracted_Books.zip" placeholder="Extracted_Books.zip">
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                  <h3 style="font-size: 1.05rem; color: var(--text); font-weight: 600;">
+                    📚 Target Book URLs &amp; Custom Names (<span id="ray-book-count">1</span> Items — Unlimited)
+                  </h3>
+                  <span style="font-size: 0.78rem; color: var(--text-muted);">Fill Target URL (or asset_ref) and custom book name. No limit on entries!</span>
+                </div>
+                <div style="display: flex; gap: 0.4rem;">
+                  <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: 36px;" onclick="openBulkPasteModal()">
+                    📋 Bulk Paste
+                  </button>
+                  <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: 36px;" onclick="clearAllBookRows()">
+                    Clear All
+                  </button>
+                </div>
+              </div>
+
+              <!-- Book Rows Grid -->
+              <div class="book-rows-container" id="ray-book-rows">
+                <!-- Dynamically populated rows -->
+              </div>
+
+              <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <button type="button" id="ray-add-row-btn" class="btn btn-secondary" onclick="addBookRow()" style="min-height: 42px;">
+                  ➕ Add Another Book URL
+                </button>
+                <span id="ray-limit-msg" style="color: #34d399; font-size: 0.82rem;">✓ Unlimited items supported</span>
+              </div>
+            </div>
+
+            <button type="submit" id="ray-btn-start-urls" class="btn btn-primary" style="width: 100%; margin-top: 1.25rem; padding: 0.95rem;">
+              🚀 Start URL Batch Extraction
+            </button>
+          </form>
+        </div>
+
+        <!-- Global Action Controls (Stop & Folder) -->
+        <div style="display: flex; gap: 0.85rem; margin-top: 1rem;">
+          <button type="button" id="ray-btn-stop" class="btn btn-danger" style="display: none; flex: 1; padding: 0.95rem;" onclick="stopRayExtraction()">
+            🛑 Stop Extraction
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="openFolder('ray-book')" style="padding: 0.95rem; min-width: 150px;">
+            📂 Open Output Folder
+          </button>
+        </div>
 
         <!-- Live Progress Bar -->
         <div id="ray-progress-panel" style="display: none; margin-top: 1.5rem; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); border-radius: 1rem; padding: 1.15rem;">
@@ -901,6 +1608,7 @@
           <div class="progress-bar-container">
             <div class="progress-bar-fill" id="ray-progress-fill"></div>
           </div>
+          <div id="ray-active-details" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.5rem; font-family: 'JetBrains Mono', monospace;"></div>
         </div>
 
         <!-- Live Terminal for Ray Book -->
@@ -916,31 +1624,52 @@
             </div>
           </div>
           <div class="terminal-body" id="ray-terminal-body">
-            <div class="log-line"><span class="log-time">[Ready]</span> <span class="log-msg">Ray Book Extractor ready. Add URLs and click Start.</span></div>
+            <div class="log-line"><span class="log-time">[Ready]</span> <span class="log-msg">Ray Book Extractor ready. Select a mode above and begin.</span></div>
           </div>
         </div>
 
         <!-- Download Section for Ray Book -->
         <div id="ray-downloads-section" style="margin-top: 1.75rem;">
           <h3 style="font-size: 1.1rem; margin-bottom: 0.85rem; color: var(--text);">
-            📥 Download Extracted Books
+            📥 Download Extracted Files &amp; Multi-Tier Archives
           </h3>
 
-          <!-- Consolidated Master ZIP Card -->
+          <!-- Consolidated Master ZIP Card (Tier 3) -->
           <div id="ray-master-zip-card" style="display: none; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 1rem; padding: 1.15rem 1.35rem; margin-bottom: 1rem; justify-content: space-between; align-items: center;">
             <div>
-              <span style="display: inline-block; padding: 0.2rem 0.5rem; background: #10b981; color: black; font-weight: 700; font-size: 0.72rem; border-radius: 0.35rem; margin-bottom: 0.4rem;">CONSOLIDATED ARCHIVE</span>
+              <span class="tier-badge" style="background: #10b981; color: black;">TIER 3 • CONSOLIDATED MASTER ARCHIVE</span>
               <h4 id="ray-zip-card-name" style="font-size: 1.05rem; color: white;">Extracted_Books.zip</h4>
-              <span id="ray-zip-card-meta" style="font-size: 0.8rem; color: var(--text-muted);">All books inside with custom names</span>
+              <span id="ray-zip-card-meta" style="font-size: 0.8rem; color: var(--text-muted);">All books &amp; chapters inside</span>
             </div>
             <a id="ray-zip-download-btn" href="#" class="btn btn-primary" style="padding: 0.7rem 1.4rem;">
-              📦 Download Full ZIP
+              📦 Download Master ZIP
             </a>
           </div>
 
-          <!-- Individual Files List -->
-          <div id="ray-individual-downloads">
-            <p style="color: var(--text-muted); font-size: 0.88rem;">No extracted book files yet in this session.</p>
+          <!-- 5-Book Batch Part Archives Container (Tier 2) -->
+          <div id="ray-part-zips-section" style="display: none; margin-bottom: 1.25rem;">
+            <h4 style="font-size: 0.95rem; color: #a78bfa; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+              🗂️ Tier 2: 5-Book Batch Archives
+            </h4>
+            <div id="ray-part-zips-list"></div>
+          </div>
+
+          <!-- Individual Book ZIP Archives (Tier 1) -->
+          <div id="ray-book-zips-section" style="display: none; margin-bottom: 1.25rem;">
+            <h4 style="font-size: 0.95rem; color: #38bdf8; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+              📚 Tier 1: Individual Book Archives (ZIP Per Book)
+            </h4>
+            <div id="ray-book-zips-list"></div>
+          </div>
+
+          <!-- Individual Chapter PDFs -->
+          <div id="ray-individual-section" style="margin-bottom: 1rem;">
+            <h4 style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+              📄 Individual Chapter PDFs
+            </h4>
+            <div id="ray-individual-downloads">
+              <p style="color: var(--text-muted); font-size: 0.88rem;">No extracted book files yet in this session.</p>
+            </div>
           </div>
         </div>
 
@@ -1050,25 +1779,86 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
     // ==========================================
     let qzPolling = null;
     let qzLastLogIdx = 0;
+    let qzAllTestDetails = [];
 
     const qzForm = document.getElementById('quizard-form');
     const qzBtnStart = document.getElementById('qz-btn-start');
     const qzBtnStop = document.getElementById('qz-btn-stop');
 
+    function selectQuizardCategory(catName) {
+      document.querySelectorAll('.qz-category-card').forEach(c => {
+        if (c.getAttribute('data-cat') === catName) {
+          c.classList.add('active');
+        } else {
+          c.classList.remove('active');
+        }
+      });
+      const input = document.getElementById('qz-category');
+      if (input) input.value = catName;
+    }
+
+    async function loadQuizardBrainStats() {
+      try {
+        const res = await fetch('/api/quizard/brain-stats');
+        const data = await res.json();
+        if (data.success) {
+          const testSpan = document.getElementById('qz-brain-tests-count');
+          const batchSpan = document.getElementById('qz-brain-batches-count');
+          if (testSpan) testSpan.textContent = (data.total_tests || 0).toLocaleString();
+          if (batchSpan) batchSpan.textContent = (data.total_batches || 0).toLocaleString();
+        }
+      } catch (e) {
+        console.warn('Failed to load brain stats:', e);
+      }
+    }
+
+    async function rescanQuizardBrain() {
+      const btn = document.getElementById('qz-btn-rescan-brain');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Scanning...';
+      }
+      try {
+        const res = await fetch('/api/quizard/rescan-brain', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          const testSpan = document.getElementById('qz-brain-tests-count');
+          const batchSpan = document.getElementById('qz-brain-batches-count');
+          if (testSpan) testSpan.textContent = (data.total_tests || 0).toLocaleString();
+          if (batchSpan) batchSpan.textContent = (data.total_batches || 0).toLocaleString();
+          alert(`🧠 Quizard Brain Updated!\nFound ${data.total_tests} tests across ${data.total_batches} batches.`);
+        }
+      } catch (e) {
+        alert('Failed to rescan brain: ' + e);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '🔄 Rescan Library';
+        }
+      }
+    }
+
     qzForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const downloadMode = document.querySelector('input[name="qz-download-mode"]:checked')?.value || 'new_only';
       const payload = {
         category: document.getElementById('qz-category').value.trim(),
         batches: document.getElementById('qz-batches').value.trim(),
         base_url: document.getElementById('qz-base-url').value.trim(),
         use_api_syllabus: document.getElementById('qz-syllabus').checked,
-        headless: document.getElementById('qz-headless').checked
+        headless: document.getElementById('qz-headless').checked,
+        download_mode: downloadMode
       };
 
       qzBtnStart.disabled = true;
       qzBtnStop.style.display = 'inline-flex';
       qzLastLogIdx = 0;
+      qzAllTestDetails = [];
       clearTerminal('qz-terminal-body');
+
+      // Hide or reset text analysis section
+      const analysisSec = document.getElementById('qz-text-analysis-section');
+      if (analysisSec) analysisSec.style.display = 'none';
 
       try {
         const res = await fetch('/api/quizard/start', {
@@ -1111,10 +1901,16 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
             renderQuizardDownloads(d.zip_files);
           }
 
+          if (d.test_details && d.test_details.length > 0) {
+            renderQuizardTextAnalysis(d.test_details, d.text_format_count || 0, d.image_only_count || 0, d.skipped_brain_count || 0);
+          }
+
           if (d.state === 'finished' || d.state === 'stopped' || d.state === 'error' || d.state === 'idle') {
             clearInterval(qzPolling);
             qzBtnStart.disabled = false;
             qzBtnStop.style.display = 'none';
+            // Also refresh brain stats after run finishes
+            loadQuizardBrainStats();
           }
         } catch (e) {
           console.error('Polling error', e);
@@ -1124,7 +1920,7 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
 
     function renderQuizardDownloads(zips) {
       const container = document.getElementById('qz-downloads-list');
-      if (!zips || zips.length === 0) return;
+      if (!container || !zips || zips.length === 0) return;
       container.innerHTML = zips.map(z => `
         <div class="download-card">
           <div>
@@ -1138,23 +1934,89 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
       `).join('');
     }
 
+    function renderQuizardTextAnalysis(details, textCount, imageCount, skippedCount) {
+      const sec = document.getElementById('qz-text-analysis-section');
+      if (!sec) return;
+      sec.style.display = 'block';
+
+      qzAllTestDetails = details || [];
+
+      const statText = document.getElementById('qz-stat-text');
+      const statImg = document.getElementById('qz-stat-image');
+      const statSkip = document.getElementById('qz-stat-skipped');
+      if (statText) statText.textContent = textCount;
+      if (statImg) statImg.textContent = imageCount;
+      if (statSkip) statSkip.textContent = skippedCount;
+
+      filterQuizardTestDetails();
+    }
+
+    function filterQuizardTestDetails() {
+      const list = document.getElementById('qz-test-details-list');
+      if (!list) return;
+      const search = (document.getElementById('qz-test-search')?.value || '').toLowerCase().trim();
+
+      const filtered = qzAllTestDetails.filter(t => {
+        if (!search) return true;
+        return (t.test_name || '').toLowerCase().includes(search) ||
+               (t.batch_name || '').toLowerCase().includes(search);
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem;">No matching tests found.</div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(t => {
+        const isText = t.has_text;
+        const badgeColor = isText ? '#34d399' : '#94a3b8';
+        const badgeBg = isText ? 'rgba(16, 185, 129, 0.15)' : 'rgba(148, 163, 184, 0.15)';
+        const badgeText = isText ? '✨ TEXT + LATEX (New Format)' : '🖼️ IMAGE ONLY';
+        
+        return `
+          <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid ${isText ? 'rgba(52, 211, 153, 0.3)' : 'rgba(148, 163, 184, 0.2)'}; border-radius: 0.75rem; padding: 0.85rem 1.1rem; margin-bottom: 0.65rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 200px;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                  <span style="font-size: 0.72rem; padding: 0.15rem 0.5rem; border-radius: 9999px; background: ${badgeBg}; color: ${badgeColor}; font-weight: 700;">
+                    ${badgeText}
+                  </span>
+                  <span style="font-size: 0.76rem; color: #818cf8; font-family: 'JetBrains Mono', monospace;">
+                    ${escapeHtml(t.batch_name || '')}
+                  </span>
+                </div>
+                <h4 style="color: white; font-size: 0.92rem; margin: 0; font-weight: 600;">
+                  ${escapeHtml(t.test_name || '')}
+                </h4>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-weight: 700; font-size: 0.92rem; color: ${isText ? '#34d399' : 'white'}; font-family: 'JetBrains Mono', monospace;">
+                  ${t.total_questions || 0} Questions
+                </div>
+                <div style="font-size: 0.76rem; color: var(--text-muted);">
+                  ${isText ? `<b>${t.text_questions_count || 0}</b> contain text / LaTeX` : 'Full image questions'}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
     // ==========================================
     //       RAY BOOK EXTRACTOR LOGIC
     // ==========================================
     const rayTokenInput = document.getElementById('ray-token');
-    const rayBookRows = document.getElementById('ray-book-rows');
-    const rayBookCount = document.getElementById('ray-book-count');
-    const rayAddRowBtn = document.getElementById('ray-add-row-btn');
-    const rayForm = document.getElementById('ray-form');
-    const rayBtnStart = document.getElementById('ray-btn-start');
     const rayBtnStop = document.getElementById('ray-btn-stop');
     const rayProgressPanel = document.getElementById('ray-progress-panel');
     const rayProgressFill = document.getElementById('ray-progress-fill');
     const rayProgressPct = document.getElementById('ray-progress-pct');
     const rayStatusText = document.getElementById('ray-status-text');
+    const rayActiveDetails = document.getElementById('ray-active-details');
 
     let rayPolling = null;
     let rayLastLogIdx = 0;
+    let currentRaySubMode = 'book'; // 'book', 'cohort', 'urls'
 
     // Load or initialize default token
     const savedToken = localStorage.getItem('ray_book_token');
@@ -1179,14 +2041,563 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
       alert('Token reset to default pre-configured key.');
     }
 
-    // Responsive Book Row Element
+    function getRayToken() {
+      return rayTokenInput.value.trim() || DEFAULT_RAY_TOKEN;
+    }
+
+    // -----------------------------------------------------------------
+    // Mode Switcher (Book ID / Cohort / Direct URLs)
+    // -----------------------------------------------------------------
+    function switchRaySubMode(mode) {
+      currentRaySubMode = mode;
+      document.getElementById('ray-tab-book-btn').classList.toggle('active', mode === 'book');
+      document.getElementById('ray-tab-cohort-btn').classList.toggle('active', mode === 'cohort');
+      document.getElementById('ray-tab-urls-btn').classList.toggle('active', mode === 'urls');
+
+      document.getElementById('ray-sec-book').style.display = mode === 'book' ? 'block' : 'none';
+      document.getElementById('ray-sec-cohort').style.display = mode === 'cohort' ? 'block' : 'none';
+      document.getElementById('ray-sec-urls').style.display = mode === 'urls' ? 'block' : 'none';
+    }
+
+    // =================================================================
+    // MODE 1: BOOK ID ANALYSIS & EXTRACTION
+    // =================================================================
+    let currentAnalysedBook = null;
+
+    async function analyseBook() {
+      const bookInput = document.getElementById('ray-book-id-input').value.trim();
+      if (!bookInput) {
+        alert('Please enter a Book ID or URL.');
+        return;
+      }
+
+      const btn = document.getElementById('ray-btn-analyse-book');
+      btn.disabled = true;
+      btn.textContent = '⏳ Analysing...';
+
+      try {
+        const res = await fetch('/api/ray-book/analyse-book', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ book_id: bookInput, token: getRayToken() })
+        });
+        const data = await res.json();
+
+        if (!data.success || !data.book) {
+          alert('Analysis Failed: ' + (data.error || 'Could not inspect book chapters.'));
+          return;
+        }
+
+        currentAnalysedBook = data.book;
+        renderBookAnalysis(data.book);
+      } catch (err) {
+        alert('Communication error: ' + err);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔍 Analyse Book';
+      }
+    }
+
+    function renderBookAnalysis(book) {
+      const box = document.getElementById('ray-book-analysis-box');
+      box.style.display = 'block';
+
+      document.getElementById('ray-analysis-book-title').textContent = book.title;
+      document.getElementById('ray-analysis-book-meta').textContent = `${book.total_chapters} Total Chapters Available`;
+      document.getElementById('ray-custom-book-name').value = book.title;
+
+      const listContainer = document.getElementById('ray-book-chapter-list');
+      listContainer.innerHTML = '';
+
+      book.chapters.forEach((chap, idx) => {
+        const item = document.createElement('label');
+        item.className = 'chapter-check-item';
+        item.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 0.65rem; flex: 1; overflow: hidden;">
+            <input type="checkbox" class="ray-book-chap-chk" data-idx="${idx}" checked onchange="updateBookSelectedCount()">
+            <div class="chap-meta-info">
+              <span class="chap-num-tag">Ch. ${chap.chapter_number}</span>
+              <span class="chap-title-text" title="${escapeHtml(chap.title)}">${escapeHtml(chap.title)}</span>
+            </div>
+          </div>
+          <a href="${escapeHtml(chap.viewer_url)}" target="_blank" class="token-action-btn" style="flex-shrink: 0;" onclick="event.stopPropagation()">👁 Preview</a>
+        `;
+        listContainer.appendChild(item);
+      });
+
+      updateBookSelectedCount();
+      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function updateBookSelectedCount() {
+      const checks = document.querySelectorAll('.ray-book-chap-chk');
+      const checked = Array.from(checks).filter(c => c.checked).length;
+      document.getElementById('ray-book-selected-count').textContent = `${checked} / ${checks.length} chapters selected`;
+    }
+
+    function toggleAllBookChapters(select) {
+      document.querySelectorAll('.ray-book-chap-chk').forEach(c => c.checked = select);
+      updateBookSelectedCount();
+    }
+
+    function invertBookChapters() {
+      document.querySelectorAll('.ray-book-chap-chk').forEach(c => c.checked = !c.checked);
+      updateBookSelectedCount();
+    }
+
+    async function startBookExtraction() {
+      if (!currentAnalysedBook) return;
+
+      const checkedBoxes = Array.from(document.querySelectorAll('.ray-book-chap-chk:checked'));
+      if (checkedBoxes.length === 0) {
+        alert('Please select at least 1 chapter to extract.');
+        return;
+      }
+
+      const customTitle = document.getElementById('ray-custom-book-name').value.trim() || currentAnalysedBook.title;
+      const selectedChapters = checkedBoxes.map(chk => {
+        const idx = parseInt(chk.dataset.idx, 10);
+        return currentAnalysedBook.chapters[idx];
+      });
+
+      const payload = {
+        mode: 'book',
+        token: getRayToken(),
+        remove_watermarks: document.getElementById('ray-watermark-toggle').checked,
+        zip_name: `${customTitle}.zip`,
+        books: [{
+          id: currentAnalysedBook.id,
+          title: customTitle,
+          chapters: selectedChapters
+        }]
+      };
+
+      prepareForExtraction(`Extracting "${customTitle}" (${selectedChapters.length} chapters)...`);
+
+      try {
+        const res = await fetch('/api/ray-book/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await res.json();
+        if (d.error) {
+          alert('Error starting extraction: ' + d.error);
+          onExtractionFinished(false);
+          return;
+        }
+        startRayBookPolling();
+      } catch (e) {
+        alert('Server communication error: ' + e);
+        onExtractionFinished(false);
+      }
+    }
+
+    // =================================================================
+    // MODE 2: CLASS & EXAM SELECTION -> COHORT MAPPING LOGIC
+    // =================================================================
+    let currentSelectedClass = '10th'; // '9th', '10th', '11th', '12th', 'dropper'
+    let currentSelectedExam = 'boards'; // 'neet', 'jee', 'boards', 'upsc', 'others'
+    let currentBoard = 'CBSE';
+    const boardOptions = ['CBSE', 'ICSE', 'State Board'];
+    let currentAnalysedCohort = null;
+
+    function selectClass(cls) {
+      currentSelectedClass = cls;
+      document.querySelectorAll('#ray-class-selector .class-card-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-class') === cls);
+      });
+      computeCohortFromSelection();
+    }
+
+    function toggleExam(examKey) {
+      currentSelectedExam = examKey;
+      const allExams = ['neet', 'jee', 'boards', 'upsc', 'others'];
+      allExams.forEach(k => {
+        const card = document.getElementById(`exam-card-${k}`);
+        const chk = document.getElementById(`exam-check-${k}`);
+        if (card && chk) {
+          if (k === examKey) {
+            card.classList.add('active');
+            chk.innerHTML = '✓';
+          } else {
+            card.classList.remove('active');
+            chk.innerHTML = '';
+          }
+        }
+      });
+
+      const boardSub = document.getElementById('exam-board-sub');
+      if (boardSub) {
+        boardSub.style.display = (examKey === 'boards') ? 'flex' : 'none';
+      }
+
+      const othersSub = document.getElementById('exam-others-sub');
+      if (othersSub) {
+        othersSub.style.display = (examKey === 'others') ? 'block' : 'none';
+        if (examKey === 'others') {
+          const inp = document.getElementById('ray-others-custom-input');
+          if (inp) inp.focus();
+        }
+      }
+
+      computeCohortFromSelection();
+    }
+
+    function cycleBoardSelection() {
+      const idx = boardOptions.indexOf(currentBoard);
+      const nextIdx = (idx + 1) % boardOptions.length;
+      currentBoard = boardOptions[nextIdx];
+      const lbl = document.getElementById('ray-selected-board-name');
+      if (lbl) lbl.textContent = currentBoard;
+      computeCohortFromSelection();
+    }
+
+    function computeCohortFromSelection() {
+      let cohortStr = '';
+      let ruleDesc = '';
+
+      if (currentSelectedExam === 'boards') {
+        // User rule: "if i slect 10th and exam school/borad then cohort become 10th boards"
+        if (currentSelectedClass === '10th') {
+          cohortStr = '10th boards';
+          ruleDesc = 'Rule applied: Class 10th + School/Board = 10th boards';
+        } else if (currentSelectedClass === '9th') {
+          cohortStr = '9th boards';
+          ruleDesc = 'Rule applied: Class 9th + School/Board = 9th boards';
+        } else if (currentSelectedClass === '11th') {
+          cohortStr = '11th boards';
+          ruleDesc = 'Rule applied: Class 11th + School/Board = 11th boards';
+        } else if (currentSelectedClass === '12th') {
+          cohortStr = '12th boards';
+          ruleDesc = 'Rule applied: Class 12th + School/Board = 12th boards';
+        } else if (currentSelectedClass === 'dropper') {
+          cohortStr = 'dropper boards';
+          ruleDesc = 'Rule applied: Dropper + School/Board = dropper boards';
+        }
+      } else if (currentSelectedExam === 'jee') {
+        // "for others its simple 11th jee 11th neet"
+        if (currentSelectedClass === '11th') {
+          cohortStr = '11th jee';
+          ruleDesc = 'Rule applied: Class 11th + IIT-JEE = 11th jee';
+        } else if (currentSelectedClass === '12th') {
+          cohortStr = '12th jee';
+          ruleDesc = 'Rule applied: Class 12th + IIT-JEE = 12th jee';
+        } else if (currentSelectedClass === 'dropper') {
+          cohortStr = 'dropper jee';
+          ruleDesc = 'Rule applied: Dropper + IIT-JEE = dropper jee';
+        } else if (currentSelectedClass === '10th') {
+          cohortStr = '10th jee';
+          ruleDesc = 'Rule applied: Class 10th + IIT-JEE = 10th jee';
+        } else {
+          cohortStr = `${currentSelectedClass} jee`;
+          ruleDesc = `Rule applied: Class ${currentSelectedClass} + IIT-JEE = ${cohortStr}`;
+        }
+      } else if (currentSelectedExam === 'neet') {
+        if (currentSelectedClass === '11th') {
+          cohortStr = '11th neet';
+          ruleDesc = 'Rule applied: Class 11th + NEET = 11th neet';
+        } else if (currentSelectedClass === '12th') {
+          cohortStr = '12th neet';
+          ruleDesc = 'Rule applied: Class 12th + NEET = 12th neet';
+        } else if (currentSelectedClass === 'dropper') {
+          cohortStr = 'dropper neet';
+          ruleDesc = 'Rule applied: Dropper + NEET = dropper neet';
+        } else if (currentSelectedClass === '10th') {
+          cohortStr = '10th neet';
+          ruleDesc = 'Rule applied: Class 10th + NEET = 10th neet';
+        } else {
+          cohortStr = `${currentSelectedClass} neet`;
+          ruleDesc = `Rule applied: Class ${currentSelectedClass} + NEET = ${cohortStr}`;
+        }
+      } else if (currentSelectedExam === 'upsc') {
+        cohortStr = 'upsc';
+        ruleDesc = 'Rule applied: UPSC Exam selected';
+      } else if (currentSelectedExam === 'others') {
+        const customInput = document.getElementById('ray-others-custom-input');
+        const customVal = customInput ? customInput.value.trim() : '';
+        cohortStr = customVal || 'others';
+        ruleDesc = 'Rule applied: Custom input';
+      }
+
+      const input = document.getElementById('ray-cohort-input');
+      if (input) input.value = cohortStr;
+
+      const badge = document.getElementById('ray-cohort-badge-text');
+      if (badge) badge.textContent = cohortStr;
+
+      const rule = document.getElementById('ray-cohort-rule-note');
+      if (rule) rule.textContent = ruleDesc;
+    }
+
+    function setCohortPreset(code) {
+      const lower = code.toLowerCase();
+      if (lower.includes('10th') || lower.includes('10_')) {
+        currentSelectedClass = '10th';
+      } else if (lower.includes('11th') || lower.includes('11_')) {
+        currentSelectedClass = '11th';
+      } else if (lower.includes('12th') || lower.includes('12_')) {
+        currentSelectedClass = '12th';
+      } else if (lower.includes('dropper')) {
+        currentSelectedClass = 'dropper';
+      }
+
+      if (lower.includes('board')) {
+        currentSelectedExam = 'boards';
+      } else if (lower.includes('jee')) {
+        currentSelectedExam = 'jee';
+      } else if (lower.includes('neet')) {
+        currentSelectedExam = 'neet';
+      }
+
+      // Sync UI classes
+      document.querySelectorAll('#ray-class-selector .class-card-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-class') === currentSelectedClass);
+      });
+      ['neet', 'jee', 'boards', 'upsc', 'others'].forEach(k => {
+        const card = document.getElementById(`exam-card-${k}`);
+        const chk = document.getElementById(`exam-check-${k}`);
+        if (card && chk) {
+          card.classList.toggle('active', k === currentSelectedExam);
+          chk.innerHTML = (k === currentSelectedExam) ? '✓' : '';
+        }
+      });
+
+      document.getElementById('ray-cohort-input').value = code;
+      const badge = document.getElementById('ray-cohort-badge-text');
+      if (badge) badge.textContent = code;
+      const rule = document.getElementById('ray-cohort-rule-note');
+      if (rule) rule.textContent = `Preset active: ${code}`;
+
+      analyseCohort();
+    }
+
+    async function analyseCohort() {
+      const cohortInput = document.getElementById('ray-cohort-input').value.trim();
+      if (!cohortInput) {
+        alert('Please enter a cohort name or code.');
+        return;
+      }
+
+      const btn = document.getElementById('ray-btn-analyse-cohort');
+      btn.disabled = true;
+      btn.textContent = '⏳ Analysing Cohort...';
+
+      try {
+        const res = await fetch('/api/ray-book/analyse-cohort', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cohort: cohortInput, token: getRayToken() })
+        });
+        const data = await res.json();
+
+        if (!data.success || !data.books) {
+          alert('Cohort Analysis Failed: ' + (data.error || 'Could not fetch cohort books.'));
+          return;
+        }
+
+        currentAnalysedCohort = data;
+        renderCohortAnalysis(data);
+      } catch (err) {
+        alert('Communication error: ' + err);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔍 Analyse Cohort';
+      }
+    }
+
+    function renderCohortAnalysis(cohortData) {
+      const box = document.getElementById('ray-cohort-analysis-box');
+      box.style.display = 'block';
+
+      document.getElementById('ray-cohort-title').textContent = cohortData.cohort_display || cohortData.cohort;
+      document.getElementById('ray-cohort-meta').textContent = `${cohortData.total_books} Books & ${cohortData.total_chapters} Total Chapters Available`;
+
+      const listContainer = document.getElementById('ray-cohort-books-list');
+      listContainer.innerHTML = '';
+
+      cohortData.books.forEach((book, bIdx) => {
+        const bookCard = document.createElement('div');
+        bookCard.className = 'cohort-book-card';
+        bookCard.id = `cohort-book-card-${bIdx}`;
+        bookCard.dataset.title = (book.title || '').toLowerCase();
+
+        bookCard.innerHTML = `
+          <div class="cohort-book-header" onclick="toggleCohortBookAccordion(${bIdx})">
+            <div class="cohort-book-title-wrap">
+              <input type="checkbox" class="cohort-book-chk" data-bidx="${bIdx}" checked onclick="event.stopPropagation(); onCohortBookToggle(${bIdx})">
+              <span style="font-weight: 600; color: white; font-size: 0.92rem;">${escapeHtml(book.title)}</span>
+              <span class="chap-num-tag" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">${book.chapter_count} chaps</span>
+            </div>
+            <button type="button" class="token-action-btn" onclick="event.stopPropagation(); toggleCohortBookAccordion(${bIdx})">
+              <span id="cohort-book-arrow-${bIdx}">▼</span> Chapters
+            </button>
+          </div>
+          <div class="cohort-book-chapters-list" id="cohort-book-chaps-${bIdx}">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.78rem;">
+              <span style="color: var(--text-muted);">Chapters in this book:</span>
+              <div style="display: flex; gap: 0.35rem;">
+                <button type="button" class="token-action-btn" onclick="toggleBookSubChapters(${bIdx}, true)">Select All</button>
+                <button type="button" class="token-action-btn" onclick="toggleBookSubChapters(${bIdx}, false)">None</button>
+              </div>
+            </div>
+            ${book.chapters.map((chap, cIdx) => `
+              <label class="chapter-check-item" style="padding: 0.35rem 0.5rem; font-size: 0.82rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; overflow: hidden;">
+                  <input type="checkbox" class="cohort-chap-chk" data-bidx="${bIdx}" data-cidx="${cIdx}" checked onchange="onCohortChapterToggle(${bIdx})">
+                  <span class="chap-num-tag" style="font-size: 0.7rem;">Ch. ${chap.chapter_number}</span>
+                  <span class="chap-title-text" style="font-size: 0.82rem;">${escapeHtml(chap.title)}</span>
+                </div>
+                <a href="${escapeHtml(chap.viewer_url)}" target="_blank" class="token-action-btn" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;" onclick="event.stopPropagation()">👁</a>
+              </label>
+            `).join('')}
+          </div>
+        `;
+        listContainer.appendChild(bookCard);
+      });
+
+      updateCohortSelectionSummary();
+      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function toggleCohortBookAccordion(bIdx) {
+      const panel = document.getElementById(`cohort-book-chaps-${bIdx}`);
+      const arrow = document.getElementById(`cohort-book-arrow-${bIdx}`);
+      if (!panel) return;
+      const isOpen = panel.style.display === 'block';
+      panel.style.display = isOpen ? 'none' : 'block';
+      if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+    }
+
+    function onCohortBookToggle(bIdx) {
+      const bookChk = document.querySelector(`.cohort-book-chk[data-bidx="${bIdx}"]`);
+      if (!bookChk) return;
+      const isChecked = bookChk.checked;
+      document.querySelectorAll(`.cohort-chap-chk[data-bidx="${bIdx}"]`).forEach(c => c.checked = isChecked);
+      updateCohortSelectionSummary();
+    }
+
+    function onCohortChapterToggle(bIdx) {
+      const bookChk = document.querySelector(`.cohort-book-chk[data-bidx="${bIdx}"]`);
+      const chapChecks = document.querySelectorAll(`.cohort-chap-chk[data-bidx="${bIdx}"]`);
+      if (!bookChk || chapChecks.length === 0) return;
+      const anyChecked = Array.from(chapChecks).some(c => c.checked);
+      bookChk.checked = anyChecked;
+      updateCohortSelectionSummary();
+    }
+
+    function toggleBookSubChapters(bIdx, select) {
+      document.querySelectorAll(`.cohort-chap-chk[data-bidx="${bIdx}"]`).forEach(c => c.checked = select);
+      const bookChk = document.querySelector(`.cohort-book-chk[data-bidx="${bIdx}"]`);
+      if (bookChk) bookChk.checked = select;
+      updateCohortSelectionSummary();
+    }
+
+    function toggleAllCohortBooks(select) {
+      document.querySelectorAll('.cohort-book-chk').forEach(c => c.checked = select);
+      document.querySelectorAll('.cohort-chap-chk').forEach(c => c.checked = select);
+      updateCohortSelectionSummary();
+    }
+
+    function selectFirstNCohortBooks(n) {
+      toggleAllCohortBooks(false);
+      const cards = document.querySelectorAll('.cohort-book-card');
+      cards.forEach((card, idx) => {
+        if (idx < n) {
+          const bChk = card.querySelector('.cohort-book-chk');
+          if (bChk) bChk.checked = true;
+          card.querySelectorAll('.cohort-chap-chk').forEach(c => c.checked = true);
+        }
+      });
+      updateCohortSelectionSummary();
+    }
+
+    function filterCohortBooks() {
+      const q = document.getElementById('ray-cohort-search').value.trim().toLowerCase();
+      document.querySelectorAll('.cohort-book-card').forEach(card => {
+        const title = card.dataset.title || '';
+        card.style.display = (!q || title.includes(q)) ? 'block' : 'none';
+      });
+    }
+
+    function updateCohortSelectionSummary() {
+      const bookChecks = Array.from(document.querySelectorAll('.cohort-book-chk')).filter(c => c.checked);
+      const chapChecks = Array.from(document.querySelectorAll('.cohort-chap-chk')).filter(c => c.checked);
+      document.getElementById('ray-cohort-selection-summary').textContent = `Selected: ${bookChecks.length} books (${chapChecks.length} chapters)`;
+    }
+
+    async function startCohortExtraction() {
+      if (!currentAnalysedCohort) return;
+
+      const selectedBooks = [];
+      currentAnalysedCohort.books.forEach((book, bIdx) => {
+        const checkedChaps = [];
+        document.querySelectorAll(`.cohort-chap-chk[data-bidx="${bIdx}"]:checked`).forEach(chk => {
+          const cIdx = parseInt(chk.dataset.cidx, 10);
+          checkedChaps.push(book.chapters[cIdx]);
+        });
+
+        if (checkedChaps.length > 0) {
+          selectedBooks.push({
+            id: book.id,
+            title: book.title,
+            chapters: checkedChaps
+          });
+        }
+      });
+
+      if (selectedBooks.length === 0) {
+        alert('Please select at least 1 book or chapter to extract.');
+        return;
+      }
+
+      const totalChaps = selectedBooks.reduce((acc, b) => acc + b.chapters.length, 0);
+      const cohortName = currentAnalysedCohort.cohort || 'Cohort';
+
+      const payload = {
+        mode: 'cohort',
+        cohort_name: cohortName,
+        token: getRayToken(),
+        remove_watermarks: document.getElementById('ray-watermark-toggle').checked,
+        zip_name: `${cohortName}_Complete_All_Books.zip`,
+        books: selectedBooks
+      };
+
+      prepareForExtraction(`Batch extracting ${selectedBooks.length} books (${totalChaps} total chapters)...`);
+
+      try {
+        const res = await fetch('/api/ray-book/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await res.json();
+        if (d.error) {
+          alert('Error starting cohort extraction: ' + d.error);
+          onExtractionFinished(false);
+          return;
+        }
+        startRayBookPolling();
+      } catch (e) {
+        alert('Server communication error: ' + e);
+        onExtractionFinished(false);
+      }
+    }
+
+    // =================================================================
+    // MODE 3: DIRECT URLS BATCH (UNLIMITED)
+    // =================================================================
+    const rayBookRows = document.getElementById('ray-book-rows');
+    const rayBookCount = document.getElementById('ray-book-count');
+    const rayAddRowBtn = document.getElementById('ray-add-row-btn');
+
     function createRowElement(index, url = '', name = '') {
       const row = document.createElement('div');
       row.className = 'book-row';
       row.innerHTML = `
         <div class="book-row-meta">
           <span class="row-index">#${index}</span>
-          <button type="button" class="row-remove-btn" title="Remove book" onclick="removeBookRow(this)">✖</button>
+          <button type="button" class="row-remove-btn" title="Remove" onclick="removeBookRow(this)">✖</button>
         </div>
         <input type="text" class="form-input ray-item-url" placeholder="Target Book URL (or asset_ref)" value="${escapeHtml(url)}" required>
         <input type="text" class="form-input ray-item-name" placeholder="Custom Book Name (e.g. Physics_Ch1)" value="${escapeHtml(name)}">
@@ -1200,16 +2611,10 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
         r.querySelector('.row-index').textContent = `#${idx + 1}`;
       });
       rayBookCount.textContent = rows.length;
-      rayAddRowBtn.disabled = rows.length >= 30;
-      document.getElementById('ray-limit-msg').style.color = rows.length >= 30 ? 'var(--warning)' : 'var(--text-muted)';
     }
 
     function addBookRow(url = '', name = '') {
       const currentCount = rayBookRows.querySelectorAll('.book-row').length;
-      if (currentCount >= 30) {
-        alert('Maximum 30 books can be added per batch.');
-        return;
-      }
       const newRow = createRowElement(currentCount + 1, url, name);
       rayBookRows.appendChild(newRow);
       updateRowIndices();
@@ -1233,7 +2638,7 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
     // Initialize with 1 empty row
     addBookRow('', '');
 
-    // Bulk Paste Modal
+    // Bulk Paste Modal (Unlimited)
     const bulkModal = document.getElementById('bulk-paste-modal');
     function openBulkPasteModal() {
       bulkModal.style.display = 'flex';
@@ -1248,7 +2653,7 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
         closeBulkPasteModal();
         return;
       }
-      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0).slice(0, 30);
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       if (lines.length === 0) return;
 
       rayBookRows.innerHTML = '';
@@ -1270,11 +2675,7 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
       closeBulkPasteModal();
     }
 
-    // Form Submission: Start Ray Book Batch
-    rayForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const token = rayTokenInput.value.trim() || DEFAULT_RAY_TOKEN;
-
+    async function startUrlsExtraction() {
       const rows = Array.from(rayBookRows.querySelectorAll('.book-row'));
       const items = [];
       for (let i = 0; i < rows.length; i++) {
@@ -1291,20 +2692,14 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
       }
 
       const payload = {
-        token: token,
-        zip_name: document.getElementById('ray-zip-name').value.trim() || 'Extracted_Books.zip',
+        mode: 'urls',
+        token: getRayToken(),
+        zip_name: document.getElementById('ray-urls-zip-name').value.trim() || 'Extracted_Books.zip',
         remove_watermarks: document.getElementById('ray-watermark-toggle').checked,
         items: items
       };
 
-      rayBtnStart.disabled = true;
-      rayBtnStop.style.display = 'inline-flex';
-      rayProgressPanel.style.display = 'block';
-      rayProgressFill.style.width = '0%';
-      rayProgressPct.textContent = '0%';
-      rayStatusText.textContent = `Starting batch of ${items.length} book(s)...`;
-      rayLastLogIdx = 0;
-      clearTerminal('ray-terminal-body');
+      prepareForExtraction(`Starting extraction of ${items.length} book(s)...`);
 
       try {
         const res = await fetch('/api/ray-book/start', {
@@ -1314,22 +2709,54 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
         });
         const d = await res.json();
         if (d.error) {
-          alert('Error starting Ray Book extraction: ' + d.error);
-          rayBtnStart.disabled = false;
-          rayBtnStop.style.display = 'none';
+          alert('Error starting URL extraction: ' + d.error);
+          onExtractionFinished(false);
           return;
         }
         startRayBookPolling();
       } catch (err) {
         alert('Server communication error: ' + err);
-        rayBtnStart.disabled = false;
-        rayBtnStop.style.display = 'none';
+        onExtractionFinished(false);
       }
-    });
+    }
 
-    rayBtnStop.addEventListener('click', async () => {
+    // =================================================================
+    // COMMON PROGRESS & POLLING LOGIC
+    // =================================================================
+    function prepareForExtraction(msg) {
+      setExtractButtonsState(false);
+      rayBtnStop.style.display = 'inline-flex';
+      rayProgressPanel.style.display = 'block';
+      rayProgressFill.style.width = '0%';
+      rayProgressPct.textContent = '0%';
+      rayStatusText.textContent = msg;
+      rayActiveDetails.textContent = '';
+      rayLastLogIdx = 0;
+      clearTerminal('ray-terminal-body');
+    }
+
+    function setExtractButtonsState(enabled) {
+      const b1 = document.getElementById('ray-btn-start-book');
+      if (b1) b1.disabled = !enabled;
+      const b2 = document.getElementById('ray-btn-start-cohort');
+      if (b2) b2.disabled = !enabled;
+      const b3 = document.getElementById('ray-btn-start-urls');
+      if (b3) b3.disabled = !enabled;
+    }
+
+    function onExtractionFinished(success) {
+      if (rayPolling) clearInterval(rayPolling);
+      setExtractButtonsState(true);
+      rayBtnStop.style.display = 'none';
+      if (success) {
+        rayProgressFill.style.width = '100%';
+        rayProgressPct.textContent = '100%';
+      }
+    }
+
+    async function stopRayExtraction() {
       await fetch('/api/ray-book/stop', { method: 'POST' });
-    });
+    }
 
     function startRayBookPolling() {
       if (rayPolling) clearInterval(rayPolling);
@@ -1347,19 +2774,16 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
             const pct = Math.min(Math.round((d.done / d.total) * 100), 100);
             rayProgressFill.style.width = `${pct}%`;
             rayProgressPct.textContent = `${pct}%`;
-            rayStatusText.textContent = d.message || `Processed ${d.done}/${d.total} books`;
+            rayStatusText.textContent = d.message || `Processed ${d.done}/${d.total} items`;
+            if (d.active_chapter) {
+              rayActiveDetails.textContent = `Active: ${d.active_chapter} (Page ${d.active_page || 1})`;
+            }
           }
 
-          renderRayDownloads(d.extracted_files, d.zip_file_info);
+          renderRayDownloads(d);
 
           if (d.state === 'finished' || d.state === 'stopped' || d.state === 'error' || d.state === 'idle') {
-            clearInterval(rayPolling);
-            rayBtnStart.disabled = false;
-            rayBtnStop.style.display = 'none';
-            if (d.state === 'finished') {
-              rayProgressFill.style.width = '100%';
-              rayProgressPct.textContent = '100%';
-            }
+            onExtractionFinished(d.state === 'finished');
           }
         } catch (e) {
           console.error('Polling error', e);
@@ -1367,37 +2791,80 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
       }, 1500);
     }
 
-    function renderRayDownloads(files, zipInfo) {
-      // Master ZIP
-      const masterZipCard = document.getElementById('ray-master-zip-card');
-      const zipNameEl = document.getElementById('ray-zip-card-name');
-      const zipMetaEl = document.getElementById('ray-zip-card-meta');
-      const zipDownloadBtn = document.getElementById('ray-zip-download-btn');
+    // =================================================================
+    // DOWNLOAD RENDERING (TIER 1, TIER 2, TIER 3 ARCHIVES)
+    // =================================================================
+    function renderRayDownloads(statusData) {
+      if (!statusData) return;
 
-      if (zipInfo) {
-        masterZipCard.style.display = 'flex';
-        zipNameEl.textContent = zipInfo.filename;
-        zipMetaEl.textContent = `${zipInfo.file_count} books consolidated • ${zipInfo.size_mb} MB`;
-        zipDownloadBtn.href = `/api/ray-book/download?file=${encodeURIComponent(zipInfo.filename)}`;
+      const masterZip = statusData.master_zip || statusData.zip_file_info;
+      const partZips = statusData.part_zips || [];
+      const bookZips = statusData.book_zips || [];
+      const files = statusData.extracted_files || [];
+
+      // 1. Tier 3: Master Consolidated Archive
+      const masterCard = document.getElementById('ray-master-zip-card');
+      if (masterZip && masterZip.filename) {
+        masterCard.style.display = 'flex';
+        document.getElementById('ray-zip-card-name').textContent = masterZip.filename;
+        const bCount = masterZip.book_count ? `${masterZip.book_count} books • ` : '';
+        document.getElementById('ray-zip-card-meta').textContent = `${bCount}${masterZip.size_mb} MB • Complete Consolidated Archive`;
+        document.getElementById('ray-zip-download-btn').href = `/api/ray-book/download?file=${encodeURIComponent(masterZip.filename)}`;
       }
 
-      // Individual Files
-      const container = document.getElementById('ray-individual-downloads');
-      if (!files || files.length === 0) {
-        return;
-      }
-
-      container.innerHTML = files.map(f => `
-        <div class="download-card">
-          <div>
-            <h4 style="color: white; font-size: 0.96rem;">📄 ${escapeHtml(f.filename)}</h4>
-            <span style="font-size: 0.78rem; color: var(--text-muted);">${f.pages} pages • ${f.size_mb} MB</span>
+      // 2. Tier 2: 5-Book Batch Archives
+      const partSection = document.getElementById('ray-part-zips-section');
+      const partList = document.getElementById('ray-part-zips-list');
+      if (partZips.length > 0) {
+        partSection.style.display = 'block';
+        partList.innerHTML = partZips.map(pz => `
+          <div class="download-card">
+            <div>
+              <span class="tier-badge" style="background: rgba(167, 139, 250, 0.2); color: #a78bfa;">TIER 2 • 5-BOOK BATCH</span>
+              <h4 style="color: white; font-size: 0.95rem;">🗂️ ${escapeHtml(pz.filename)}</h4>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">${pz.range} (${pz.book_count} books) • ${pz.size_mb} MB</span>
+            </div>
+            <a href="/api/ray-book/download?file=${encodeURIComponent(pz.filename)}" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; color: #a78bfa; border-color: rgba(167, 139, 250, 0.4);">
+              ⬇ Download Part ZIP
+            </a>
           </div>
-          <a href="/api/ray-book/download?file=${encodeURIComponent(f.filename)}" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; color: #818cf8; border-color: rgba(99, 102, 241, 0.4);">
-            ⬇ Download PDF
-          </a>
-        </div>
-      `).join('');
+        `).join('');
+      }
+
+      // 3. Tier 1: Individual Book Archives (ZIP Per Book)
+      const bookSection = document.getElementById('ray-book-zips-section');
+      const bookList = document.getElementById('ray-book-zips-list');
+      if (bookZips.length > 0) {
+        bookSection.style.display = 'block';
+        bookList.innerHTML = bookZips.map(bz => `
+          <div class="download-card">
+            <div>
+              <span class="tier-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">TIER 1 • BOOK ARCHIVE</span>
+              <h4 style="color: white; font-size: 0.95rem;">📚 ${escapeHtml(bz.filename)}</h4>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">${bz.file_count} chapter(s) • ${bz.size_mb} MB</span>
+            </div>
+            <a href="/api/ray-book/download?file=${encodeURIComponent(bz.filename)}" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">
+              ⬇ Download Book ZIP
+            </a>
+          </div>
+        `).join('');
+      }
+
+      // 4. Individual Chapter PDFs
+      const indContainer = document.getElementById('ray-individual-downloads');
+      if (files.length > 0) {
+        indContainer.innerHTML = files.map(f => `
+          <div class="download-card">
+            <div>
+              <h4 style="color: white; font-size: 0.92rem;">📄 ${escapeHtml(f.display_name || f.filename)}</h4>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">${f.book_name ? escapeHtml(f.book_name) + ' • ' : ''}${f.pages} pages • ${f.size_mb} MB</span>
+            </div>
+            <a href="/api/ray-book/download?file=${encodeURIComponent(f.filename)}" class="btn btn-secondary" style="padding: 0.45rem 0.9rem; font-size: 0.82rem; color: #818cf8; border-color: rgba(99, 102, 241, 0.4);">
+              ⬇ PDF
+            </a>
+          </div>
+        `).join('');
+      }
     }
 
     // Load initial files on startup
@@ -1406,22 +2873,34 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
         const res = await fetch('/api/ray-book/files');
         const d = await res.json();
         if (d.files && d.files.length > 0) {
-          const nonZipFiles = d.files.filter(f => !f.is_zip);
-          const zipFiles = d.files.filter(f => f.is_zip);
-          if (zipFiles.length > 0) {
-            renderRayDownloads([], {
-              filename: zipFiles[0].filename,
-              size_mb: zipFiles[0].size_mb,
-              file_count: nonZipFiles.length
-            });
-          }
-          if (nonZipFiles.length > 0) {
-            renderRayDownloads(nonZipFiles.map(f => ({
-              filename: f.filename,
+          const zips = d.files.filter(f => f.is_zip);
+          const pdfs = d.files.filter(f => !f.is_zip);
+
+          // Find master, part, and book zips by naming patterns
+          const masterZips = zips.filter(z => z.filename.toLowerCase().includes('complete') || z.filename.toLowerCase().includes('extracted_books'));
+          const partZips = zips.filter(z => z.filename.toLowerCase().includes('part_'));
+          const bookZips = zips.filter(z => !masterZips.includes(z) && !partZips.includes(z));
+
+          renderRayDownloads({
+            master_zip: masterZips[0] || zips[0] || null,
+            part_zips: partZips.map(z => ({
+              filename: z.filename,
+              range: 'Archive',
+              book_count: 5,
+              size_mb: z.size_mb
+            })),
+            book_zips: bookZips.map(z => ({
+              filename: z.filename,
+              file_count: 'Archive',
+              size_mb: z.size_mb
+            })),
+            extracted_files: pdfs.map(p => ({
+              filename: p.filename,
+              display_name: p.display_name,
               pages: 'Ready',
-              size_mb: f.size_mb
-            })), zipFiles[0] || null);
-          }
+              size_mb: p.size_mb
+            }))
+          });
         }
       } catch (e) {}
 
@@ -1434,7 +2913,11 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
       } catch (e) {}
     }
 
-    window.addEventListener('DOMContentLoaded', loadExistingFiles);
+    window.addEventListener('DOMContentLoaded', () => {
+      computeCohortFromSelection();
+      loadExistingFiles();
+      loadQuizardBrainStats();
+    });
   </script>
 </body>
 </html>
