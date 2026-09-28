@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Quizzy Practice — Allen Question Bank &amp; Practice Player</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Local or CDN JSZip -->
+  <script src="/static/jszip.min.js"></script>
+  <script>
+    if (typeof JSZip === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"><\/script>');
+    }
+  </script>
+  <style>
+    /* ======================================================== */
+    /* THEME VARIABLES: DARK (DEFAULT) & LIGHT                  */
+    /* ======================================================== */
+    :root {
+      --bg: #070a12;
+      --bg-ambient: radial-gradient(circle, rgba(0, 191, 165, 0.16) 0%, rgba(99, 102, 241, 0.1) 45%, transparent 75%);
+      --surface: #0f172a;
+      --surface-card: rgba(15, 23, 42, 0.88);
+      --surface-border: rgba(148, 163, 184, 0.18);
+      --nav-bg: rgba(10, 15, 30, 0.92);
+      --primary: #00bfa5;
+      --primary-hover: #00a892;
+      --primary-glow: rgba(0, 191, 165, 0.3);
+      --accent: #6366f1;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --purple: #a855f7;
+      --text: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --q-img-bg: #ffffff;
+      --q-img-border: transparent;
+      --option-bg: rgba(15, 23, 42, 0.7);
+      --option-hover: rgba(15, 23, 42, 0.98);
+      --cell-bg: rgba(15, 23, 42, 0.6);
+      --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+      --font-main: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    [data-theme="light"] {
+      --bg: #f1f5f9;
+      --bg-ambient: radial-gradient(circle, rgba(0, 191, 165, 0.14) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 75%);
+      --surface: #ffffff;
+      --surface-card: rgba(255, 255, 255, 0.96);
+      --surface-border: #cbd5e1;
+      --nav-bg: rgba(255, 255, 255, 0.92);
+      --primary: #00a892;
+      --primary-hover: #008f7c;
+      --primary-glow: rgba(0, 168, 146, 0.25);
+      --accent: #4f46e5;
+      --success: #059669;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --purple: #9333ea;
+      --text: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --q-img-bg: #ffffff;
+      --q-img-border: #e2e8f0;
+      --option-bg: #f8fafc;
+      --option-hover: #f1f5f9;
+      --cell-bg: #f8fafc;
+      --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-size: 15px;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    /* Ambient background glow */
+    .ambient-glow {
+      position: fixed;
+      top: -160px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1000px;
+      max-width: 100vw;
+      height: 480px;
+      background: var(--bg-ambient);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Nav */
+    .qp-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--nav-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--surface-border);
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--card-shadow);
+    }
+
+    .qp-logo-group {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      cursor: pointer;
+    }
+
+    .qp-logo-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 15px var(--primary-glow);
+      flex-shrink: 0;
+    }
+
+    .qp-logo-title {
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .qp-logo-sub {
+      font-size: 0.72rem;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .qp-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    /* Theme Switcher Toggle */
+    .theme-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 0.65rem;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      user-select: none;
+    }
+    .theme-toggle-btn:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* Live Practice Stats Pill */
+    .practice-score-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 0.65rem;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .pill-stat-correct { color: #10b981; }
+    .pill-stat-wrong { color: #ef4444; }
+    .pill-stat-total { color: var(--text-muted); }
+
+    /* View Mode Switcher Buttons */
+    .view-mode-toggle {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 0.65rem;
+      padding: 0.2rem;
+    }
+
+    .view-mode-btn {
+      padding: 0.45rem 0.85rem;
+      border-radius: 0.5rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+
+    .view-mode-btn.active {
+      background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 2px 10px var(--primary-glow);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 0.65rem 1.25rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      text-decoration: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px var(--primary-glow);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(148, 163, 184, 0.15);
+      border-color: var(--primary);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-purple {
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--purple);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 1.5rem auto 3rem auto;
+      padding: 0 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface-card);
+      border: 1.5px solid var(--surface-border);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--card-shadow);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Home / Upload Screen */
+    .hero-banner {
+      text-align: center;
+      padding: 2.2rem 1rem;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.3rem 0.85rem;
+      border-radius: 9999px;
+      background: rgba(0, 191, 165, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(0, 191, 165, 0.3);
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.04em;
+    }
+
+    .hero-title {
+      font-size: 2.3rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-desc {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      line-height: 1.6;
+    }
+
+    /* Dropzone */
+    .zip-dropzone {
+      border: 2px dashed rgba(0, 191, 165, 0.4);
+      background: var(--surface);
+      border-radius: 1.25rem;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 1.25rem;
+    }
+    .zip-dropzone:hover, .zip-dropzone.dragover {
+      border-color: var(--primary);
+      background: rgba(0, 191, 165, 0.08);
+      transform: translateY(-2px);
+    }
+
+    /* Direct link input */
+    .link-input-group {
+      display: flex;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+    }
+    .form-input {
+      flex: 1;
+      padding: 0.8rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 0.75rem;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    /* Saved Quizzes Shelf */
+    .saved-shelf {
+      margin-top: 2rem;
+    }
+    .saved-shelf-title {
+      font-size: 1rem;
+      color: var(--text);
+      font-weight: 700;
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .saved-quiz-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 0.85rem;
+      padding: 0.85rem 1.15rem;
+      margin-bottom: 0.65rem;
+    }
+    .saved-quiz-card:hover {
+      border-color: var(--primary);
+    }
+
+    /* Runner Layout (Main + Navigator Sidebar) */
+    .runner-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* Question Card */
+    .q-card {
+      background: var(--surface-card);
+      border: 1.5px solid var(--surface-border);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      box-shadow: var(--card-shadow);
+    }
+    .q-card.active-focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .q-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      border-bottom: 1px solid var(--surface-border);
+      padding-bottom: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .q-badges {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .q-badge-num {
+      background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+      color: white;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .q-badge-topic {
+      background: rgba(99, 102, 241, 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 0.2rem 0.55rem;
+      border-radius: 0.4rem;
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+
+    .q-badge-subtopic {
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      padding: 0.2rem 0.55rem;
+      border-radius: 0.4rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+    }
+
+    /* Question Image Display */
+    .q-image-container {
+      background: var(--q-img-bg);
+      border: 1px solid var(--q-img-border);
+      border-radius: 0.85rem;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      cursor: zoom-in;
+    }
+
+    .q-image-container img {
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+
+    /* Options Grid (1, 2, 3, 4) */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .option-item {
+      background: var(--option-bg);
+      border: 1.5px solid var(--surface-border);
+      border-radius: 0.85rem;
+      padding: 0.85rem 1.15rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      user-select: none;
+    }
+
+    .option-item:hover {
+      border-color: var(--primary);
+      background: var(--option-hover);
+      transform: translateY(-1.5px);
+    }
+
+    .option-bubble {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1.5px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .option-label {
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: var(--text);
+    }
+
+    /* Instant Practice Answer Reveal Styles */
+    .option-item.opt-correct {
+      background: rgba(16, 185, 129, 0.18) !important;
+      border-color: #10b981 !important;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+    }
+    .option-item.opt-correct .option-bubble {
+      background: #10b981 !important;
+      border-color: #10b981 !important;
+      color: white !important;
+    }
+    .option-item.opt-correct .option-label {
+      color: #10b981 !important;
+      font-weight: 700;
+    }
+
+    .option-item.opt-wrong {
+      background: rgba(239, 68, 68, 0.18) !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.25);
+    }
+    .option-item.opt-wrong .option-bubble {
+      background: #ef4444 !important;
+      border-color: #ef4444 !important;
+      color: white !important;
+    }
+    .option-item.opt-wrong .option-label {
+      color: #ef4444 !important;
+      font-weight: 700;
+    }
+
+    /* Practice Result Banner */
+    .practice-result-banner {
+      border-radius: 0.85rem;
+      padding: 0.85rem 1.15rem;
+      margin-top: 1rem;
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .practice-result-banner.banner-correct {
+      background: rgba(16, 185, 129, 0.14);
+      border: 1.5px solid #10b981;
+      color: #10b981;
+    }
+    .practice-result-banner.banner-wrong {
+      background: rgba(239, 68, 68, 0.14);
+      border: 1.5px solid #ef4444;
+      color: #ef4444;
+    }
+    .practice-result-banner.banner-peek {
+      background: rgba(99, 102, 241, 0.14);
+      border: 1.5px solid var(--accent);
+      color: var(--accent);
+    }
+
+    /* Question Footer Actions */
+    .q-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      border-top: 1px solid var(--surface-border);
+      padding-top: 1rem;
+      margin-top: 1rem;
+    }
+
+    /* Navigator Sidebar */
+    .navigator-card {
+      position: sticky;
+      top: 5rem;
+      background: var(--surface-card);
+      border: 1.5px solid var(--surface-border);
+      border-radius: 1.25rem;
+      padding: 1.25rem;
+      backdrop-filter: blur(14px);
+      box-shadow: var(--card-shadow);
+      max-height: calc(100vh - 6.5rem);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .nav-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.85rem;
+    }
+    .nav-title {
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--text);
+    }
+
+    /* Topic & Subtopic Switcher Tabs */
+    .nav-tabs-wrap {
+      margin-bottom: 0.75rem;
+    }
+    .nav-section-pills {
+      display: flex;
+      gap: 0.35rem;
+      overflow-x: auto;
+      padding-bottom: 0.35rem;
+      scrollbar-width: none;
+    }
+    .nav-section-pills::-webkit-scrollbar {
+      display: none;
+    }
+    .section-pill-btn {
+      padding: 0.35rem 0.65rem;
+      border-radius: 0.45rem;
+      border: 1px solid var(--surface-border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .section-pill-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .nav-subtopic-select {
+      width: 100%;
+      padding: 0.45rem 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 0.55rem;
+      color: var(--text);
+      font-size: 0.78rem;
+      margin-top: 0.45rem;
+      outline: none;
+      font-family: inherit;
+    }
+
+    /* Question Grid Cells */
+    .q-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.55rem;
+      overflow-y: auto;
+      padding: 0.4rem 0.1rem;
+      flex: 1;
+    }
+    .q-grid::-webkit-scrollbar {
+      width: 5px;
+    }
+    .q-grid::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
+    .q-cell {
+      aspect-ratio: 1;
+      border-radius: 0.65rem;
+      border: 1.5px solid var(--surface-border);
+      background: var(--cell-bg);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .q-cell:hover {
+      transform: scale(1.06);
+      border-color: var(--primary);
+      color: var(--text);
+    }
+
+    .q-cell.current {
+      box-shadow: 0 0 0 2px var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* Grid Practice Statuses */
+    .q-cell.cell-correct {
+      background: #10b981;
+      border-color: #10b981;
+      color: white;
+    }
+
+    .q-cell.cell-wrong {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: white;
+    }
+
+    .q-cell.cell-marked {
+      border-color: var(--purple);
+      color: var(--purple);
+    }
+
+    .q-cell.cell-marked::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--purple);
+    }
+
+    /* Grid Legend */
+    .grid-legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.45rem;
+      border-top: 1px solid var(--surface-border);
+      padding-top: 0.75rem;
+      margin-top: 0.65rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* Practice Summary Screen */
+    .scorecard-hero {
+      text-align: center;
+      padding: 1.5rem 0;
+    }
+    .score-circle {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      margin: 1.25rem auto;
+      background: radial-gradient(circle, var(--primary-glow) 0%, var(--surface) 70%);
+      border: 3px solid var(--primary);
+      box-shadow: 0 0 35px var(--primary-glow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .score-number {
+      font-size: 2.3rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+    .score-total {
+      font-size: 0.85rem;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .stats-pills-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+    .stat-pill {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 0.85rem;
+      padding: 0.85rem;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+    .stat-lbl {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* Mobile Drawer & Responsiveness */
+    .mobile-grid-toggle-btn {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .runner-layout {
+        grid-template-columns: 1fr;
+      }
+      .navigator-card {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        max-height: 75vh;
+        border-radius: 1.5rem 1.5rem 0 0;
+        z-index: 200;
+        transform: translateY(105%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.8);
+      }
+      .navigator-card.drawer-open {
+        transform: translateY(0);
+      }
+      .mobile-grid-toggle-btn {
+        display: inline-flex;
+      }
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+      .stats-pills-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .hero-title {
+        font-size: 1.85rem;
+      }
+      .q-card-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="qp-navbar">
+    <div class="qp-logo-group" onclick="showScreen('home')">
+      <div class="qp-logo-icon">🧪</div>
+      <div>
+        <div class="qp-logo-title">Quizzy Practice</div>
+        <div class="qp-logo-sub">Instant Answer Practice Mode</div>
+      </div>
+    </div>
+
+    <!-- Active Practice Header Controls -->
+    <div class="qp-nav-actions">
+      <!-- Live Practice Score Pill (Visible during quiz) -->
+      <div class="practice-score-pill" id="practice-score-pill" style="display: none;">
+        <span>🎯 Score: <b id="hdr-score" style="color: var(--primary);">0</b></span>
+        <span>•</span>
+        <span class="pill-stat-correct">✓ <b id="hdr-correct">0</b></span>
+        <span class="pill-stat-wrong">✗ <b id="hdr-wrong">0</b></span>
+      </div>
+
+      <!-- Mode Toggle: One-by-One vs All (Scroll) -->
+      <div class="view-mode-toggle" id="view-mode-selector" style="display: none;">
+        <button type="button" class="view-mode-btn active" id="btn-mode-one" onclick="switchViewMode('one')">
+          📄 One by One
+        </button>
+        <button type="button" class="view-mode-btn" id="btn-mode-all" onclick="switchViewMode('all')">
+          📜 All (Scroll)
+        </button>
+      </div>
+
+      <!-- Theme Switcher Button (Dark / Light) -->
+      <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+        <span id="theme-icon">🌙</span> <span id="theme-text">Dark</span>
+      </button>
+
+      <!-- Mobile Navigator Toggle Button -->
+      <button type="button" class="btn btn-secondary mobile-grid-toggle-btn" id="btn-mobile-grid" style="display: none;" onclick="toggleMobileDrawer()">
+        ▦ Grid
+      </button>
+
+      <!-- Finish Practice Summary Button -->
+      <button type="button" class="btn btn-primary" id="btn-finish-practice" style="display: none;" onclick="showPracticeSummary()">
+        📊 Summary
+      </button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ======================================================== -->
+    <!-- SCREEN 1: HOME & ZIP SELECTION SCREEN                   -->
+    <!-- ======================================================== -->
+    <div id="screen-home">
+      <div class="hero-banner">
+        <span class="hero-badge">PRACTICE &amp; INSTANT REVEAL</span>
+        <h1 class="hero-title">Allen Question Bank Practice</h1>
+        <p class="hero-desc">
+          Upload any cropped Allen module ZIP or paste a link. Questions feature <b>instant answer reveal</b> upon tapping options, topic/subtopic navigator grid, and dual One-by-One / All-Scroll modes.
+        </p>
+      </div>
+
+      <!-- Card: Upload / Link Input -->
+      <div class="card" style="max-width: 680px; margin: 0 auto 1.5rem auto;">
+        <!-- Option A: File Upload -->
+        <input type="file" id="zip-file-input" accept=".zip" style="display: none;" onchange="handleZipFileUpload(this)">
+        <div class="zip-dropzone" id="zip-dropzone" onclick="document.getElementById('zip-file-input').click()">
+          <div style="font-size: 2.8rem; margin-bottom: 0.5rem;">📦</div>
+          <h3 style="font-size: 1.15rem; color: var(--text); margin-bottom: 0.25rem;">
+            Tap to Select or Drop Allen ZIP Archive
+          </h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Accepts any ZIP exported by Allen Cropper (.zip)
+          </p>
+        </div>
+
+        <div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; margin-bottom: 1rem;">
+          — OR LOAD VIA DOWNLOAD LINK —
+        </div>
+
+        <!-- Option B: Direct Download Link -->
+        <div class="link-input-group">
+          <input type="url" id="zip-url-input" class="form-input" placeholder="Paste direct ZIP link (e.g. https://.../module.zip or runner link)">
+          <button type="button" class="btn btn-primary" onclick="loadZipFromUrlInput()">
+            Load Link
+          </button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="zip-loading-indicator" style="display: none; text-align: center; padding: 1rem;">
+          <div style="display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(0, 191, 165, 0.3); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear;"></div>
+          <p id="zip-loading-text" style="color: var(--primary); font-size: 0.88rem; margin-top: 0.5rem;">Unpacking ZIP &amp; loading practice questions...</p>
+        </div>
+      </div>
+
+      <!-- Card: Saved Quizzes Shelf (Max 3, Stored 5 Days) -->
+      <div class="card saved-shelf" style="max-width: 680px; margin: 0 auto;">
+        <div class="saved-shelf-title">
+          <span>💾 Saved Quizzes (Stored for 5 Days • Max 3)</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">Auto-pruned after 5 days</span>
+        </div>
+        <div id="saved-quizzes-list">
+          <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">
+            No saved quizzes in local storage yet. Upload a ZIP above to start practicing!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SCREEN 2: ACTIVE PRACTICE RUNNER SCREEN                 -->
+    <!-- ======================================================== -->
+    <div id="screen-runner" style="display: none;">
+      <div class="runner-layout">
+
+        <!-- Left Column: Question(s) Container -->
+        <main id="runner-main-column">
+          <!-- ONE BY ONE CONTAINER -->
+          <div id="one-by-one-wrapper"></div>
+
+          <!-- ALL (SCROLL) CONTAINER -->
+          <div id="all-scroll-wrapper" style="display: none;"></div>
+        </main>
+
+        <!-- Right Column: Question Navigator Sidebar & Drawer -->
+        <aside class="navigator-card" id="navigator-sidebar">
+          <div class="nav-head">
+            <span class="nav-title">📋 Question Navigator</span>
+            <button type="button" class="btn btn-secondary mobile-grid-toggle-btn" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="closeMobileDrawer()">✕</button>
+          </div>
+
+          <!-- Section Switcher Tabs -->
+          <div class="nav-tabs-wrap">
+            <div class="nav-section-pills" id="nav-section-pills"></div>
+            <!-- Subtopic Filter Select -->
+            <select class="nav-subtopic-select" id="nav-subtopic-select" onchange="handleSubtopicFilterChange(this.value)">
+              <option value="ALL">All Subtopics</option>
+            </select>
+          </div>
+
+          <!-- Question Grid Cells -->
+          <div class="q-grid" id="navigator-grid"></div>
+
+          <!-- Grid Legend -->
+          <div class="grid-legend">
+            <div class="legend-item"><div class="legend-dot" style="background: var(--cell-bg); border: 1.5px solid var(--surface-border);"></div> Unattempted (<span id="leg-unvisited">0</span>)</div>
+            <div class="legend-item"><div class="legend-dot" style="background: #10b981;"></div> Correct (<span id="leg-correct">0</span>)</div>
+            <div class="legend-item"><div class="legend-dot" style="background: #ef4444;"></div> Incorrect (<span id="leg-wrong">0</span>)</div>
+            <div class="legend-item"><div class="legend-dot" style="background: var(--purple);"></div> Marked (<span id="leg-marked">0</span>)</div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SCREEN 3: PRACTICE SUMMARY & SCORE REPORT               -->
+    <!-- ======================================================== -->
+    <div id="screen-scorecard" style="display: none;">
+      <div class="card" style="max-width: 800px; margin: 0 auto 1.5rem auto;">
+        <div class="scorecard-hero">
+          <span class="hero-badge">PRACTICE SESSION SUMMARY</span>
+          <h1 id="scorecard-test-name" style="font-size: 1.8rem; margin: 0.35rem 0; color: var(--text);">Practice Performance</h1>
+          <p style="color: var(--text-muted); font-size: 0.88rem;">NEET Practice Scoring: +4 for Correct, -1 for Incorrect</p>
+
+          <div class="score-circle">
+            <div class="score-number" id="sc-total-marks">0</div>
+            <div class="score-total" id="sc-max-marks">/ 0</div>
+          </div>
+
+          <div class="stats-pills-row">
+            <div class="stat-pill">
+              <div class="stat-val" style="color: var(--accent);" id="sc-accuracy">0%</div>
+              <div class="stat-lbl">Accuracy</div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-val" style="color: #10b981;" id="sc-correct-count">0</div>
+              <div class="stat-lbl">Correct (+4)</div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-val" style="color: #ef4444;" id="sc-incorrect-count">0</div>
+              <div class="stat-lbl">Incorrect (-1)</div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-val" style="color: var(--text-muted);" id="sc-unattempted-count">0</div>
+              <div class="stat-lbl">Unattempted</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.65rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem;">
+            <button type="button" class="btn btn-primary" onclick="showScreen('runner')">
+              📖 Continue Practice
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="resetPracticeSession()">
+              🔄 Reset Practice Answers
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="showScreen('home')">
+              📁 Load Another ZIP
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <style>
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+  </style>
+
+  <script>
+    // ========================================================
+    // 1. THEME SWITCHER (Dark & Light Mode)
+    // ========================================================
+    function initTheme() {
+      const saved = localStorage.getItem('quizzy_theme') || 'dark';
+      applyTheme(saved);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('quizzy_theme', theme);
+      const icon = document.getElementById('theme-icon');
+      const text = document.getElementById('theme-text');
+      if (icon && text) {
+        if (theme === 'light') {
+          icon.innerText = '☀️';
+          text.innerText = 'Light';
+        } else {
+          icon.innerText = '🌙';
+          text.innerText = 'Dark';
+        }
+      }
+    }
+
+    // Apply saved theme immediately
+    initTheme();
+
+    // ========================================================
+    // 2. INDEXEDDB STORAGE (Max 3 ZIPs, 5 Days Retention)
+    // ========================================================
+    const DB_NAME = 'QuizzyZipDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'saved_zips';
+    const MAX_SAVED_ZIPS = 3;
+    const EXPIRATION_MS = 5 * 24 * 60 * 60 * 1000; // 5 days
+
+    function openZipDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            store.createIndex('savedAt', 'savedAt', { unique: false });
+            store.createIndex('expiresAt', 'expiresAt', { unique: false });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function pruneStorage() {
+      try {
+        const db = await openZipDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.getAll();
+
+        req.onsuccess = () => {
+          const all = req.result || [];
+          const now = Date.now();
+          let valid = [];
+
+          for (const item of all) {
+            if (now > item.expiresAt) {
+              store.delete(item.id);
+            } else {
+              valid.push(item);
+            }
+          }
+
+          if (valid.length > MAX_SAVED_ZIPS) {
+            valid.sort((a, b) => b.savedAt - a.savedAt);
+            const toRemove = valid.slice(MAX_SAVED_ZIPS);
+            for (const item of toRemove) {
+              store.delete(item.id);
+            }
+          }
+        };
+      } catch (e) {
+        console.warn('Storage pruning warning:', e);
+      }
+    }
+
+    async function saveZipToDB(zipBlob, zipName, questionCount, sections, userAnswers = {}) {
+      await pruneStorage();
+      const db = await openZipDB();
+      const now = Date.now();
+      const id = 'zip_' + now + '_' + Math.random().toString(36).substr(2, 5);
+
+      const entry = {
+        id: id,
+        name: zipName || 'Allen_Module.zip',
+        size_bytes: zipBlob.size,
+        size_mb: (zipBlob.size / (1024 * 1024)).toFixed(2),
+        savedAt: now,
+        expiresAt: now + EXPIRATION_MS,
+        questionCount: questionCount || 0,
+        sections: sections || [],
+        blob: zipBlob,
+        userAnswers: userAnswers
+      };
+
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).put(entry);
+      await new Promise(res => tx.oncomplete = res);
+      await pruneStorage();
+      await renderSavedShelf();
+      return id;
+    }
+
+    async function loadSavedZipEntry(id) {
+      const db = await openZipDB();
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get(id);
+      return new Promise((resolve) => {
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    async function deleteSavedZipEntry(id, e) {
+      if (e) e.stopPropagation();
+      const db = await openZipDB();
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).delete(id);
+      await new Promise(r => tx.oncomplete = r);
+      await renderSavedShelf();
+    }
+
+    async function renderSavedShelf() {
+      await pruneStorage();
+      const container = document.getElementById('saved-quizzes-list');
+      if (!container) return;
+
+      try {
+        const db = await openZipDB();
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const req = tx.objectStore(STORE_NAME).getAll();
+
+        req.onsuccess = () => {
+          const list = req.result || [];
+          list.sort((a, b) => b.savedAt - a.savedAt);
+
+          if (list.length === 0) {
+            container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">No saved quizzes in local storage yet. Upload a ZIP above to start practicing!</p>';
+            return;
+          }
+
+          container.innerHTML = list.map(item => {
+            const daysLeft = Math.max(0, Math.ceil((item.expiresAt - Date.now()) / (24 * 60 * 60 * 1000)));
+            const savedDate = new Date(item.savedAt).toLocaleDateString();
+            return `
+              <div class="saved-quiz-card">
+                <div>
+                  <div style="font-weight: 700; color: var(--text); font-size: 0.92rem; display: flex; align-items: center; gap: 0.35rem;">
+                    📦 ${escapeHtml(item.name)}
+                  </div>
+                  <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 0.2rem;">
+                    ${item.questionCount} Questions • ${item.size_mb} MB • Saved ${savedDate} • <span style="color: #10b981;">⏳ Expires in ${daysLeft} day(s)</span>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 0.45rem;">
+                  <button type="button" class="btn btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;" onclick="openSavedQuiz('${item.id}')">
+                    ▶ Practice
+                  </button>
+                  <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.65rem; font-size: 0.8rem;" onclick="deleteSavedZipEntry('${item.id}', event)">
+                    🗑
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        };
+      } catch (err) {
+        console.warn('Shelf render error:', err);
+      }
+    }
+
+    async function openSavedQuiz(id) {
+      const entry = await loadSavedZipEntry(id);
+      if (!entry || !entry.blob) {
+        alert('Saved quiz data not found or expired.');
+        return;
+      }
+      currentZipName = entry.name;
+      currentZipBlob = entry.blob;
+      if (entry.userAnswers) {
+        userAnswers = entry.userAnswers;
+      }
+      await processZipBlob(entry.blob, entry.name, false);
+    }
+
+    // ========================================================
+    // 3. PRACTICE STATE & DATA MODEL
+    // ========================================================
+    let questions = [];            // Array of all question objects
+    let activeQuestionIdx = 0;     // Current question in one-by-one mode
+    let viewMode = 'one';          // 'one' or 'all'
+    let currentSectionFilter = 'ALL';
+    let currentSubtopicFilter = 'ALL';
+    let userAnswers = {};          // { [qId]: optionIndex (1, 2, 3, 4) }
+    let revealedQuestions = new Set(); // Set of qIds where user clicked "Show Answer"
+    let markedForReview = new Set();
+    let currentZipBlob = null;
+    let currentZipName = '';
+
+    // ========================================================
+    // 4. ZIP UNPACKING & PARSING ENGINE
+    // ========================================================
+    function naturalSort(a, b) {
+      return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    }
+
+    function extractQNumber(filename) {
+      const m = filename.match(/\d+/);
+      return m ? parseInt(m[0]) : 0;
+    }
+
+    async function processZipBlob(blob, filename, shouldSaveToDB = true) {
+      showLoading(true, 'Extracting questions & answer keys from ZIP...');
+      try {
+        const zip = await JSZip.loadAsync(blob);
+        const entries = Object.keys(zip.files);
+
+        // 1. Locate all answer_key.json files
+        const answerKeys = {};
+        for (const path of entries) {
+          if (path.toLowerCase().endsWith('answer_key.json')) {
+            try {
+              const text = await zip.files[path].async('text');
+              const json = JSON.parse(text);
+              const dir = path.replace(/[\\\/]Answer Key[\\\/]answer_key\.json$/i, '').replace(/[\\\/]answer_key\.json$/i, '');
+              answerKeys[dir] = json;
+            } catch (e) {
+              console.warn('Failed parsing answer key:', path, e);
+            }
+          }
+        }
+
+        // 2. Locate all question images (q*.png / q*.jpg)
+        const rawQuestionTasks = [];
+        for (const path of entries) {
+          const lower = path.toLowerCase();
+          if (zip.files[path].dir) continue;
+          if (lower.includes('__macosx') || lower.includes('/.') || lower.includes('answer key')) continue;
+
+          if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
+            const parts = path.replace(/\\/g, '/').split('/');
+            const fname = parts.pop();
+            if (/^q\d+/i.test(fname)) {
+              rawQuestionTasks.push({
+                fullPath: path,
+                filename: fname,
+                dirParts: parts
+              });
+            }
+          }
+        }
+
+        if (rawQuestionTasks.length === 0) {
+          throw new Error('No question images starting with "q" (e.g. q1.png) were found in this ZIP.');
+        }
+
+        rawQuestionTasks.sort((a, b) => naturalSort(a.fullPath, b.fullPath));
+
+        // 3. Build Question Objects
+        questions = [];
+        const sectionsSet = new Set();
+
+        for (let i = 0; i < rawQuestionTasks.length; i++) {
+          const task = rawQuestionTasks[i];
+          const parts = task.dirParts;
+
+          let section = 'General';
+          let subtopic = 'General';
+
+          if (parts.length === 1) {
+            section = parts[0];
+          } else if (parts.length >= 2) {
+            section = parts[0];
+            subtopic = parts.slice(1).join(' - ');
+          }
+
+          sectionsSet.add(section);
+
+          const imgBlob = await zip.files[task.fullPath].async('blob');
+          const imgUrl = URL.createObjectURL(imgBlob);
+          const qNum = extractQNumber(task.filename);
+
+          // Find correct answer from answer keys
+          let ansData = null;
+          for (const keyPath in answerKeys) {
+            if (task.fullPath.startsWith(keyPath)) {
+              ansData = answerKeys[keyPath];
+              break;
+            }
+          }
+          if (!ansData && Object.keys(answerKeys).length === 1) {
+            ansData = Object.values(answerKeys)[0];
+          }
+
+          let correctVal = null;
+          if (ansData) {
+            const rawVal = ansData[`q${qNum}`] || ansData[String(qNum)] || ansData[qNum];
+            if (rawVal !== undefined && rawVal !== null) {
+              const parsedInt = parseInt(rawVal);
+              correctVal = !isNaN(parsedInt) ? parsedInt : rawVal;
+            }
+          }
+
+          questions.push({
+            id: `q_${i + 1}`,
+            qNum: qNum || (i + 1),
+            displayIndex: i + 1,
+            section: section,
+            subtopic: subtopic,
+            filename: task.filename,
+            imgUrl: imgUrl,
+            correctAnswer: correctVal,
+            userSelected: userAnswers[`q_${i + 1}`] || null
+          });
+        }
+
+        // Section Order Priority
+        const sectionPriority = { 'conceptual questions': 0, 'pyq': 1, 'analytical questions': 2 };
+        questions.sort((a, b) => {
+          const pa = sectionPriority[a.section.toLowerCase()] ?? 99;
+          const pb = sectionPriority[b.section.toLowerCase()] ?? 99;
+          if (pa !== pb) return pa - pb;
+          if (a.section !== b.section) return a.section.localeCompare(b.section);
+          return a.qNum - b.qNum;
+        });
+
+        questions.forEach((q, idx) => {
+          q.displayIndex = idx + 1;
+        });
+
+        if (shouldSaveToDB) {
+          await saveZipToDB(blob, filename, questions.length, Array.from(sectionsSet));
+        }
+
+        currentZipBlob = blob;
+        currentZipName = filename;
+        activeQuestionIdx = 0;
+
+        showLoading(false);
+        launchPracticeSession();
+
+      } catch (err) {
+        showLoading(false);
+        alert(`Failed to load ZIP archive: ${err.message}`);
+        console.error(err);
+      }
+    }
+
+    // ========================================================
+    // 5. LOAD INPUT HANDLERS (Upload / URL)
+    // ========================================================
+    function handleZipFileUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        processZipBlob(file, file.name, true);
+      }
+    }
+
+    async function loadZipFromUrlInput() {
+      const url = document.getElementById('zip-url-input').value.trim();
+      if (!url) {
+        alert('Please enter a valid downloadable ZIP URL');
+        return;
+      }
+      showLoading(true, 'Downloading ZIP from URL...');
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`HTTP error ${resp.status}`);
+        const blob = await resp.blob();
+        let fname = 'Downloaded_Module.zip';
+        try {
+          const u = new URL(url);
+          const p = u.pathname.split('/').pop();
+          if (p.toLowerCase().endsWith('.zip')) fname = p;
+        } catch (e) {}
+        await processZipBlob(blob, fname, true);
+      } catch (e) {
+        showLoading(false);
+        alert(`Failed to download ZIP: ${e.message}`);
+      }
+    }
+
+    // Drag and drop for zip dropzone
+    const dropzone = document.getElementById('zip-dropzone');
+    if (dropzone) {
+      ['dragenter', 'dragover'].forEach(n => dropzone.addEventListener(n, (e) => {
+        e.preventDefault(); e.stopPropagation();
+        dropzone.classList.add('dragover');
+      }));
+      ['dragleave', 'drop'].forEach(n => dropzone.addEventListener(n, (e) => {
+        e.preventDefault(); e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      }));
+      dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        if (dt.files && dt.files[0] && dt.files[0].name.toLowerCase().endsWith('.zip')) {
+          processZipBlob(dt.files[0], dt.files[0].name, true);
+        } else {
+          alert('Please drop a valid .zip archive file.');
+        }
+      });
+    }
+
+    function showLoading(show, msg = 'Loading...') {
+      const ind = document.getElementById('zip-loading-indicator');
+      const text = document.getElementById('zip-loading-text');
+      if (ind) ind.style.display = show ? 'block' : 'none';
+      if (text) text.innerText = msg;
+    }
+
+    // ========================================================
+    // 6. PRACTICE RUNNER INTERFACE
+    // ========================================================
+    function launchPracticeSession() {
+      showScreen('runner');
+      renderSectionPills();
+      renderSubtopicSelect();
+      renderNavigatorGrid();
+      renderActiveView();
+      updatePracticeScoreHeader();
+    }
+
+    function showScreen(screenName) {
+      document.getElementById('screen-home').style.display = screenName === 'home' ? 'block' : 'none';
+      document.getElementById('screen-runner').style.display = screenName === 'runner' ? 'block' : 'none';
+      document.getElementById('screen-scorecard').style.display = screenName === 'scorecard' ? 'block' : 'none';
+
+      const isQuizScreen = screenName === 'runner' || screenName === 'scorecard';
+      document.getElementById('practice-score-pill').style.display = isQuizScreen ? 'flex' : 'none';
+      document.getElementById('view-mode-selector').style.display = isQuizScreen ? 'flex' : 'none';
+      document.getElementById('btn-mobile-grid').style.display = screenName === 'runner' ? 'inline-flex' : 'none';
+      document.getElementById('btn-finish-practice').style.display = screenName === 'runner' ? 'inline-flex' : 'none';
+
+      if (screenName === 'runner') {
+        renderActiveView();
+        renderNavigatorGrid();
+      }
+    }
+
+    function switchViewMode(mode) {
+      viewMode = mode;
+      document.getElementById('btn-mode-one').classList.toggle('active', mode === 'one');
+      document.getElementById('btn-mode-all').classList.toggle('active', mode === 'all');
+
+      document.getElementById('one-by-one-wrapper').style.display = mode === 'one' ? 'block' : 'none';
+      document.getElementById('all-scroll-wrapper').style.display = mode === 'all' ? 'block' : 'none';
+
+      renderActiveView();
+    }
+
+    function renderActiveView() {
+      if (viewMode === 'one') {
+        renderOneByOneView();
+      } else {
+        renderAllScrollView();
+      }
+      updateLegendCounts();
+      updatePracticeScoreHeader();
+    }
+
+    function updatePracticeScoreHeader() {
+      let correct = 0;
+      let wrong = 0;
+      let score = 0;
+
+      questions.forEach(q => {
+        if (q.userSelected !== null && q.userSelected !== undefined) {
+          if (q.correctAnswer !== null && q.userSelected === q.correctAnswer) {
+            correct++;
+            score += 4;
+          } else {
+            wrong++;
+            score -= 1;
+          }
+        }
+      });
+
+      const elScore = document.getElementById('hdr-score');
+      const elCor = document.getElementById('hdr-correct');
+      const elWr = document.getElementById('hdr-wrong');
+
+      if (elScore) elScore.innerText = score;
+      if (elCor) elCor.innerText = correct;
+      if (elWr) elWr.innerText = wrong;
+    }
+
+    // --- Section & Subtopic Navigation Filters ---
+    function renderSectionPills() {
+      const container = document.getElementById('nav-section-pills');
+      if (!container) return;
+
+      const sections = ['ALL', ...Array.from(new Set(questions.map(q => q.section)))];
+      container.innerHTML = sections.map(sec => {
+        const count = sec === 'ALL' ? questions.length : questions.filter(q => q.section === sec).length;
+        const activeCls = sec === currentSectionFilter ? 'active' : '';
+        return `
+          <button type="button" class="section-pill-btn ${activeCls}" onclick="filterBySection('${escapeHtml(sec)}')">
+            ${sec === 'ALL' ? 'All Sections' : escapeHtml(sec)} (${count})
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderSubtopicSelect() {
+      const select = document.getElementById('nav-subtopic-select');
+      if (!select) return;
+
+      const pool = currentSectionFilter === 'ALL' ? questions : questions.filter(q => q.section === currentSectionFilter);
+      const subtopics = Array.from(new Set(pool.map(q => q.subtopic)));
+
+      select.innerHTML = `
+        <option value="ALL">All Subtopics (${pool.length})</option>
+        ${subtopics.map(sub => {
+          const cnt = pool.filter(q => q.subtopic === sub).length;
+          return `<option value="${escapeHtml(sub)}">${escapeHtml(sub)} (${cnt})</option>`;
+        }).join('')}
+      `;
+      currentSubtopicFilter = 'ALL';
+    }
+
+    function filterBySection(section) {
+      currentSectionFilter = section;
+      renderSectionPills();
+      renderSubtopicSelect();
+      renderNavigatorGrid();
+
+      const firstIdx = questions.findIndex(q => matchQuestionFilters(q));
+      if (firstIdx !== -1) {
+        goToQuestion(firstIdx);
+      }
+    }
+
+    function handleSubtopicFilterChange(val) {
+      currentSubtopicFilter = val;
+      renderNavigatorGrid();
+      const firstIdx = questions.findIndex(q => matchQuestionFilters(q));
+      if (firstIdx !== -1) {
+        goToQuestion(firstIdx);
+      }
+    }
+
+    function matchQuestionFilters(q) {
+      if (currentSectionFilter !== 'ALL' && q.section !== currentSectionFilter) return false;
+      if (currentSubtopicFilter !== 'ALL' && q.subtopic !== currentSubtopicFilter) return false;
+      return true;
+    }
+
+    // --- Navigator Grid ---
+    function renderNavigatorGrid() {
+      const grid = document.getElementById('navigator-grid');
+      if (!grid) return;
+
+      grid.innerHTML = questions.map((q, idx) => {
+        const visible = matchQuestionFilters(q);
+        if (!visible) return '';
+
+        let cls = 'q-cell';
+        if (idx === activeQuestionIdx && viewMode === 'one') cls += ' current';
+
+        const isAnswered = q.userSelected !== null && q.userSelected !== undefined;
+        const isMarked = markedForReview.has(q.id);
+
+        if (isAnswered) {
+          if (q.correctAnswer !== null && q.userSelected === q.correctAnswer) {
+            cls += ' cell-correct';
+          } else {
+            cls += ' cell-wrong';
+          }
+        } else if (revealedQuestions.has(q.id)) {
+          cls += ' cell-correct';
+        }
+
+        if (isMarked) {
+          cls += ' cell-marked';
+        }
+
+        return `
+          <button type="button" class="${cls}" onclick="goToQuestion(${idx})" title="${q.section} • ${q.subtopic}">
+            ${q.displayIndex}
+          </button>
+        `;
+      }).join('');
+
+      updateLegendCounts();
+    }
+
+    function updateLegendCounts() {
+      let correct = 0;
+      let wrong = 0;
+      let marked = markedForReview.size;
+
+      questions.forEach(q => {
+        if (q.userSelected !== null && q.userSelected !== undefined) {
+          if (q.correctAnswer !== null && q.userSelected === q.correctAnswer) {
+            correct++;
+          } else {
+            wrong++;
+          }
+        }
+      });
+
+      const unvisited = questions.length - (correct + wrong);
+
+      const elCor = document.getElementById('leg-correct');
+      const elWr = document.getElementById('leg-wrong');
+      const elUnv = document.getElementById('leg-unvisited');
+      const elMark = document.getElementById('leg-marked');
+
+      if (elCor) elCor.innerText = correct;
+      if (elWr) elWr.innerText = wrong;
+      if (elUnv) elUnv.innerText = unvisited;
+      if (elMark) elMark.innerText = marked;
+    }
+
+    function goToQuestion(idx) {
+      if (idx < 0 || idx >= questions.length) return;
+      activeQuestionIdx = idx;
+
+      if (viewMode === 'one') {
+        renderOneByOneView();
+      } else {
+        const cardEl = document.getElementById(`scroll-card-${idx}`);
+        if (cardEl) {
+          document.querySelectorAll('.q-card').forEach(c => c.classList.remove('active-focus'));
+          cardEl.classList.add('active-focus');
+          cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+      renderNavigatorGrid();
+      closeMobileDrawer();
+    }
+
+    // ========================================================
+    // 7. RENDER VIEWS & INSTANT ANSWER REVEAL LOGIC
+    // ========================================================
+    function renderOneByOneView() {
+      const container = document.getElementById('one-by-one-wrapper');
+      if (!container) return;
+      const q = questions[activeQuestionIdx];
+      if (!q) return;
+
+      const isMarked = markedForReview.has(q.id);
+      const isLast = activeQuestionIdx === questions.length - 1;
+      const isFirst = activeQuestionIdx === 0;
+
+      container.innerHTML = `
+        <div class="q-card">
+          <div class="q-card-head">
+            <div class="q-badges">
+              <span class="q-badge-num">Question ${q.displayIndex} of ${questions.length}</span>
+              <span class="q-badge-topic">🏷️ ${escapeHtml(q.section)}</span>
+              <span class="q-badge-subtopic">📌 ${escapeHtml(q.subtopic)}</span>
+            </div>
+            <span style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono);">Practice: +4, -1</span>
+          </div>
+
+          <div class="q-image-container" onclick="openImageLightbox('${q.imgUrl}')">
+            <img src="${q.imgUrl}" alt="Question ${q.displayIndex}">
+          </div>
+
+          <!-- Options 1, 2, 3, 4 with Instant Reveal -->
+          <div class="options-grid">
+            ${[1, 2, 3, 4].map(optNum => renderPracticeOptionItem(q, optNum)).join('')}
+          </div>
+
+          <!-- Instant Answer Reveal Banner -->
+          ${renderPracticeAnswerBanner(q)}
+
+          <div class="q-card-footer">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button type="button" class="btn ${isMarked ? 'btn-purple' : 'btn-secondary'}" onclick="toggleMarkReview('${q.id}')">
+                ${isMarked ? '🟣 Marked' : '🔖 Mark for Review'}
+              </button>
+              ${q.userSelected !== null ? `
+                <button type="button" class="btn btn-secondary" onclick="retryQuestion('${q.id}')">
+                  🔄 Try Again
+                </button>
+              ` : `
+                <button type="button" class="btn btn-secondary" onclick="revealAnswerDirectly('${q.id}')">
+                  👁️ Show Answer
+                </button>
+              `}
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" class="btn btn-secondary" onclick="goToQuestion(${activeQuestionIdx - 1})" ${isFirst ? 'disabled' : ''}>
+                ← Previous
+              </button>
+              <button type="button" class="btn btn-primary" onclick="goToQuestion(${activeQuestionIdx + 1})" ${isLast ? 'disabled' : ''}>
+                Next →
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAllScrollView() {
+      const container = document.getElementById('all-scroll-wrapper');
+      if (!container) return;
+
+      container.innerHTML = questions.map((q, idx) => {
+        const visible = matchQuestionFilters(q);
+        if (!visible) return '';
+
+        const isMarked = markedForReview.has(q.id);
+
+        return `
+          <div class="q-card" id="scroll-card-${idx}">
+            <div class="q-card-head">
+              <div class="q-badges">
+                <span class="q-badge-num">Question ${q.displayIndex} of ${questions.length}</span>
+                <span class="q-badge-topic">🏷️ ${escapeHtml(q.section)}</span>
+                <span class="q-badge-subtopic">📌 ${escapeHtml(q.subtopic)}</span>
+              </div>
+              <span style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono);">Practice: +4, -1</span>
+            </div>
+
+            <div class="q-image-container" onclick="openImageLightbox('${q.imgUrl}')">
+              <img src="${q.imgUrl}" alt="Question ${q.displayIndex}">
+            </div>
+
+            <div class="options-grid">
+              ${[1, 2, 3, 4].map(optNum => renderPracticeOptionItem(q, optNum)).join('')}
+            </div>
+
+            ${renderPracticeAnswerBanner(q)}
+
+            <div class="q-card-footer">
+              <button type="button" class="btn ${isMarked ? 'btn-purple' : 'btn-secondary'}" onclick="toggleMarkReview('${q.id}')">
+                ${isMarked ? '🟣 Marked' : '🔖 Mark for Review'}
+              </button>
+              ${q.userSelected !== null ? `
+                <button type="button" class="btn btn-secondary" onclick="retryQuestion('${q.id}')">
+                  🔄 Try Again
+                </button>
+              ` : `
+                <button type="button" class="btn btn-secondary" onclick="revealAnswerDirectly('${q.id}')">
+                  👁️ Show Answer
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderPracticeOptionItem(q, optNum) {
+      const isSelected = q.userSelected === optNum;
+      const isRevealed = revealedQuestions.has(q.id);
+      let extraClass = '';
+      let bubbleContent = `(${optNum})`;
+
+      // INSTANT ANSWER REVEAL
+      if (q.userSelected !== null || isRevealed) {
+        if (q.correctAnswer === optNum) {
+          extraClass = 'opt-correct';
+          bubbleContent = '✓';
+        } else if (isSelected && q.correctAnswer !== optNum) {
+          extraClass = 'opt-wrong';
+          bubbleContent = '✗';
+        }
+      }
+
+      return `
+        <div class="option-item ${extraClass}" onclick="selectPracticeOption('${q.id}', ${optNum})">
+          <div class="option-bubble">${bubbleContent}</div>
+          <span class="option-label">Option (${optNum})</span>
+        </div>
+      `;
+    }
+
+    function renderPracticeAnswerBanner(q) {
+      if (q.userSelected === null && !revealedQuestions.has(q.id)) {
+        return '';
+      }
+
+      if (revealedQuestions.has(q.id) && q.userSelected === null) {
+        return `
+          <div class="practice-result-banner banner-peek">
+            <div style="font-weight: 700; font-size: 0.95rem;">💡 Answer Key Revealed</div>
+            <div style="font-size: 0.82rem; margin-top: 0.2rem;">
+              The correct answer is <b>Option (${q.correctAnswer || 'N/A'})</b>.
+            </div>
+          </div>
+        `;
+      }
+
+      const isCorrect = q.correctAnswer !== null && q.userSelected === q.correctAnswer;
+      if (isCorrect) {
+        return `
+          <div class="practice-result-banner banner-correct">
+            <div style="font-weight: 700; font-size: 0.95rem;">🎉 Correct Answer! (+4 pts)</div>
+            <div style="font-size: 0.82rem; margin-top: 0.2rem;">
+              You chose Option (${q.userSelected}). Section: <b>${escapeHtml(q.section)}</b> • Subtopic: <b>${escapeHtml(q.subtopic)}</b>
+            </div>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="practice-result-banner banner-wrong">
+            <div style="font-weight: 700; font-size: 0.95rem;">❌ Incorrect (-1 pt)</div>
+            <div style="font-size: 0.82rem; margin-top: 0.2rem;">
+              You selected Option (${q.userSelected}). The correct answer is <b>Option (${q.correctAnswer || 'N/A'})</b>.
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // --- Option Selection Logic (Instant Reveal) ---
+    function selectPracticeOption(qId, optNum) {
+      const q = questions.find(item => item.id === qId);
+      if (!q) return;
+
+      q.userSelected = optNum;
+      userAnswers[q.id] = optNum;
+
+      renderActiveView();
+      renderNavigatorGrid();
+    }
+
+    function retryQuestion(qId) {
+      const q = questions.find(item => item.id === qId);
+      if (!q) return;
+      q.userSelected = null;
+      delete userAnswers[q.id];
+      revealedQuestions.delete(q.id);
+
+      renderActiveView();
+      renderNavigatorGrid();
+    }
+
+    function revealAnswerDirectly(qId) {
+      revealedQuestions.add(qId);
+      renderActiveView();
+      renderNavigatorGrid();
+    }
+
+    function toggleMarkReview(qId) {
+      if (markedForReview.has(qId)) {
+        markedForReview.delete(qId);
+      } else {
+        markedForReview.add(qId);
+      }
+      renderActiveView();
+      renderNavigatorGrid();
+    }
+
+    // Drawer for Mobile
+    function toggleMobileDrawer() {
+      const el = document.getElementById('navigator-sidebar');
+      if (el) el.classList.toggle('drawer-open');
+    }
+    function closeMobileDrawer() {
+      const el = document.getElementById('navigator-sidebar');
+      if (el) el.classList.remove('drawer-open');
+    }
+
+    // ========================================================
+    // 8. PRACTICE SUMMARY SCORECARD
+    // ========================================================
+    function showPracticeSummary() {
+      let correct = 0;
+      let incorrect = 0;
+      let unattempted = 0;
+      let totalMarks = 0;
+      const maxMarks = questions.length * 4;
+
+      questions.forEach(q => {
+        if (q.userSelected === null || q.userSelected === undefined) {
+          unattempted++;
+        } else if (q.correctAnswer !== null && q.userSelected === q.correctAnswer) {
+          correct++;
+          totalMarks += 4;
+        } else {
+          incorrect++;
+          totalMarks -= 1;
+        }
+      });
+
+      const attempted = correct + incorrect;
+      const accuracy = attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
+
+      document.getElementById('sc-total-marks').innerText = totalMarks;
+      document.getElementById('sc-max-marks').innerText = `/ ${maxMarks}`;
+      document.getElementById('sc-accuracy').innerText = `${accuracy}%`;
+      document.getElementById('sc-correct-count').innerText = correct;
+      document.getElementById('sc-incorrect-count').innerText = incorrect;
+      document.getElementById('sc-unattempted-count').innerText = unattempted;
+      document.getElementById('scorecard-test-name').innerText = currentZipName || 'Practice Session';
+
+      showScreen('scorecard');
+    }
+
+    function resetPracticeSession() {
+      userAnswers = {};
+      markedForReview.clear();
+      revealedQuestions.clear();
+      questions.forEach(q => {
+        q.userSelected = null;
+      });
+      launchPracticeSession();
+    }
+
+    // Helper: Lightbox image modal
+    function openImageLightbox(url) {
+      window.open(url, '_blank');
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Keyboard navigation (One-by-one mode)
+    window.addEventListener('keydown', (e) => {
+      if (document.getElementById('screen-runner').style.display !== 'none' && viewMode === 'one') {
+        if (e.key === 'ArrowLeft') goToQuestion(activeQuestionIdx - 1);
+        if (e.key === 'ArrowRight') goToQuestion(activeQuestionIdx + 1);
+        if (['1', '2', '3', '4'].includes(e.key)) {
+          const q = questions[activeQuestionIdx];
+          if (q) selectPracticeOption(q.id, parseInt(e.key));
+        }
+        if (e.key.toLowerCase() === 'm') {
+          const q = questions[activeQuestionIdx];
+          if (q) toggleMarkReview(q.id);
+        }
+      }
+    });
+
+    // Check URL parameters on load for auto-launch
+    window.addEventListener('DOMContentLoaded', async () => {
+      await renderSavedShelf();
+
+      const params = new URLSearchParams(window.location.search);
+      const zipUrl = params.get('zip_url');
+      const zipName = params.get('name') || 'Module.zip';
+
+      if (zipUrl) {
+        document.getElementById('zip-url-input').value = zipUrl;
+        loadZipFromUrlInput();
+      }
+    });
+  </script>
+</body>
+</html>

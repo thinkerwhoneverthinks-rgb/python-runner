@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,9 +10,12 @@
   <style>
     :root {
       --bg: #090d16;
+      --bg-ambient: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.08) 50%, transparent 75%);
       --surface: #0f172a;
       --surface-card: rgba(15, 23, 42, 0.78);
       --surface-border: #1e293b;
+      --nav-bg: rgba(15, 23, 42, 0.88);
+      --nav-switch-bg: rgba(10, 15, 30, 0.65);
       --primary: #6366f1;
       --primary-hover: #4f46e5;
       --accent: #818cf8;
@@ -24,6 +27,35 @@
       --text-muted: #94a3b8;
       --border: rgba(148, 163, 184, 0.15);
       --glow: rgba(99, 102, 241, 0.25);
+      --input-bg: rgba(15, 23, 42, 0.7);
+      --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      --opt-bg: rgba(15, 23, 42, 0.7);
+      --opt-hover: rgba(15, 23, 42, 0.85);
+    }
+
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --bg-ambient: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.06) 50%, transparent 75%);
+      --surface: #ffffff;
+      --surface-card: rgba(255, 255, 255, 0.96);
+      --surface-border: #cbd5e1;
+      --nav-bg: rgba(255, 255, 255, 0.92);
+      --nav-switch-bg: #e2e8f0;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --accent: #6366f1;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --text: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border: #cbd5e1;
+      --glow: rgba(99, 102, 241, 0.15);
+      --input-bg: #f1f5f9;
+      --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      --opt-bg: #f8fafc;
+      --opt-hover: #f1f5f9;
     }
 
     * {
@@ -31,6 +63,7 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
     }
 
     body {
@@ -53,7 +86,7 @@
       width: 1000px;
       max-width: 100vw;
       height: 450px;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.08) 50%, transparent 75%);
+      background: var(--bg-ambient);
       pointer-events: none;
       z-index: 0;
     }
@@ -63,7 +96,7 @@
       max-width: 1080px;
       margin: 1.25rem auto 0 auto;
       padding: 0.75rem 1.25rem;
-      background: rgba(15, 23, 42, 0.88);
+      background: var(--nav-bg);
       border: 1px solid var(--border);
       border-radius: 1.25rem;
       backdrop-filter: blur(16px);
@@ -71,9 +104,30 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      box-shadow: var(--card-shadow);
       position: relative;
       z-index: 10;
+    }
+
+    .theme-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 0.85rem;
+      border-radius: 0.65rem;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      user-select: none;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .theme-toggle-btn:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
     }
 
     .nav-brand-group {
@@ -115,7 +169,7 @@
     .nav-view-switcher {
       display: flex;
       gap: 0.4rem;
-      background: rgba(10, 15, 30, 0.65);
+      background: var(--nav-switch-bg);
       padding: 0.3rem;
       border-radius: 0.75rem;
       border: 1px solid var(--border);
@@ -221,7 +275,7 @@
     .form-input, .form-select, .form-textarea {
       width: 100%;
       padding: 0.8rem 1rem;
-      background: rgba(15, 23, 42, 0.7);
+      background: var(--input-bg);
       border: 1px solid var(--border);
       border-radius: 0.75rem;
       color: var(--text);
@@ -234,7 +288,7 @@
     .form-input:focus, .form-select:focus, .form-textarea:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
-      background: rgba(15, 23, 42, 0.9);
+      background: var(--surface);
     }
 
     .grid-2 {
@@ -579,7 +633,7 @@
     }
 
     .exam-card-item {
-      background: rgba(15, 23, 42, 0.7);
+      background: var(--opt-bg);
       border: 1.5px solid var(--border);
       border-radius: 0.85rem;
       padding: 0.85rem 1.15rem;
@@ -593,7 +647,7 @@
 
     .exam-card-item:hover {
       border-color: rgba(99, 102, 241, 0.4);
-      background: rgba(15, 23, 42, 0.85);
+      background: var(--opt-hover);
     }
 
     .exam-card-item.active {
@@ -901,6 +955,46 @@
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
     }
 
+    /* Allen Cropper Custom Styles */
+    .allen-dropzone {
+      border: 2px dashed rgba(99, 102, 241, 0.4);
+      border-radius: 1rem;
+      padding: 2.2rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--surface);
+      user-select: none;
+    }
+    .allen-dropzone:hover, .allen-dropzone.dragover {
+      border-color: #818cf8;
+      background: rgba(99, 102, 241, 0.12);
+      transform: translateY(-2px);
+    }
+    .allen-opt-card {
+      background: var(--opt-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 0.85rem;
+      padding: 1rem 1.15rem;
+      transition: all 0.2s ease;
+      user-select: none;
+      display: block;
+    }
+    .allen-opt-card:hover {
+      border-color: rgba(99, 102, 241, 0.5);
+      background: var(--opt-hover);
+    }
+    .allen-opt-card.active {
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.12);
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.2);
+    }
+    @media (max-width: 640px) {
+      .allen-options-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
     /* ========================================================================= */
     /* MOBILE PHONE RESPONSIVE STYLES (SCREEN WIDTH <= 768px & <= 480px)        */
     /* ========================================================================= */
@@ -1041,15 +1135,26 @@
       <div class="nav-logo-badge">⚡</div>
       <div class="nav-brand-text">
         <span class="nav-brand-name">EXTRACTION RUNNER STUDIO</span>
-        <span class="nav-brand-sub">Quizard &amp; Ray Book Suite</span>
+        <span class="nav-brand-sub">Quizard, Ray Book &amp; Allen Cropper Suite</span>
       </div>
     </div>
-    <div class="nav-view-switcher">
-      <button type="button" id="nav-btn-quizard" class="view-switch-btn active">
-        ⚡ Quizard Extractor
-      </button>
-      <button type="button" id="nav-btn-ray-book" class="view-switch-btn">
-        📚 Ray Book Extractor
+    <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+      <div class="nav-view-switcher">
+        <button type="button" id="nav-btn-quizard" class="view-switch-btn active">
+          ⚡ Quizard Extractor
+        </button>
+        <button type="button" id="nav-btn-ray-book" class="view-switch-btn">
+          📚 Ray Book Extractor
+        </button>
+        <button type="button" id="nav-btn-allen" class="view-switch-btn">
+          ✂️ Allen Cropper
+        </button>
+        <a href="/static/quiz_player.html" target="_blank" class="view-switch-btn" style="text-decoration: none; color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
+          🧪 Quizzy Player ↗
+        </a>
+      </div>
+      <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+        <span id="theme-icon">🌙</span> <span id="theme-text">Dark</span>
       </button>
     </div>
   </header>
@@ -1676,6 +1781,269 @@
       </div>
     </div>
 
+    <!-- ========================================================================= -->
+    <!-- VIEW 3: ALLEN CROPPER -->
+    <!-- ========================================================================= -->
+    <div id="view-allen" style="display: none;">
+      <div class="hero-card">
+        <div class="hero-header">
+          <span class="hero-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">
+            ALLEN CROPPER &amp; CLOUDINARY ENGINE
+          </span>
+          <h1 class="hero-title">✂️ Allen Question Cropper</h1>
+          <p class="hero-desc">
+            Slices Allen PDF modules into question crops without question numbers. Auto-detects Topics, Sections (Conceptual, PYQ, Analytical), and Answer Keys. Download as organized ZIP or upload to Cloudinary for Quiz JSON.
+          </p>
+        </div>
+
+        <form id="allen-form" onsubmit="event.preventDefault();">
+          <!-- Step 1: Input Mode Switcher (Upload File vs Download Link) -->
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 700; color: white; display: flex; align-items: center; justify-content: space-between;">
+              <span>1. Choose PDF Input Source</span>
+              <span id="allen-mobile-hint" style="font-size: 0.76rem; color: #818cf8; font-weight: normal;">📱 Mobile &amp; Desktop Ready</span>
+            </label>
+            <div class="mode-pills-container" style="margin-bottom: 0.85rem;">
+              <button type="button" id="allen-pill-upload" class="mode-pill-btn active" onclick="setAllenInputMode('upload')">
+                📤 Upload PDF File
+              </button>
+              <button type="button" id="allen-pill-url" class="mode-pill-btn" onclick="setAllenInputMode('url')">
+                🔗 Downloadable PDF Link
+              </button>
+            </div>
+          </div>
+
+          <!-- Section A: File Upload Zone -->
+          <div id="allen-upload-section" class="form-group">
+            <input type="file" id="allen-file-input" accept=".pdf" style="display: none;" onchange="handleAllenFileSelected(this)">
+            <div class="allen-dropzone" id="allen-dropzone" onclick="document.getElementById('allen-file-input').click()">
+              <div id="allen-dropzone-prompt">
+                <div style="font-size: 2.2rem; margin-bottom: 0.4rem;">📄</div>
+                <div style="font-weight: 600; font-size: 1.05rem; color: white; margin-bottom: 0.25rem;">
+                  Tap to Choose PDF File or Drag &amp; Drop
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-muted);">
+                  Select any Allen NEET/JEE PDF module from your device (Android, iPhone, PC)
+                </div>
+              </div>
+
+              <!-- Selected File Display -->
+              <div id="allen-selected-file-card" style="display: none; align-items: center; justify-content: space-between; background: rgba(16, 185, 129, 0.12); border: 1.5px solid rgba(16, 185, 129, 0.35); border-radius: 0.75rem; padding: 0.85rem 1.15rem; text-align: left;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; overflow: hidden;">
+                  <span style="font-size: 1.6rem; flex-shrink: 0;">📕</span>
+                  <div style="overflow: hidden;">
+                    <div id="allen-selected-filename" style="font-weight: 700; color: white; font-size: 0.95rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                      module.pdf
+                    </div>
+                    <div style="font-size: 0.78rem; color: #6ee7b7; display: flex; gap: 0.5rem; align-items: center;">
+                      <span id="allen-selected-filesize">0 MB</span>
+                      <span>•</span>
+                      <span>✓ Ready to Crop</span>
+                    </div>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="clearAllenSelectedFile(event)" style="padding: 0.35rem 0.7rem; font-size: 0.8rem; min-height: auto; color: #fca5a5; border-color: rgba(239, 68, 68, 0.3);">
+                  Change
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section B: Downloadable Link Input Zone -->
+          <div id="allen-url-section" class="form-group" style="display: none;">
+            <label class="form-label" for="allen-url-input">
+              Enter PDF Link (Direct URL or Google Drive)
+            </label>
+            <input type="url" id="allen-url-input" class="form-input" placeholder="https://example.com/allen_physics_module.pdf or Google Drive link" autocomplete="off">
+            <span style="display: block; font-size: 0.76rem; color: var(--text-muted); margin-top: 0.35rem;">
+              💡 Works with direct PDF links, Google Drive sharing links, and cloud storage URLs. Downloaded automatically on server.
+            </span>
+          </div>
+
+          <!-- Step 2: Naming Prefix & Output Settings -->
+          <div class="card" style="margin-top: 1.25rem;">
+            <h3 style="font-size: 1rem; color: white; margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+              <span>⚙️</span> 2. Output Settings &amp; Delivery Options
+            </h3>
+
+            <!-- Output Prefix Input -->
+            <div class="form-group">
+              <label class="form-label" for="allen-prefix-input">
+                ZIP &amp; Question ID Prefix (Optional)
+              </label>
+              <input type="text" id="allen-prefix-input" class="form-input" placeholder="e.g. allen 26, Mole Concept, NEET Physics 2026" value="">
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">
+                Prefix used for output ZIP file (e.g., <code>allen_26_Some_Topic.zip</code>) and Cloudinary question IDs.
+              </span>
+            </div>
+
+            <!-- Dual Option Selector: ZIP vs Cloudinary JSON vs BOTH -->
+            <div style="margin-top: 1rem;">
+              <label class="form-label" style="margin-bottom: 0.5rem; font-weight: 700; color: white;">
+                Choose Output Formats (Choose Either or Both):
+              </label>
+              
+              <div class="allen-options-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+                <!-- Option 1: ZIP Archive -->
+                <label class="allen-opt-card active" id="allen-card-zip" style="cursor: pointer;">
+                  <div style="display: flex; align-items: flex-start; gap: 0.65rem;">
+                    <input type="checkbox" id="allen-opt-zip" checked style="width: 20px; height: 20px; margin-top: 0.15rem; accent-color: #6366f1;" onchange="toggleAllenOptionVisuals()">
+                    <div>
+                      <div style="font-weight: 700; color: white; font-size: 0.92rem; display: flex; align-items: center; gap: 0.35rem;">
+                        <span>📦</span> Generate ZIP Archive
+                      </div>
+                      <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; line-height: 1.35;">
+                        Downloads topic-wise ZIP with questions cleanly sorted into Conceptual, PYQ, Analytical &amp; Answer Keys.
+                      </div>
+                    </div>
+                  </div>
+                </label>
+
+                <!-- Option 2: Cloudinary & JSON -->
+                <label class="allen-opt-card" id="allen-card-cloudinary" style="cursor: pointer;">
+                  <div style="display: flex; align-items: flex-start; gap: 0.65rem;">
+                    <input type="checkbox" id="allen-opt-cloudinary" style="width: 20px; height: 20px; margin-top: 0.15rem; accent-color: #10b981;" onchange="toggleAllenOptionVisuals()">
+                    <div>
+                      <div style="font-weight: 700; color: white; font-size: 0.92rem; display: flex; align-items: center; gap: 0.35rem;">
+                        <span>☁️</span> Cloudinary Upload &amp; JSON
+                      </div>
+                      <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; line-height: 1.35;">
+                        Uploads questions to Cloudinary, attaches answer keys, and produces structured Quiz JSON format.
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div style="margin-top: 0.75rem; padding: 0.6rem 0.85rem; background: rgba(99, 102, 241, 0.08); border: 1px dashed rgba(99, 102, 241, 0.3); border-radius: 0.65rem; font-size: 0.78rem; color: #c7d2fe;">
+                💡 <b>Flexible Delivery:</b> You can choose <b>ZIP only</b>, <b>Cloudinary + JSON only</b>, or choose <b>BOTH</b> to get the ZIP archive and Cloudinary JSON simultaneously!
+              </div>
+            </div>
+
+            <!-- Collapsible Cloudinary Settings -->
+            <div id="allen-cloudinary-settings-wrapper" style="margin-top: 1rem;">
+              <button type="button" class="token-action-btn" onclick="toggleAllenCloudinarySettings()" style="width: 100%; text-align: left; padding: 0.55rem 0.85rem; font-size: 0.82rem; display: flex; justify-content: space-between; align-items: center;">
+                <span>⚙️ Cloudinary Credentials (Optional / Pre-Configured)</span>
+                <span id="allen-c-chevron">▼</span>
+              </button>
+              
+              <div id="allen-cloudinary-settings-panel" style="display: none; padding: 1rem; background: rgba(10, 15, 30, 0.65); border: 1px solid var(--border); border-radius: 0.75rem; margin-top: 0.5rem;">
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label" style="font-size: 0.8rem;">Cloud Name</label>
+                    <input type="text" id="allen-c-cloud-name" class="form-input" value="anjwxmku">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" style="font-size: 0.8rem;">API Key</label>
+                    <input type="text" id="allen-c-api-key" class="form-input" value="238786274222253">
+                  </div>
+                </div>
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label" style="font-size: 0.8rem;">API Secret</label>
+                    <input type="password" id="allen-c-api-secret" class="form-input" value="pU7L-TxAXF8DRiM7rOghMKPmp2A">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" style="font-size: 0.8rem;">Base Folder</label>
+                    <input type="text" id="allen-c-base-folder" class="form-input" value="quiz_app">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Action Buttons (Touch Friendly) -->
+          <div class="action-buttons-group" style="display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;">
+            <button type="button" id="allen-btn-start" class="btn btn-primary" onclick="startAllenCropJob()" style="flex: 2; min-width: 200px;">
+              🚀 Start Allen Cropping
+            </button>
+            <button type="button" id="allen-btn-stop" class="btn btn-danger" onclick="stopAllenCropJob()" style="flex: 1; min-width: 140px; display: none;">
+              ⏹️ Stop Cropping
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="openAllenFolder()" style="flex: 1; min-width: 150px;">
+              📁 Open Outputs
+            </button>
+          </div>
+        </form>
+
+        <!-- Progress & Terminal Section -->
+        <div class="terminal-container" id="allen-terminal-section" style="margin-top: 1.75rem;">
+          <div class="terminal-header">
+            <div class="terminal-title">
+              <span class="terminal-indicator" id="allen-status-dot"></span>
+              <span id="allen-status-text">Allen Cropper Console — Ready</span>
+            </div>
+            <div class="terminal-actions">
+              <button type="button" class="terminal-action-btn" onclick="clearTerminal('allen-terminal')">Clear</button>
+              <button type="button" class="terminal-action-btn" onclick="copyLogs('allen-terminal')">Copy Logs</button>
+            </div>
+          </div>
+          
+          <div style="padding: 0.5rem 1rem; background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 0.78rem; color: #94a3b8;" id="allen-progress-label">Status: Idle</div>
+            <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8;" id="allen-progress-pct">0%</div>
+          </div>
+          <div class="progress-bar-container" style="margin: 0; border-radius: 0; height: 4px;">
+            <div class="progress-bar-fill" id="allen-progress-bar"></div>
+          </div>
+
+          <div class="terminal-body" id="allen-terminal">
+            <div class="log-line">
+              <span class="log-time">[00:00:00]</span>
+              <span class="log-msg log-info">Ready to crop Allen NEET/JEE modules. Upload a PDF or enter a link to begin.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Results & Downloads Card -->
+        <div id="allen-results-card" class="card" style="display: none; margin-top: 1.5rem; border-color: rgba(16, 185, 129, 0.4); background: rgba(15, 23, 42, 0.85);">
+          <h3 style="font-size: 1.1rem; color: #34d399; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🎉</span> Extraction Complete — Download Artifacts
+          </h3>
+          <p id="allen-results-summary" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Your files have been processed and are ready below:
+          </p>
+
+          <!-- ZIP Downloads Container -->
+          <div id="allen-zip-downloads-wrap" style="display: none; margin-bottom: 1rem;">
+            <h4 style="font-size: 0.92rem; color: #818cf8; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.35rem;">
+              📦 ZIP Archives (Question Bank)
+            </h4>
+            <div id="allen-zip-list"></div>
+          </div>
+
+          <!-- JSON Downloads & Preview Container -->
+          <div id="allen-json-downloads-wrap" style="display: none; margin-bottom: 1rem;">
+            <h4 style="font-size: 0.92rem; color: #34d399; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.35rem;">
+              💾 Formatted Quiz JSON (Cloudinary URLs)
+            </h4>
+            <div id="allen-json-list"></div>
+
+            <!-- JSON Quick Preview Collapsible -->
+            <div id="allen-json-preview-container" style="display: none; margin-top: 0.85rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600;">Question JSON Preview:</span>
+                <button type="button" class="token-action-btn" onclick="copyAllenJsonPreview()">📋 Copy Full JSON</button>
+              </div>
+              <pre id="allen-json-preview-body" style="background: #080c16; border: 1px solid #1e293b; border-radius: 0.65rem; padding: 0.85rem; max-height: 260px; overflow: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: #a5f3fc; line-height: 1.4;"></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5: Past Files History -->
+        <div id="allen-history-section" style="margin-top: 1.5rem;">
+          <h4 style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 0.6rem; display: flex; align-items: center; justify-content: space-between;">
+            <span>📁 Previous Cropper Output Files</span>
+            <button type="button" class="token-action-btn" onclick="loadAllenFilesHistory()">🔄 Refresh</button>
+          </h4>
+          <div id="allen-history-list">
+            <p style="font-size: 0.82rem; color: var(--text-muted);">No previous outputs found yet.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- Bulk Paste Modal -->
@@ -1707,31 +2075,43 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
     // ==========================================
     const navBtnQuizard = document.getElementById('nav-btn-quizard');
     const navBtnRayBook = document.getElementById('nav-btn-ray-book');
+    const navBtnAllen = document.getElementById('nav-btn-allen');
     const viewQuizard = document.getElementById('view-quizard');
     const viewRayBook = document.getElementById('view-ray-book');
+    const viewAllen = document.getElementById('view-allen');
 
     function switchView(viewName) {
+      if (navBtnQuizard) navBtnQuizard.classList.remove('active');
+      if (navBtnRayBook) navBtnRayBook.classList.remove('active');
+      if (navBtnAllen) navBtnAllen.classList.remove('active');
+      if (viewQuizard) viewQuizard.style.display = 'none';
+      if (viewRayBook) viewRayBook.style.display = 'none';
+      if (viewAllen) viewAllen.style.display = 'none';
+
       if (viewName === 'quizard') {
-        navBtnQuizard.classList.add('active');
-        navBtnRayBook.classList.remove('active');
-        viewQuizard.style.display = 'block';
-        viewRayBook.style.display = 'none';
+        if (navBtnQuizard) navBtnQuizard.classList.add('active');
+        if (viewQuizard) viewQuizard.style.display = 'block';
         localStorage.setItem('active_view', 'quizard');
+      } else if (viewName === 'allen') {
+        if (navBtnAllen) navBtnAllen.classList.add('active');
+        if (viewAllen) viewAllen.style.display = 'block';
+        localStorage.setItem('active_view', 'allen');
       } else {
-        navBtnRayBook.classList.add('active');
-        navBtnQuizard.classList.remove('active');
-        viewRayBook.style.display = 'block';
-        viewQuizard.style.display = 'none';
+        if (navBtnRayBook) navBtnRayBook.classList.add('active');
+        if (viewRayBook) viewRayBook.style.display = 'block';
         localStorage.setItem('active_view', 'ray-book');
       }
     }
 
-    navBtnQuizard.addEventListener('click', () => switchView('quizard'));
-    navBtnRayBook.addEventListener('click', () => switchView('ray-book'));
+    if (navBtnQuizard) navBtnQuizard.addEventListener('click', () => switchView('quizard'));
+    if (navBtnRayBook) navBtnRayBook.addEventListener('click', () => switchView('ray-book'));
+    if (navBtnAllen) navBtnAllen.addEventListener('click', () => switchView('allen'));
 
     const savedView = localStorage.getItem('active_view');
     if (savedView === 'ray-book') {
       switchView('ray-book');
+    } else if (savedView === 'allen') {
+      switchView('allen');
     }
 
     // ==========================================
@@ -2917,7 +3297,476 @@ https://books.streamfiles.eu.org/viewer.php?asset_ref=... | Chapter 2 Magnetism"
       computeCohortFromSelection();
       loadExistingFiles();
       loadQuizardBrainStats();
+      loadAllenFilesHistory();
     });
+
+    // ==========================================
+    //          ALLEN CROPPER CLIENT LOGIC
+    // ==========================================
+    let allenInputMode = 'upload';
+    let allenSelectedFile = null;
+    let allenPollingInterval = null;
+    let allenLastLogIdx = 0;
+    let allenLastJsonData = null;
+
+    function setAllenInputMode(mode) {
+      allenInputMode = mode;
+      const pillUpload = document.getElementById('allen-pill-upload');
+      const pillUrl = document.getElementById('allen-pill-url');
+      const secUpload = document.getElementById('allen-upload-section');
+      const secUrl = document.getElementById('allen-url-section');
+
+      if (mode === 'upload') {
+        pillUpload.classList.add('active');
+        pillUrl.classList.remove('active');
+        secUpload.style.display = 'block';
+        secUrl.style.display = 'none';
+      } else {
+        pillUrl.classList.add('active');
+        pillUpload.classList.remove('active');
+        secUrl.style.display = 'block';
+        secUpload.style.display = 'none';
+      }
+    }
+
+    function handleAllenFileSelected(input) {
+      if (input.files && input.files[0]) {
+        allenSelectedFile = input.files[0];
+        const card = document.getElementById('allen-selected-file-card');
+        const prompt = document.getElementById('allen-dropzone-prompt');
+        const nameEl = document.getElementById('allen-selected-filename');
+        const sizeEl = document.getElementById('allen-selected-filesize');
+
+        nameEl.innerText = allenSelectedFile.name;
+        const mb = (allenSelectedFile.size / (1024 * 1024)).toFixed(2);
+        sizeEl.innerText = `${mb} MB`;
+
+        prompt.style.display = 'none';
+        card.style.display = 'flex';
+
+        const prefixInput = document.getElementById('allen-prefix-input');
+        if (prefixInput && !prefixInput.value.trim()) {
+          const autoName = allenSelectedFile.name.replace(/\.pdf$/i, '').replace(/_/g, ' ');
+          prefixInput.placeholder = `e.g. ${autoName}`;
+        }
+      }
+    }
+
+    function clearAllenSelectedFile(e) {
+      if (e) e.stopPropagation();
+      allenSelectedFile = null;
+      const fileInput = document.getElementById('allen-file-input');
+      if (fileInput) fileInput.value = '';
+
+      const card = document.getElementById('allen-selected-file-card');
+      const prompt = document.getElementById('allen-dropzone-prompt');
+      if (card) card.style.display = 'none';
+      if (prompt) prompt.style.display = 'block';
+    }
+
+    // Setup drag and drop for dropzone
+    const allenDropzone = document.getElementById('allen-dropzone');
+    if (allenDropzone) {
+      ['dragenter', 'dragover'].forEach(eventName => {
+        allenDropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          allenDropzone.classList.add('dragover');
+        }, false);
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        allenDropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          allenDropzone.classList.remove('dragover');
+        }, false);
+      });
+      allenDropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length > 0 && files[0].name.toLowerCase().endsWith('.pdf')) {
+          const fileInput = document.getElementById('allen-file-input');
+          fileInput.files = files;
+          handleAllenFileSelected(fileInput);
+        } else {
+          alert('Please drop a valid .pdf file.');
+        }
+      });
+    }
+
+    function toggleAllenOptionVisuals() {
+      const optZip = document.getElementById('allen-opt-zip');
+      const optCloud = document.getElementById('allen-opt-cloudinary');
+      const cardZip = document.getElementById('allen-card-zip');
+      const cardCloud = document.getElementById('allen-card-cloudinary');
+
+      if (optZip.checked) cardZip.classList.add('active');
+      else cardZip.classList.remove('active');
+
+      if (optCloud.checked) cardCloud.classList.add('active');
+      else cardCloud.classList.remove('active');
+    }
+
+    function toggleAllenCloudinarySettings() {
+      const panel = document.getElementById('allen-cloudinary-settings-panel');
+      const chev = document.getElementById('allen-c-chevron');
+      if (panel.style.display === 'none' || !panel.style.display) {
+        panel.style.display = 'block';
+        if (chev) chev.innerText = '▲';
+      } else {
+        panel.style.display = 'none';
+        if (chev) chev.innerText = '▼';
+      }
+    }
+
+    async function startAllenCropJob() {
+      const optZip = document.getElementById('allen-opt-zip').checked;
+      const optCloud = document.getElementById('allen-opt-cloudinary').checked;
+      const prefix = document.getElementById('allen-prefix-input').value.trim();
+
+      if (!optZip && !optCloud) {
+        alert('Please select at least one output option: "Generate ZIP Archive" or "Cloudinary Upload & JSON" (or both).');
+        return;
+      }
+
+      let payload = {
+        input_type: allenInputMode,
+        prefix: prefix,
+        generate_zip: optZip,
+        upload_cloudinary: optCloud,
+        cloudinary_config: {
+          cloud_name: document.getElementById('allen-c-cloud-name').value.trim(),
+          api_key: document.getElementById('allen-c-api-key').value.trim(),
+          api_secret: document.getElementById('allen-c-api-secret').value.trim(),
+          base_folder: document.getElementById('allen-c-base-folder').value.trim() || 'quiz_app',
+        }
+      };
+
+      const btnStart = document.getElementById('allen-btn-start');
+      const btnStop = document.getElementById('allen-btn-stop');
+      const statusLabel = document.getElementById('allen-progress-label');
+      const statusDot = document.getElementById('allen-status-dot');
+      const statusText = document.getElementById('allen-status-text');
+
+      clearTerminal('allen-terminal');
+      document.getElementById('allen-results-card').style.display = 'none';
+      document.getElementById('allen-progress-bar').style.width = '0%';
+      document.getElementById('allen-progress-pct').innerText = '0%';
+
+      btnStart.disabled = true;
+
+      // 1. If File Upload Mode
+      if (allenInputMode === 'upload') {
+        if (!allenSelectedFile) {
+          alert('Please select or drop a PDF file first!');
+          btnStart.disabled = false;
+          return;
+        }
+
+        appendLog('allen-terminal', new Date().toLocaleTimeString(), `Uploading PDF "${allenSelectedFile.name}" to server runner...`, 'info');
+        statusLabel.innerText = 'Status: Uploading PDF to runner...';
+
+        try {
+          const upRes = await fetch('/api/cropper/upload-pdf', {
+            method: 'POST',
+            body: allenSelectedFile,
+            headers: {
+              'X-Filename': encodeURIComponent(allenSelectedFile.name)
+            }
+          });
+          const upData = await upRes.json();
+          if (!upRes.ok || !upData.success) {
+            throw new Error(upData.error || 'Failed to upload PDF file');
+          }
+          appendLog('allen-terminal', new Date().toLocaleTimeString(), `✓ PDF uploaded successfully (${upData.size_mb} MB). Starting pipeline...`, 'success');
+          payload.file_path = upData.file_path;
+        } catch (err) {
+          appendLog('allen-terminal', new Date().toLocaleTimeString(), `❌ Upload error: ${err.message}`, 'error');
+          alert(`Error uploading PDF: ${err.message}`);
+          btnStart.disabled = false;
+          return;
+        }
+      } else {
+        // Link mode
+        const urlVal = document.getElementById('allen-url-input').value.trim();
+        if (!urlVal) {
+          alert('Please enter a downloadable PDF URL or Google Drive link!');
+          btnStart.disabled = false;
+          return;
+        }
+        payload.pdf_url = urlVal;
+        appendLog('allen-terminal', new Date().toLocaleTimeString(), `Initiating download from URL: ${urlVal}`, 'info');
+      }
+
+      // 2. Start the Job
+      try {
+        const startRes = await fetch('/api/cropper/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const startData = await startRes.json();
+        if (!startRes.ok || startData.error) {
+          throw new Error(startData.error || 'Failed to start Cropper job');
+        }
+
+        btnStart.style.display = 'none';
+        btnStop.style.display = 'inline-flex';
+        btnStop.disabled = false;
+        statusText.innerText = 'Allen Cropper — Processing';
+        statusDot.style.background = '#38bdf8';
+        statusDot.style.boxShadow = '0 0 8px #38bdf8';
+
+        allenLastLogIdx = 0;
+        if (allenPollingInterval) clearInterval(allenPollingInterval);
+        allenPollingInterval = setInterval(pollAllenStatus, 1000);
+      } catch (err) {
+        appendLog('allen-terminal', new Date().toLocaleTimeString(), `❌ Start failed: ${err.message}`, 'error');
+        alert(`Failed to start job: ${err.message}`);
+        btnStart.disabled = false;
+      }
+    }
+
+    async function pollAllenStatus() {
+      try {
+        const res = await fetch(`/api/cropper/status?since=${allenLastLogIdx}`);
+        if (!res.ok) return;
+        const d = await res.json();
+
+        // Append logs
+        if (d.logs && d.logs.length > 0) {
+          d.logs.forEach(l => {
+            appendLog('allen-terminal', l.time, l.msg, l.level || 'info');
+          });
+          allenLastLogIdx += d.logs.length;
+        }
+
+        // Update progress
+        const progressBar = document.getElementById('allen-progress-bar');
+        const progressPct = document.getElementById('allen-progress-pct');
+        const progressLbl = document.getElementById('allen-progress-label');
+
+        if (d.total > 0) {
+          const pct = Math.min(100, Math.round((d.done / d.total) * 100));
+          progressBar.style.width = `${pct}%`;
+          progressPct.innerText = `${pct}%`;
+          progressLbl.innerText = `Status: Cropping page ${d.done} of ${d.total}`;
+        } else {
+          progressLbl.innerText = `Status: ${d.message || d.state}`;
+        }
+
+        // Job completed or stopped
+        if (d.state === 'finished' || d.state === 'stopped' || d.state === 'error') {
+          clearInterval(allenPollingInterval);
+          allenPollingInterval = null;
+
+          const btnStart = document.getElementById('allen-btn-start');
+          const btnStop = document.getElementById('allen-btn-stop');
+          const statusDot = document.getElementById('allen-status-dot');
+          const statusText = document.getElementById('allen-status-text');
+
+          btnStart.style.display = 'inline-flex';
+          btnStart.disabled = false;
+          btnStop.style.display = 'none';
+
+          if (d.state === 'finished') {
+            progressBar.style.width = '100%';
+            progressPct.innerText = '100%';
+            progressLbl.innerText = 'Status: Completed!';
+            statusDot.style.background = '#10b981';
+            statusDot.style.boxShadow = '0 0 8px #10b981';
+            statusText.innerText = 'Allen Cropper — Completed';
+            renderAllenResults(d);
+            loadAllenFilesHistory();
+          } else if (d.state === 'stopped') {
+            progressLbl.innerText = 'Status: Stopped by user';
+            statusDot.style.background = '#f59e0b';
+            statusDot.style.boxShadow = '0 0 8px #f59e0b';
+            statusText.innerText = 'Allen Cropper — Stopped';
+          } else {
+            progressLbl.innerText = 'Status: Failed with errors';
+            statusDot.style.background = '#ef4444';
+            statusDot.style.boxShadow = '0 0 8px #ef4444';
+            statusText.innerText = 'Allen Cropper — Error';
+          }
+        }
+      } catch (err) {
+        console.error('Error polling Allen Cropper status:', err);
+      }
+    }
+
+    async function stopAllenCropJob() {
+      const btnStop = document.getElementById('allen-btn-stop');
+      btnStop.disabled = true;
+      btnStop.innerText = 'Stopping...';
+      try {
+        await fetch('/api/cropper/stop', { method: 'POST' });
+      } catch (e) {
+        console.error('Stop error:', e);
+      }
+    }
+
+    function openAllenFolder() {
+      fetch('/api/cropper/open-folder', { method: 'POST' })
+        .then(r => r.json())
+        .then(d => {
+          if (d.success) console.log('Opened folder:', d.path);
+        })
+        .catch(e => console.error(e));
+    }
+
+    function renderAllenResults(jobData) {
+      const resultsCard = document.getElementById('allen-results-card');
+      const summaryText = document.getElementById('allen-results-summary');
+      const zipWrap = document.getElementById('allen-zip-downloads-wrap');
+      const zipList = document.getElementById('allen-zip-list');
+      const jsonWrap = document.getElementById('allen-json-downloads-wrap');
+      const jsonList = document.getElementById('allen-json-list');
+      const jsonPreviewBox = document.getElementById('allen-json-preview-container');
+      const jsonPreviewBody = document.getElementById('allen-json-preview-body');
+
+      let hasArtifacts = false;
+      resultsCard.style.display = 'block';
+
+      // 1. Render ZIP Archives
+      if (jobData.zip_files && jobData.zip_files.length > 0) {
+        hasArtifacts = true;
+        zipWrap.style.display = 'block';
+        zipList.innerHTML = jobData.zip_files.map(z => `
+          <div class="download-card" style="margin-bottom: 0.65rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span style="font-size: 1.6rem;">📦</span>
+              <div>
+                <h4 style="color: white; font-size: 0.95rem; font-weight: 700;">${escapeHtml(z.filename)}</h4>
+                <span style="font-size: 0.78rem; color: #a5b4fc;">Size: ${z.size_mb} MB • Full Topic Question Bank</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <a href="/static/quiz_player.html?zip_url=${encodeURIComponent('/api/cropper/download?file=' + z.relative_path)}&name=${encodeURIComponent(z.filename)}" target="_blank" class="btn btn-primary" style="padding: 0.55rem 1.15rem; font-size: 0.88rem; background: linear-gradient(135deg, #00bfa5, #059669); text-decoration: none;">
+                ▶️ Attempt Quiz
+              </a>
+              <a href="/api/cropper/download?file=${encodeURIComponent(z.relative_path)}" class="btn btn-secondary" style="padding: 0.55rem 1rem; font-size: 0.88rem; text-decoration: none;">
+                📥 Download ZIP
+              </a>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        zipWrap.style.display = 'none';
+      }
+
+      // 2. Render JSON Outputs
+      if (jobData.json_files && jobData.json_files.length > 0) {
+        hasArtifacts = true;
+        jsonWrap.style.display = 'block';
+        jsonList.innerHTML = jobData.json_files.map(j => `
+          <div class="download-card" style="margin-bottom: 0.65rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span style="font-size: 1.6rem;">💾</span>
+              <div>
+                <h4 style="color: white; font-size: 0.95rem; font-weight: 700;">${escapeHtml(j.filename)}</h4>
+                <span style="font-size: 0.78rem; color: #6ee7b7;">${j.question_count} Questions • ${j.size_kb} KB • Cloudinary URLs Linked</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+              <a href="/api/cropper/download?file=${encodeURIComponent(j.relative_path)}" class="btn btn-secondary" style="padding: 0.55rem 0.9rem; font-size: 0.84rem; color: #34d399; border-color: rgba(16, 185, 129, 0.4); text-decoration: none;">
+                📥 Download JSON
+              </a>
+            </div>
+          </div>
+        `).join('');
+
+        // Preview snippet if available
+        if (jobData.questions_preview && jobData.questions_preview.length > 0) {
+          allenLastJsonData = jobData.questions_preview;
+          jsonPreviewBox.style.display = 'block';
+          jsonPreviewBody.innerText = JSON.stringify(jobData.questions_preview, null, 2);
+        }
+      } else {
+        jsonWrap.style.display = 'none';
+      }
+
+      summaryText.innerText = hasArtifacts 
+        ? `Successfully generated ${jobData.zip_files?.length || 0} ZIP file(s) and ${jobData.json_files?.length || 0} JSON file(s). Tap below to save to your device.`
+        : 'Process finished. No files generated based on selected options.';
+
+      resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function copyAllenJsonPreview() {
+      if (!allenLastJsonData) return;
+      navigator.clipboard.writeText(JSON.stringify(allenLastJsonData, null, 2));
+      alert('JSON preview copied to clipboard!');
+    }
+
+    async function loadAllenFilesHistory() {
+      try {
+        const res = await fetch('/api/cropper/files');
+        const data = await res.json();
+        const container = document.getElementById('allen-history-list');
+        if (!container) return;
+
+        if (data.files && data.files.length > 0) {
+          container.innerHTML = data.files.slice(0, 10).map(f => `
+            <div class="download-card" style="padding: 0.65rem 0.85rem; margin-bottom: 0.5rem; background: rgba(15, 23, 42, 0.5);">
+              <div>
+                <span style="font-size: 0.85rem; color: white; font-weight: 600;">
+                  ${f.is_zip ? '📦' : '💾'} ${escapeHtml(f.display_name)}
+                </span>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">${f.size_mb} MB</div>
+              </div>
+              <div style="display: flex; gap: 0.35rem;">
+                ${f.is_zip ? `
+                  <a href="/static/quiz_player.html?zip_url=${encodeURIComponent('/api/cropper/download?file=' + f.filename)}&name=${encodeURIComponent(f.display_name)}" target="_blank" class="btn btn-primary" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; text-decoration: none; background: linear-gradient(135deg, #00bfa5, #059669);">
+                    ▶ Quiz
+                  </a>
+                ` : ''}
+                <a href="/api/cropper/download?file=${encodeURIComponent(f.filename)}" class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; text-decoration: none;">
+                  Download
+                </a>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<p style="font-size: 0.82rem; color: var(--text-muted);">No previous outputs found yet.</p>';
+        }
+      } catch (e) {
+        console.error('Error loading history:', e);
+      }
+    }
+
+    // =========================================================================
+    // THEME SWITCHER (Dark & Light Mode)
+    // =========================================================================
+    function initTheme() {
+      const saved = localStorage.getItem('studio_theme') || 'dark';
+      applyTheme(saved);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('studio_theme', theme);
+      const icon = document.getElementById('theme-icon');
+      const text = document.getElementById('theme-text');
+      if (icon && text) {
+        if (theme === 'light') {
+          icon.innerText = '☀️';
+          text.innerText = 'Light';
+        } else {
+          icon.innerText = '🌙';
+          text.innerText = 'Dark';
+        }
+      }
+    }
+
+    // Apply saved theme immediately
+    initTheme();
   </script>
 </body>
 </html>
