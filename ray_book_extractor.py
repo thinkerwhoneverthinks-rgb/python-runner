@@ -123,22 +123,80 @@ def get_api_headers(token: str = "") -> Dict[str, str]:
     }
 
 
+def fetch_streamfiles_api(url: str, token: str = "", timeout: int = 15) -> Optional[Dict[str, Any]]:
+    """Attempts fast requests.get, falling back to Playwright in-browser fetch if blocked (e.g. HTTP 403/Cloudflare on GitHub Actions)."""
+    headers = get_api_headers(token)
+    act_token = headers.get("Authorization", "")
+
+    # 1. Fast requests.get attempt
+    try:
+        res = requests.get(url, headers=headers, timeout=timeout)
+        if res.status_code == 200:
+            return res.json()
+        elif res.status_code not in (403, 520, 521, 522, 523, 524):
+            try:
+                return res.json()
+            except Exception:
+                return None
+    except Exception:
+        pass
+
+    # 2. In-browser fetch fallback with Playwright
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-blink-features=AutomationControlled"
+                ]
+            )
+            ctx = browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+            )
+            page = ctx.new_page()
+            try:
+                page.goto("https://books.streamfiles.eu.org/viewer.php?asset_ref=init", wait_until="domcontentloaded", timeout=12000)
+            except Exception:
+                pass
+            data = page.evaluate('''
+                async ([targetUrl, bearerToken]) => {
+                    try {
+                        const res = await fetch(targetUrl, {
+                            headers: {
+                                'Authorization': bearerToken,
+                                'x-authorization': bearerToken,
+                                'client-id': '5eb393ee95fab7468a79d189',
+                                'client-type': 'WEB'
+                            }
+                        });
+                        return await res.json();
+                    } catch(e) {
+                        return null;
+                    }
+                }
+            ''', [url, act_token])
+            browser.close()
+            if isinstance(data, dict):
+                return data
+    except Exception:
+        pass
+    return None
+
+
 def analyse_book(book_id_or_url: str, token: str = "") -> Dict[str, Any]:
     """Fetches and analyses all chapters for a given Book ID."""
     book_id = extract_book_id(book_id_or_url)
     if not book_id:
         return {"success": False, "error": "Invalid book ID or URL provided."}
 
-    headers = get_api_headers(token)
     api_url = f"https://books.streamfiles.eu.org/api/books.php?book_chapters={book_id}"
-
-    try:
-        res = requests.get(api_url, headers=headers, timeout=20)
-        if res.status_code != 200:
-            return {"success": False, "error": f"Server returned HTTP {res.status_code}: {res.text[:200]}"}
-        json_data = res.json()
-    except Exception as e:
-        return {"success": False, "error": f"Failed to connect to API: {e}"}
+    json_data = fetch_streamfiles_api(api_url, token=token, timeout=20)
+    if not json_data:
+        return {"success": False, "error": f"Failed to connect to API or retrieve data for Book ID: {book_id}. (If streamfiles.eu.org is down, please try again when origin recovers or paste direct chapter URLs)."}
 
     chapters_raw = []
     book_title = "Unknown Book"
@@ -209,16 +267,11 @@ def analyse_cohort(cohort_input: str, token: str = "") -> Dict[str, Any]:
 
     for cand in candidates:
         api_url = f"https://books.streamfiles.eu.org/api/books.php?cohort={urllib.parse.quote(cand)}"
-        try:
-            res = requests.get(api_url, headers=headers, timeout=20)
-            if res.status_code == 200:
-                data = res.json()
-                if data.get("data") and data["data"].get("explorePages"):
-                    cohort_json = data
-                    used_cohort = cand
-                    break
-        except Exception:
-            pass
+        data = fetch_streamfiles_api(api_url, token=token, timeout=15)
+        if data and data.get("data") and data["data"].get("explorePages"):
+            cohort_json = data
+            used_cohort = cand
+            break
 
     if not cohort_json:
         return {
@@ -255,9 +308,8 @@ def analyse_cohort(cohort_input: str, token: str = "") -> Dict[str, Any]:
         bid = b["id"]
         try:
             url = f"https://books.streamfiles.eu.org/api/books.php?book_chapters={bid}"
-            r = requests.get(url, headers=headers, timeout=15)
-            if r.status_code == 200:
-                cd = r.json()
+            cd = fetch_streamfiles_api(url, token=token, timeout=12)
+            if cd:
                 data = cd.get("data") if isinstance(cd.get("data"), dict) else cd
                 c_title = data.get("title") or b["title"]
                 c_list = data.get("chapterDetails", []) or []
