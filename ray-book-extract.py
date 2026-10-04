@@ -4,7 +4,7 @@ Downloads and decrypts PW / Streamfiles books with XOR-cipher reversing
 and performs automatic watermark removal.
 
 Supported Modes:
-1. Single Book via Book ID: --book-id <id>
+1. Single/Multiple Books via Book ID: --book-id <id1,id2>
 2. Cohort Batch: --cohort <12th jee | dropper jee | 12th neet | dropper neet>
 3. Direct URL / asset_ref: --url <url>
 """
@@ -25,10 +25,10 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Ray Book Extractor & Watermark Remover")
     parser.add_argument("--url", default="", help="Target chapter URL or asset_ref")
-    parser.add_argument("--book-id", default="", help="Extract full book via Book ID (e.g. 699eb4309a1240f7a2d435ba)")
+    parser.add_argument("--book-id", default="", help="Extract full book(s) via Book ID (comma-separated for multiple)")
     parser.add_argument("--cohort", default="", help="Extract cohort (e.g. 12th jee, dropper jee, 12th neet)")
     parser.add_argument("--token", default=DEFAULT_TOKEN, help="Authorization Bearer Token")
-    parser.add_argument("--name", default="", help="Custom name for book or zip")
+    parser.add_argument("--name", default="", help="Custom name for book or master zip")
     parser.add_argument("--no-clean", action="store_true", help="Skip watermark removal")
     args = parser.parse_args()
 
@@ -49,24 +49,45 @@ if __name__ == "__main__":
             remove_watermarks=not args.no_clean
         )
         job.run()
+        
     elif args.book_id:
-        print(f"🔍 Analysing Book ID '{args.book_id}'...")
-        res = RBE.analyse_book(args.book_id, token)
-        if not res.get("success"):
-            print("❌ Error:", res.get("error"))
+        book_ids = [bid.strip() for bid in args.book_id.split(",") if bid.strip()]
+        valid_books = []
+        
+        for bid in book_ids:
+            print(f"🔍 Analysing Book ID '{bid}'...")
+            res = RBE.analyse_book(bid, token)
+            if not res.get("success"):
+                print(f"❌ Error fetching ID {bid}:", res.get("error"))
+            else:
+                b = res["book"]
+                # Only apply custom name to the book if there is exactly 1 ID being extracted
+                book_title = args.name if (args.name and len(book_ids) == 1) else b["title"]
+                b["title"] = book_title
+                print(f"✅ Discovered Book: {book_title} ({b['total_chapters']} chapters)")
+                valid_books.append(b)
+                
+        if not valid_books:
+            print("❌ No valid books could be extracted. Exiting.")
             sys.exit(1)
-        b = res["book"]
-        book_title = args.name or b["title"]
-        print(f"✅ Discovered Book: {book_title} ({b['total_chapters']} chapters)")
-        b["title"] = book_title
+            
+        # Determine master ZIP name based on number of valid books
+        if len(valid_books) == 1:
+            master_zip_name = f"{RBE.sanitize_filename(valid_books[0]['title'])}.zip"
+        else:
+            # If multiple books, use args.name for the master zip if provided, else default
+            raw_master = args.name if args.name else "Multiple_Extracted_Books"
+            master_zip_name = f"{RBE.sanitize_filename(raw_master)}.zip"
+
         job = RBE.RayBookJob(
             mode="book",
-            books=[b],
-            zip_name=f"{RBE.sanitize_filename(book_title)}.zip",
+            books=valid_books,
+            zip_name=master_zip_name,
             default_token=token,
             remove_watermarks=not args.no_clean
         )
         job.run()
+        
     else:
         target_url = args.url or DEFAULT_TARGET_URL
         name = args.name or "Final_Extracted_Book"
