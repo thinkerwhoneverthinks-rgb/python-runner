@@ -10,7 +10,8 @@ import json
 from collections import defaultdict
 from PIL import Image
 
-ZOOM = 300 / 72.0
+# Increased to 250 DPI for sharper text
+ZOOM = 250 / 72.0
 
 GENERIC_HEADER_WORDS = {
     "NEET : PHYSICS", "NEET : CHEMISTRY", "NEET : BIOLOGY",
@@ -87,7 +88,7 @@ def _ink_mask(raw):
 
 INK_GRAY_MAX = 200      # < this = ink (the light grey watermark is ~219-230)
 INK_ROW_TOL = 2         # rows with <= this many ink pixels count as blank
-GAP_MIN_PX = 10         # preferred separator height, at ZOOM (300 dpi)
+GAP_MIN_PX = 10         # preferred separator height, at ZOOM (250 dpi)
 GAP_MIN_PX_FALLBACK = 5 # used only when no preferred-size gap exists
 GAP_SEARCH_PT = 130.0   # how far above a marker we look for a separator
 TAG_DESCENDER_PT = 3.5  # empty descender space inside a tag's glyph box
@@ -407,6 +408,35 @@ def _extract_digit_words(row):
     return digits
 
 
+MULTI_ANS_RE = re.compile(r"^\d(?:[,/]\d)+$")
+
+
+def _extract_answer_words(row):
+    """Like _extract_digit_words but keeps multi-value answers (e.g. '2,3')
+    as a single anchor so the column count matches the question row."""
+    entries = []
+    for w in row:
+        text = w["text"].strip()
+        if _is_label_word(text):
+            continue
+        # Multi-value answer like "2,3" or "1,4" — keep as one anchor
+        if MULTI_ANS_RE.match(text):
+            entries.append({"ch": text, "cx": w["cx"]})
+            continue
+        only_digits = "".join(ch for ch in text if ch.isdigit())
+        if not only_digits:
+            continue
+        if len(only_digits) == 1:
+            entries.append({"ch": only_digits, "cx": w["cx"]})
+        else:
+            w_width = w["x1"] - w["x0"]
+            for k, ch in enumerate(only_digits):
+                frac = (k + 0.5) / len(only_digits)
+                cx = w["x0"] + frac * w_width
+                entries.append({"ch": ch, "cx": cx})
+    return entries
+
+
 def _cells_from_rows(q_digits, a_digits):
     if not a_digits or not q_digits:
         return {}
@@ -414,7 +444,7 @@ def _cells_from_rows(q_digits, a_digits):
     if len(anchors) == 1:
         num_str = "".join(d["ch"] for d in q_digits)
         if num_str.isdigit():
-            return {int(num_str): int(a_digits[0]["ch"])}
+            return {int(num_str): a_digits[0]["ch"]}
         return {}
 
     pitch = (anchors[-1] - anchors[0]) / (len(anchors) - 1)
@@ -430,8 +460,16 @@ def _cells_from_rows(q_digits, a_digits):
             continue
         num_str = "".join(d["ch"] for d in sorted(digs, key=lambda d: d["cx"]))
         if num_str.isdigit():
-            result[int(num_str)] = int(a_digits[i]["ch"])
+            val = a_digits[i]["ch"]
+            # Convert single-digit answers to int for backward compat
+            if val.isdigit() and len(val) == 1:
+                val = int(val)
+            result[int(num_str)] = val
     return result
+
+
+def _is_ans_val(v):
+    return v in "1234" or bool(MULTI_ANS_RE.match(str(v)))
 
 
 def parse_answer_key_spatial(raw_words, zone_y0, zone_y1):
@@ -439,26 +477,55 @@ def parse_answer_key_spatial(raw_words, zone_y0, zone_y1):
     if len(rows) < 2:
         return {}
 
+    # Identify Q/A rows by their leading label word, then extract
+    # digits appropriately: question rows use _extract_digit_words,
+    # answer rows use _extract_answer_words (preserves "2,3" as one anchor).
+    labelled_pairs = []
+    i = 0
+    while i < len(rows) - 1:
+        row_a_texts = [w["text"].strip().rstrip(".").lower() for w in rows[i]]
+        row_b_texts = [w["text"].strip().rstrip(".").lower() for w in rows[i + 1]]
+        a_is_q = any(t in ("question", "que", "q") for t in row_a_texts)
+        b_is_a = any(t in ("answer", "ans", "a") for t in row_b_texts)
+        if a_is_q and b_is_a:
+            q_digits = _extract_digit_words(rows[i])
+            a_digits = _extract_answer_words(rows[i + 1])
+            if q_digits and a_digits:
+                labelled_pairs.append((q_digits, a_digits))
+            i += 2
+            continue
+        i += 1
+
+    if labelled_pairs:
+        result = {}
+        for q_digits, a_digits in labelled_pairs:
+            result.update(_cells_from_rows(q_digits, a_digits))
+        return result
+
+    # Fallback: heuristic using digit content only
     digit_rows = []
     for row in rows:
-        digits = _extract_digit_words(row)
+        digits = _extract_answer_words(row)
         if digits:
-            digit_rows.append(digits)
+            digit_rows.append((row, digits))
 
     if len(digit_rows) < 2:
         return {}
 
     result = {}
-    for a, b in zip(digit_rows[0::2], digit_rows[1::2]):
-        a_all_answers = all(d["ch"] in "1234" for d in a)
-        b_all_answers = all(d["ch"] in "1234" for d in b)
+    for (row_a, a), (row_b, b) in zip(digit_rows[0::2], digit_rows[1::2]):
+        a_all_answers = all(_is_ans_val(d["ch"]) for d in a)
+        b_all_answers = all(_is_ans_val(d["ch"]) for d in b)
 
         if not a_all_answers and b_all_answers:
-            result.update(_cells_from_rows(a, b))
+            q_digits = _extract_digit_words(row_a)
+            result.update(_cells_from_rows(q_digits, b))
         elif a_all_answers and not b_all_answers:
-            result.update(_cells_from_rows(b, a))
+            q_digits = _extract_digit_words(row_b)
+            result.update(_cells_from_rows(q_digits, a))
         elif b_all_answers:
-            result.update(_cells_from_rows(a, b))
+            q_digits = _extract_digit_words(row_a)
+            result.update(_cells_from_rows(q_digits, b))
 
     return result
 
@@ -664,6 +731,16 @@ def process_pdf(pdf_path, out_root, prefix=""):
                         if l["text"].strip() == current_topic or l["text"].strip().upper() in GENERIC_HEADER_WORDS:
                             continue
                         if is_conceptual_subtopic(l["text"]):
+                            # Real subtopics sit on a tinted heading band; reject
+                            # chemical-formula labels (e.g. "COOH") that happen to
+                            # pass the text heuristic but have no band behind them.
+                            on_band = any(
+                                r.y0 <= l["y1"] and r.y1 >= l["y0"]
+                                and r.x0 < col_hi and r.x1 > col_lo
+                                for r in heading_boxes
+                            )
+                            if not on_band:
+                                continue
                             subtopic_events.append({"type": "subtopic", "y0": l["y0"], "y1": l["y1"], "name": l["text"].strip()})
                 elif zone["section"] == "pyq":
                     for l in col_lines:
@@ -897,7 +974,10 @@ def write_output(data, out_root, prefix=""):
                     img = q.combined_image()
                     if img is None:
                         continue
-                    img.save(os.path.join(q_dir, f"q{q.num}.png"))
+                    # Kept RGB conversion here to retain the colored lines in diagrams
+                    img = img.convert("RGB")
+                    # Lossy format with quality=85 added to reduce file size
+                    img.save(os.path.join(q_dir, f"q{q.num}.webp"), "WEBP", lossless=False, quality=85, method=6)
 
             if content["answerkeys"]:
                 ak_dir = os.path.join(section_dir, "Answer Key")
@@ -905,7 +985,10 @@ def write_output(data, out_root, prefix=""):
                 merged_answers = {} 
                 for i, ak in enumerate(content["answerkeys"], 1):
                     suffix = "" if len(content["answerkeys"]) == 1 else f"_{i}"
-                    ak["image"].save(os.path.join(ak_dir, f"answer_key{suffix}.png"))
+                    # Kept RGB conversion here
+                    ak_img = ak["image"].convert("RGB")
+                    # Lossy format with quality=85 added to reduce file size
+                    ak_img.save(os.path.join(ak_dir, f"answer_key{suffix}.webp"), "WEBP", lossless=False, quality=85, method=6)
                     parsed = {}
                     if "raw_words" in ak:
                         parsed = parse_answer_key_spatial(
@@ -958,7 +1041,12 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 3:
         prefix_arg = sys.argv[3]
+    elif sys.stdin and sys.stdin.isatty():
+        try:
+            prefix_arg = input("Enter a prefix for the ZIP files (e.g. 'allen 23') or press Enter to skip: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            prefix_arg = ""
     else:
-        prefix_arg = input("Enter a prefix for the ZIP files (e.g. 'allen 23') or press Enter to skip: ").strip()
+        prefix_arg = ""
         
     process_pdf(pdf_file, out_dir, prefix_arg)
